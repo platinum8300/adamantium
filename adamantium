@@ -1,0 +1,843 @@
+#!/bin/bash
+
+# ═══════════════════════════════════════════════════════════════
+#  █████╗ ██████╗  █████╗ ███╗   ███╗ █████╗ ███╗   ██╗████████╗██╗██╗   ██╗███╗   ███╗
+# ██╔══██╗██╔══██╗██╔══██╗████╗ ████║██╔══██╗████╗  ██║╚══██╔══╝██║██║   ██║████╗ ████║
+# ███████║██║  ██║███████║██╔████╔██║███████║██╔██╗ ██║   ██║   ██║██║   ██║██╔████╔██║
+# ██╔══██║██║  ██║██╔══██║██║╚██╔╝██║██╔══██║██║╚██╗██║   ██║   ██║██║   ██║██║╚██╔╝██║
+# ██║  ██║██████╔╝██║  ██║██║ ╚═╝ ██║██║  ██║██║ ╚████║   ██║   ██║╚██████╔╝██║ ╚═╝ ██║
+# ╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝     ╚═╝
+# ═══════════════════════════════════════════════════════════════
+# Deep metadata cleaning | The tool that excited Edward Snowden
+# Full Mode: ExifTool + ffmpeg
+# Version: 1.0
+# ═══════════════════════════════════════════════════════════════
+
+set -euo pipefail
+
+# Colores
+readonly RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
+readonly YELLOW='\033[1;33m'
+readonly BLUE='\033[0;34m'
+readonly MAGENTA='\033[0;35m'
+readonly CYAN='\033[0;36m'
+readonly WHITE='\033[1;37m'
+readonly GRAY='\033[0;90m'
+readonly BOLD='\033[1m'
+readonly NC='\033[0m' # No Color
+
+# Emojis y símbolos
+readonly CHECK="${GREEN}✅${NC}"
+readonly CROSS="${RED}❌${NC}"
+readonly ARROW="${CYAN}→${NC}"
+readonly BULLET="${BLUE}●${NC}"
+readonly WARN="${YELLOW}⚠️${NC}"
+readonly INFO="${CYAN}💡${NC}"
+readonly CLEAN="${MAGENTA}🧹${NC}"
+readonly SHIELD="🛡️"
+readonly FILE_ICON="📁"
+readonly SIZE_ICON="📊"
+readonly VIDEO_ICON="🎬"
+readonly IMAGE_ICON="🖼️"
+readonly PDF_ICON="📄"
+readonly OFFICE_ICON="📝"
+readonly SPARKLES="✨"
+readonly SEARCH_ICON="🔍"
+readonly LOCATION_ICON="📍"
+readonly CAMERA_ICON="📷"
+readonly COMPUTER_ICON="💻"
+readonly CALENDAR_ICON="📅"
+readonly TOOL_ICON="🔧"
+
+# Variables globales
+TEMP_DIR=""
+ORIGINAL_FILE=""
+OUTPUT_FILE=""
+FILE_TYPE=""
+IS_MULTIMEDIA=false
+
+# Versiones mínimas requeridas (se actualizan automáticamente desde upstream)
+REQUIRED_EXIFTOOL_VERSION="13.39"
+REQUIRED_FFMPEG_VERSION="8.0"
+
+# Archivo de caché para evitar verificar en cada ejecución
+CACHE_FILE="$HOME/.adamantium_last_check"
+CACHE_DURATION=86400  # 24 horas en segundos
+
+# Variables de sistema
+DISTRO=""
+PACKAGE_MANAGER=""
+PKG_INSTALL_CMD=""
+
+# Variables de internacionalización
+LANG_CODE="en"  # Default: English
+
+# ═══════════════════════════════════════════════════════════════
+# SISTEMA DE INTERNACIONALIZACIÓN (i18n)
+# ═══════════════════════════════════════════════════════════════
+
+detect_language() {
+    # Detectar idioma del sistema desde variables de entorno
+    local sys_lang="${LANG:-${LC_ALL:-en_US.UTF-8}}"
+
+    if [[ "$sys_lang" =~ ^es ]]; then
+        LANG_CODE="es"
+    else
+        LANG_CODE="en"
+    fi
+}
+
+# Mensajes en español
+declare -A MSG_ES=(
+    [ERROR_NO_FILE]="Error: Debes proporcionar un archivo"
+    [USAGE]="Uso:"
+    [EXAMPLES]="Ejemplos:"
+    [ERROR_FILE_NOT_EXISTS]="Error: El archivo '%s' no existe"
+    [FILE_TO_PROCESS]="Archivo a procesar:"
+    [TYPE_DETECTED]="Tipo detectado:"
+    [PROCESSING]="Procesamiento:"
+    [METADATA_BEFORE]="METADATOS ANTES DE LA LIMPIEZA"
+    [METADATA_AFTER]="METADATOS DESPUÉS DE LA LIMPIEZA"
+    [STARTING_DEEP_CLEAN]="INICIANDO LIMPIEZA PROFUNDA"
+    [CLEANING_WITH_EXIFTOOL]="Limpiando metadatos con"
+    [DEEP_CLEAN_WITH_FFMPEG]="Limpieza profunda con"
+    [REMOVING_METADATA_EXIFTOOL]="Eliminando metadatos con ExifTool"
+    [REMOVING_CONTAINER_METADATA]="Eliminando metadatos del contenedor multimedia"
+    [CLEANING_COMPLETED]="Limpieza completada exitosamente"
+    [PROCESS_COMPLETED]="PROCESO COMPLETADO"
+    [ORIGINAL_FILE]="Archivo original:"
+    [CLEAN_FILE]="Archivo limpio:"
+    [SIZE]="Tamaño:"
+    [ORIGINAL_PRESERVED]="El archivo original se ha preservado intacto"
+    [NO_METADATA_FOUND]="No se encontraron metadatos"
+    [METADATA_FIELDS_TOTAL]="Total de campos de metadatos:"
+    [VERIFYING_EXIFTOOL]="Verificando ExifTool..."
+    [VERIFYING_FFMPEG]="Verificando ffmpeg..."
+    [EXIFTOOL_UPDATED]="ExifTool está actualizado"
+    [FFMPEG_UPDATED]="ffmpeg está actualizado"
+    [EXIFTOOL_OUTDATED]="ExifTool desactualizado:"
+    [FFMPEG_OUTDATED]="ffmpeg desactualizado:"
+    [UPDATING_FROM_REPOS]="Actualizando desde repositorios..."
+    [UPDATED_TO]="actualizado a"
+    [FROM_REPOS]="desde repositorios"
+    [TRYING_SYSTEM_REPOS]="Intentando con repositorios del sistema (puede ser versión anterior)..."
+    [UPDATE_ERROR]="Error al actualizar"
+    [CONTINUING_CURRENT]="Continuando con versión actual..."
+    [INSTALLING_FROM_SOURCE]="Instalando ExifTool"
+    [FROM_SOURCE_SITE]="desde fuente (exiftool.org)..."
+    [DOWNLOAD_ERROR]="Error al descargar ExifTool"
+    [INSTALLED_FROM_SOURCE]="instalado correctamente desde fuente"
+    [POST_INSTALL_ERROR]="Error en la verificación post-instalación"
+    [HEADER_SUBTITLE]="Limpieza profunda de metadatos | La herramienta que emocionó a Edward Snowden"
+    [MULTIMEDIA]="multimedia"
+    [IMAGE]="imagen"
+    [PDF]="pdf"
+    [OFFICE_DOC]="documento office"
+    [UNKNOWN]="desconocido"
+    [EXIFTOOL_FFMPEG]="ExifTool + ffmpeg"
+    [EXIFTOOL_ONLY]="ExifTool"
+    [TOTAL]="Total"
+    [SEPARATOR]="─────────────────────────────────────────────────────────────"
+    [PACKAGE_MANAGER_NOT_DETECTED]="No se pudo detectar el gestor de paquetes"
+)
+
+# Mensajes en inglés (idioma por defecto)
+declare -A MSG_EN=(
+    [ERROR_NO_FILE]="Error: You must provide a file"
+    [USAGE]="Usage:"
+    [EXAMPLES]="Examples:"
+    [ERROR_FILE_NOT_EXISTS]="Error: File '%s' does not exist"
+    [FILE_TO_PROCESS]="File to process:"
+    [TYPE_DETECTED]="Detected type:"
+    [PROCESSING]="Processing:"
+    [METADATA_BEFORE]="METADATA BEFORE CLEANING"
+    [METADATA_AFTER]="METADATA AFTER CLEANING"
+    [STARTING_DEEP_CLEAN]="STARTING DEEP CLEANING"
+    [CLEANING_WITH_EXIFTOOL]="Cleaning metadata with"
+    [DEEP_CLEAN_WITH_FFMPEG]="Deep cleaning with"
+    [REMOVING_METADATA_EXIFTOOL]="Removing metadata with ExifTool"
+    [REMOVING_CONTAINER_METADATA]="Removing multimedia container metadata"
+    [CLEANING_COMPLETED]="Cleaning completed successfully"
+    [PROCESS_COMPLETED]="PROCESS COMPLETED"
+    [ORIGINAL_FILE]="Original file:"
+    [CLEAN_FILE]="Clean file:"
+    [SIZE]="Size:"
+    [ORIGINAL_PRESERVED]="The original file has been preserved intact"
+    [NO_METADATA_FOUND]="No metadata found"
+    [METADATA_FIELDS_TOTAL]="Total metadata fields:"
+    [VERIFYING_EXIFTOOL]="Verifying ExifTool..."
+    [VERIFYING_FFMPEG]="Verifying ffmpeg..."
+    [EXIFTOOL_UPDATED]="ExifTool is up to date"
+    [FFMPEG_UPDATED]="ffmpeg is up to date"
+    [EXIFTOOL_OUTDATED]="ExifTool outdated:"
+    [FFMPEG_OUTDATED]="ffmpeg outdated:"
+    [UPDATING_FROM_REPOS]="Updating from repositories..."
+    [UPDATED_TO]="updated to"
+    [FROM_REPOS]="from repositories"
+    [TRYING_SYSTEM_REPOS]="Trying system repositories (may be older version)..."
+    [UPDATE_ERROR]="Error updating"
+    [CONTINUING_CURRENT]="Continuing with current version..."
+    [INSTALLING_FROM_SOURCE]="Installing ExifTool"
+    [FROM_SOURCE_SITE]="from source (exiftool.org)..."
+    [DOWNLOAD_ERROR]="Error downloading ExifTool"
+    [INSTALLED_FROM_SOURCE]="installed correctly from source"
+    [POST_INSTALL_ERROR]="Post-installation verification error"
+    [HEADER_SUBTITLE]="Deep metadata cleaning | The tool that excited Edward Snowden"
+    [MULTIMEDIA]="multimedia"
+    [IMAGE]="image"
+    [PDF]="pdf"
+    [OFFICE_DOC]="office document"
+    [UNKNOWN]="unknown"
+    [EXIFTOOL_FFMPEG]="ExifTool + ffmpeg"
+    [EXIFTOOL_ONLY]="ExifTool"
+    [TOTAL]="Total"
+    [SEPARATOR]="─────────────────────────────────────────────────────────────"
+    [PACKAGE_MANAGER_NOT_DETECTED]="Could not detect package manager"
+)
+
+# Función para obtener mensaje traducido
+msg() {
+    local key="$1"
+    shift
+    local text
+
+    if [ "$LANG_CODE" = "es" ]; then
+        text="${MSG_ES[$key]}"
+    else
+        text="${MSG_EN[$key]}"
+    fi
+
+    # Si tiene parámetros, aplicar printf
+    if [ $# -gt 0 ]; then
+        printf "$text" "$@"
+    else
+        echo "$text"
+    fi
+}
+
+# ═══════════════════════════════════════════════════════════════
+# DETECCIÓN DE DISTRIBUCIÓN Y GESTOR DE PAQUETES
+# ═══════════════════════════════════════════════════════════════
+
+detect_system() {
+    # Detectar distribución
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        DISTRO="$ID"
+    elif [ -f /etc/lsb-release ]; then
+        . /etc/lsb-release
+        DISTRO="$DISTRIB_ID"
+    else
+        DISTRO="unknown"
+    fi
+
+    # Detectar gestor de paquetes
+    if command -v pacman &>/dev/null; then
+        PACKAGE_MANAGER="pacman"
+        PKG_INSTALL_CMD="sudo pacman -S --noconfirm"
+    elif command -v apt-get &>/dev/null; then
+        PACKAGE_MANAGER="apt"
+        PKG_INSTALL_CMD="sudo apt-get install -y"
+    elif command -v dnf &>/dev/null; then
+        PACKAGE_MANAGER="dnf"
+        PKG_INSTALL_CMD="sudo dnf install -y"
+    elif command -v yum &>/dev/null; then
+        PACKAGE_MANAGER="yum"
+        PKG_INSTALL_CMD="sudo yum install -y"
+    elif command -v zypper &>/dev/null; then
+        PACKAGE_MANAGER="zypper"
+        PKG_INSTALL_CMD="sudo zypper install -y"
+    elif command -v apk &>/dev/null; then
+        PACKAGE_MANAGER="apk"
+        PKG_INSTALL_CMD="sudo apk add"
+    else
+        PACKAGE_MANAGER="unknown"
+        PKG_INSTALL_CMD=""
+    fi
+}
+
+get_package_name() {
+    local pkg="$1"
+
+    case "$pkg" in
+        exiftool)
+            case "$PACKAGE_MANAGER" in
+                pacman) echo "perl-image-exiftool" ;;
+                apt) echo "libimage-exiftool-perl" ;;
+                dnf|yum) echo "perl-Image-ExifTool" ;;
+                zypper) echo "exiftool" ;;
+                apk) echo "exiftool" ;;
+                *) echo "exiftool" ;;
+            esac
+            ;;
+        ffmpeg)
+            echo "ffmpeg"  # Mismo nombre en todas las distros
+            ;;
+        *)
+            echo "$pkg"
+            ;;
+    esac
+}
+
+install_package() {
+    local pkg="$1"
+    local pkg_name=$(get_package_name "$pkg")
+
+    if [ -z "$PKG_INSTALL_CMD" ]; then
+        echo -e "${RED}${CROSS}${NC} $(msg PACKAGE_MANAGER_NOT_DETECTED)"
+        return 1
+    fi
+
+    # Actualizar repos si es necesario
+    case "$PACKAGE_MANAGER" in
+        pacman)
+            sudo pacman -Sy &>/dev/null
+            ;;
+        apt)
+            sudo apt-get update &>/dev/null
+            ;;
+    esac
+
+    # Instalar paquete
+    $PKG_INSTALL_CMD "$pkg_name" &>/dev/null
+    return $?
+}
+
+# ═══════════════════════════════════════════════════════════════
+# FUNCIONES DE ACTUALIZACIÓN AUTOMÁTICA HÍBRIDA
+# ═══════════════════════════════════════════════════════════════
+
+should_check_updates() {
+    # Verificar si hace más de 24h desde la última verificación
+    if [ ! -f "$CACHE_FILE" ]; then
+        return 0  # No existe caché, verificar
+    fi
+
+    local last_check=$(cat "$CACHE_FILE" 2>/dev/null || echo "0")
+    local current_time=$(date +%s)
+    local time_diff=$((current_time - last_check))
+
+    if [ "$time_diff" -gt "$CACHE_DURATION" ]; then
+        return 0  # Más de 24h, verificar
+    else
+        return 1  # Menos de 24h, skip
+    fi
+}
+
+update_cache() {
+    date +%s > "$CACHE_FILE"
+}
+
+get_latest_exiftool_version() {
+    # Obtener última versión desde exiftool.org
+    local version
+    version=$(curl -s "https://exiftool.org/ver.txt" 2>/dev/null | head -1 | tr -d '\r\n' | grep -oP '[0-9]+\.[0-9]+')
+
+    if [ -z "$version" ]; then
+        # Fallback: parsear desde la página principal
+        version=$(curl -s "https://exiftool.org/" 2>/dev/null | grep -oP 'Version [0-9]+\.[0-9]+' | head -1 | grep -oP '[0-9]+\.[0-9]+')
+    fi
+
+    echo "${version:-$REQUIRED_EXIFTOOL_VERSION}"
+}
+
+compare_versions() {
+    # Compara dos versiones en formato X.Y
+    # Retorna 0 si $1 >= $2, 1 si $1 < $2
+    local v1=$1
+    local v2=$2
+
+    if [ "$v1" = "$v2" ]; then
+        return 0
+    fi
+
+    local v1_major=$(echo "$v1" | cut -d. -f1)
+    local v1_minor=$(echo "$v1" | cut -d. -f2)
+    local v2_major=$(echo "$v2" | cut -d. -f1)
+    local v2_minor=$(echo "$v2" | cut -d. -f2)
+
+    if [ "$v1_major" -gt "$v2_major" ]; then
+        return 0
+    elif [ "$v1_major" -lt "$v2_major" ]; then
+        return 1
+    fi
+
+    # Major iguales, comparar minor
+    if [ "$v1_minor" -ge "$v2_minor" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+install_exiftool_from_source() {
+    local target_version=$1
+    local temp_dir=$(mktemp -d)
+
+    echo -e "${CYAN}${ARROW}${NC} $(msg INSTALLING_FROM_SOURCE) ${WHITE}${target_version}${NC} $(msg FROM_SOURCE_SITE)"
+
+    cd "$temp_dir" || return 1
+
+    # Descargar
+    if ! wget -q "https://exiftool.org/Image-ExifTool-${target_version}.tar.gz" 2>/dev/null; then
+        echo -e "${RED}${CROSS}${NC} $(msg DOWNLOAD_ERROR) ${target_version}"
+        rm -rf "$temp_dir"
+        return 1
+    fi
+
+    # Extraer
+    tar -xzf "Image-ExifTool-${target_version}.tar.gz" || { rm -rf "$temp_dir"; return 1; }
+    cd "Image-ExifTool-${target_version}" || { rm -rf "$temp_dir"; return 1; }
+
+    # Instalar
+    perl Makefile.PL &>/dev/null || { rm -rf "$temp_dir"; return 1; }
+    make &>/dev/null || { rm -rf "$temp_dir"; return 1; }
+    sudo make install &>/dev/null || { rm -rf "$temp_dir"; return 1; }
+
+    # Limpiar
+    cd /
+    rm -rf "$temp_dir"
+
+    # Verificar instalación
+    local new_version=$(exiftool -ver 2>/dev/null || echo "error")
+    if [ "$new_version" = "$target_version" ]; then
+        echo -e "${GREEN}${CHECK}${NC} ExifTool ${WHITE}${target_version}${NC} $(msg INSTALLED_FROM_SOURCE)"
+        return 0
+    else
+        echo -e "${RED}${CROSS}${NC} $(msg POST_INSTALL_ERROR)"
+        return 1
+    fi
+}
+
+check_and_update_dependencies() {
+    # Verificar si debemos chequear actualizaciones (caché de 24h)
+    if ! should_check_updates; then
+        return 0
+    fi
+
+    local needs_update=false
+    local exiftool_version=$(exiftool -ver 2>/dev/null || echo "0")
+    local ffmpeg_version=$(ffmpeg -version 2>&1 | head -n1 | grep -oP 'version n?\K[0-9]+\.[0-9]+' | head -1 || echo "0")
+
+    # ═══════════════════════════════════════════════════════════
+    # EXIFTOOL - Hybrid system (source first, package manager fallback)
+    # ═══════════════════════════════════════════════════════════
+
+    echo -e "${GRAY}$(msg VERIFYING_EXIFTOOL)${NC}"
+    local latest_exiftool=$(get_latest_exiftool_version)
+
+    if ! compare_versions "$exiftool_version" "$latest_exiftool"; then
+        echo -e "${YELLOW}⚠${NC}  $(msg EXIFTOOL_OUTDATED) ${WHITE}${exiftool_version}${NC} → ${CYAN}${latest_exiftool}${NC}"
+
+        # Intentar instalar desde fuente (garantiza última versión)
+        if install_exiftool_from_source "$latest_exiftool"; then
+            needs_update=true
+        else
+            # Fallback: try with system package manager
+            echo -e "${YELLOW}⚠${NC}  $(msg TRYING_SYSTEM_REPOS)"
+            if install_package "exiftool"; then
+                local new_version=$(exiftool -ver 2>/dev/null)
+                echo -e "${GREEN}${CHECK}${NC} ExifTool $(msg UPDATED_TO) ${WHITE}${new_version}${NC} $(msg FROM_REPOS)"
+                needs_update=true
+            else
+                echo -e "${RED}${CROSS}${NC} $(msg UPDATE_ERROR) ExifTool. $(msg CONTINUING_CURRENT)"
+            fi
+        fi
+        echo ""
+    else
+        echo -e "${GREEN}${CHECK}${NC} ExifTool ${WHITE}${exiftool_version}${NC} $(msg EXIFTOOL_UPDATED)"
+    fi
+
+    # ═══════════════════════════════════════════════════════════
+    # FFMPEG - Repository only (compiling is very slow)
+    # ═══════════════════════════════════════════════════════════
+
+    echo -e "${GRAY}$(msg VERIFYING_FFMPEG)${NC}"
+
+    if ! compare_versions "$ffmpeg_version" "$REQUIRED_FFMPEG_VERSION"; then
+        echo -e "${YELLOW}⚠${NC}  $(msg FFMPEG_OUTDATED) ${WHITE}${ffmpeg_version}${NC} → ${CYAN}${REQUIRED_FFMPEG_VERSION}+${NC}"
+        echo -e "${CYAN}${ARROW}${NC} $(msg UPDATING_FROM_REPOS)"
+
+        if install_package "ffmpeg"; then
+            local new_version=$(ffmpeg -version 2>&1 | head -n1 | grep -oP 'version n?\K[0-9]+\.[0-9]+' | head -1)
+            echo -e "${GREEN}${CHECK}${NC} ffmpeg $(msg UPDATED_TO) ${WHITE}${new_version}${NC}"
+            needs_update=true
+        else
+            echo -e "${RED}${CROSS}${NC} $(msg UPDATE_ERROR) ffmpeg. $(msg CONTINUING_CURRENT)"
+        fi
+        echo ""
+    else
+        echo -e "${GREEN}${CHECK}${NC} ffmpeg ${WHITE}${ffmpeg_version}${NC} $(msg FFMPEG_UPDATED)"
+    fi
+
+    # Actualizar caché
+    update_cache
+
+    if [ "$needs_update" = true ]; then
+        echo -e "${GRAY}─────────────────────────────────────────────────────────────${NC}"
+        echo ""
+    fi
+}
+
+# ═══════════════════════════════════════════════════════════════
+# FUNCIONES DE UI
+# ═══════════════════════════════════════════════════════════════
+
+print_header() {
+    clear
+    echo -e "${CYAN}"
+    cat << "EOF"
+
+   █████╗ ██████╗  █████╗ ███╗   ███╗ █████╗ ███╗   ██╗████████╗██╗██╗   ██╗███╗   ███╗
+  ██╔══██╗██╔══██╗██╔══██╗████╗ ████║██╔══██╗████╗  ██║╚══██╔══╝██║██║   ██║████╗ ████║
+  ███████║██║  ██║███████║██╔████╔██║███████║██╔██╗ ██║   ██║   ██║██║   ██║██╔████╔██║
+  ██╔══██║██║  ██║██╔══██║██║╚██╔╝██║██╔══██║██║╚██╗██║   ██║   ██║██║   ██║██║╚██╔╝██║
+  ██║  ██║██████╔╝██║  ██║██║ ╚═╝ ██║██║  ██║██║ ╚████║   ██║   ██║╚██████╔╝██║ ╚═╝ ██║
+  ╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝     ╚═╝
+
+EOF
+    echo -e "${NC}"
+    echo -e "${GRAY}        $(msg HEADER_SUBTITLE)${NC}"
+    echo -e "${GRAY}        ══════════════════════════════════════════════════════════════════════════════${NC}"
+    echo ""
+}
+
+print_separator() {
+    echo -e "${GRAY}$(msg SEPARATOR)${NC}"
+}
+
+print_box() {
+    local color="$1"
+    local title="$2"
+    local content="$3"
+
+    echo -e "${color}╭─────────────────────────────────────────────────────────────╮${NC}"
+    echo -e "${color}│${NC} ${BOLD}${title}${NC}"
+    echo -e "${color}├─────────────────────────────────────────────────────────────┤${NC}"
+    echo -e "${content}" | while IFS= read -r line; do
+        echo -e "${color}│${NC} ${line}"
+    done
+    echo -e "${color}╰─────────────────────────────────────────────────────────────╯${NC}"
+}
+
+spinner() {
+    local pid=$1
+    local message=$2
+    local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+
+    tput civis # Ocultar cursor
+    while kill -0 "$pid" 2>/dev/null; do
+        local temp=${spinstr#?}
+        printf "\r${CYAN}%s${NC} %s" "${spinstr:0:1}" "$message"
+        spinstr=$temp${spinstr%"$temp"}
+        sleep 0.1
+    done
+    tput cnorm # Mostrar cursor
+    printf "\r${CHECK} %s\n" "$message"
+}
+
+# ═══════════════════════════════════════════════════════════════
+# FUNCIONES DE DETECCIÓN
+# ═══════════════════════════════════════════════════════════════
+
+detect_file_type() {
+    local file="$1"
+    local mimetype
+
+    mimetype=$(file -b --mime-type "$file")
+
+    local type_icon=""
+    case "$mimetype" in
+        video/*|audio/*)
+            FILE_TYPE="$(msg MULTIMEDIA)"
+            IS_MULTIMEDIA=true
+            type_icon="$VIDEO_ICON"
+            ;;
+        image/*)
+            FILE_TYPE="$(msg IMAGE)"
+            IS_MULTIMEDIA=false
+            type_icon="$IMAGE_ICON"
+            ;;
+        application/pdf)
+            FILE_TYPE="$(msg PDF)"
+            IS_MULTIMEDIA=false
+            type_icon="$PDF_ICON"
+            ;;
+        application/vnd.openxmlformats-officedocument.*|application/vnd.oasis.opendocument.*)
+            FILE_TYPE="$(msg OFFICE_DOC)"
+            IS_MULTIMEDIA=false
+            type_icon="$OFFICE_ICON"
+            ;;
+        application/msword|application/vnd.ms-*)
+            FILE_TYPE="$(msg OFFICE_DOC)"
+            IS_MULTIMEDIA=false
+            type_icon="$OFFICE_ICON"
+            ;;
+        *)
+            FILE_TYPE="$(msg UNKNOWN)"
+            IS_MULTIMEDIA=false
+            type_icon="$BULLET"
+            ;;
+    esac
+
+    echo -e "  ${type_icon} $(msg TYPE_DETECTED): ${YELLOW}${FILE_TYPE}${NC} ${GRAY}(${mimetype})${NC}"
+    echo -e "  ${TOOL_ICON} $(msg PROCESSING): ${CYAN}$([ "$IS_MULTIMEDIA" = true ] && msg EXIFTOOL_FFMPEG || msg EXIFTOOL_ONLY)${NC}"
+}
+
+# ═══════════════════════════════════════════════════════════════
+# FUNCIONES DE ANÁLISIS DE METADATOS
+# ═══════════════════════════════════════════════════════════════
+
+show_metadata() {
+    local file="$1"
+    local title="$2"
+    local color="$3"
+
+    echo ""
+    echo -e "${color}╔═══════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${color}║${NC} ${BOLD}${SEARCH_ICON} ${title}${NC}"
+    echo -e "${color}╚═══════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+
+    # Obtener TODOS los metadatos con exiftool (sin filtrar)
+    local metadata
+    metadata=$(exiftool "$file" 2>/dev/null)
+
+    if [ -z "$metadata" ] || [ "$(echo "$metadata" | wc -l)" -le 1 ]; then
+        echo -e "${GREEN}  ${CHECK} $(msg NO_METADATA_FOUND)${NC}"
+        return
+    fi
+
+    # Campos sensibles a destacar en rojo
+    local sensitive_patterns="Author|Creator|GPS|Location|Artist|Company|Owner|Serial|Parameters|Model|Software|Camera|Device|Make|Copyright|Last Modified By|User|Comment|Description|Subject|Keywords"
+
+    # Campos técnicos/fechas en amarillo
+    local technical_patterns="Date|Time|Timestamp|Encoder|Codec|Compression|Version|Tool"
+
+    # Campos básicos del sistema en gris (menos importantes visualmente)
+    local system_patterns="ExifTool|File Name|Directory|File Size|File Permissions|File Inode|File Access Date"
+
+    # Valores genéricos de Handler que NO son sensibles (estructura MP4 estándar)
+    local generic_handler_values="VideoHandler|SoundHandler|DataHandler|SubtitleHandler|TextHandler|MetaHandler"
+
+    local line_count=0
+    local metadata_found=false
+
+    # Mostrar TODOS los metadatos sin filtrar
+    while IFS= read -r line; do
+        # Saltar líneas vacías
+        [ -z "$line" ] && continue
+
+        # Verificar que la línea tiene el formato "Key : Value"
+        if echo "$line" | grep -q ":"; then
+            metadata_found=true
+            line_count=$((line_count + 1))
+
+            local key=$(echo "$line" | cut -d: -f1 | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+            local value=$(echo "$line" | cut -d: -f2- | sed 's/^[[:space:]]*//')
+
+            # Colorear según nivel de sensibilidad
+            # EXCEPCIÓN: Handler con valores genéricos → AZUL (no sensible)
+            if echo "$key" | grep -qi "Handler" && echo "$value" | grep -qE "(${generic_handler_values})"; then
+                # AZUL: Handler genérico (estructura estándar MP4, no sensible)
+                echo -e "  ${BLUE}●${NC} ${CYAN}${key}:${NC} ${value}"
+            elif echo "$key" | grep -qE "(${sensitive_patterns})"; then
+                # ROJO: Metadatos sensibles (privacidad crítica)
+                echo -e "  ${RED}●${NC} ${RED}${key}:${NC} ${WHITE}${value}${NC}"
+            elif echo "$key" | grep -qE "(${technical_patterns})"; then
+                # AMARILLO: Metadatos técnicos
+                echo -e "  ${YELLOW}●${NC} ${YELLOW}${key}:${NC} ${CYAN}${value}${NC}"
+            elif echo "$key" | grep -qE "(${system_patterns})"; then
+                # GRIS: Info del sistema (menos crítico)
+                echo -e "  ${GRAY}●${NC} ${GRAY}${key}:${NC} ${GRAY}${value}${NC}"
+            else
+                # AZUL: Resto de metadatos
+                echo -e "  ${BLUE}●${NC} ${CYAN}${key}:${NC} ${value}"
+            fi
+        fi
+    done <<< "$metadata"
+
+    if [ "$metadata_found" = false ]; then
+        echo -e "${GREEN}  ${CHECK} $(msg NO_METADATA_FOUND)${NC}"
+    else
+        echo ""
+        echo -e "${GRAY}  $(msg METADATA_FIELDS_TOTAL) ${WHITE}${line_count}${NC}"
+    fi
+
+    echo ""
+}
+
+# ═══════════════════════════════════════════════════════════════
+# FUNCIONES DE LIMPIEZA
+# ═══════════════════════════════════════════════════════════════
+
+clean_with_exiftool() {
+    local input="$1"
+    local output="$2"
+
+    echo -e "${ARROW} $(msg CLEANING_WITH_EXIFTOOL) ${CYAN}ExifTool${NC}..."
+
+    # Copiar archivo para preservar el original
+    cp "$input" "$output"
+
+    # Limpiar metadatos
+    exiftool -all= -overwrite_original "$output" &>/dev/null &
+    spinner $! "$(msg REMOVING_METADATA_EXIFTOOL)"
+
+    return 0
+}
+
+clean_with_ffmpeg() {
+    local input="$1"
+    local output="$2"
+
+    echo -e "${ARROW} $(msg DEEP_CLEAN_WITH_FFMPEG) ${CYAN}ffmpeg${NC}..."
+
+    # Detectar si es audio o video
+    local codec_copy="-c copy"
+
+    # Limpiar metadatos del contenedor
+    ffmpeg -i "$input" -map_metadata -1 -fflags +bitexact $codec_copy "$output" -y &>/dev/null &
+    spinner $! "$(msg REMOVING_CONTAINER_METADATA)"
+
+    return 0
+}
+
+perform_cleaning() {
+    local input="$1"
+    local output="$2"
+
+    echo ""
+    print_separator
+    echo -e "${BOLD}${MAGENTA}$(msg STARTING_DEEP_CLEAN)${NC}"
+    print_separator
+    echo ""
+
+    if [ "$IS_MULTIMEDIA" = true ]; then
+        # Para multimedia: ffmpeg primero, luego exiftool
+        local temp_ffmpeg="${TEMP_DIR}/temp_ffmpeg_$(basename "$input")"
+
+        clean_with_ffmpeg "$input" "$temp_ffmpeg"
+        clean_with_exiftool "$temp_ffmpeg" "$output"
+
+        rm -f "$temp_ffmpeg"
+    else
+        # Para otros archivos: solo exiftool
+        clean_with_exiftool "$input" "$output"
+    fi
+
+    echo ""
+    echo -e "${GREEN}${SPARKLES} ${CHECK} $(msg CLEANING_COMPLETED)${NC}"
+}
+
+# ═══════════════════════════════════════════════════════════════
+# FUNCIONES DE COMPARACIÓN
+# ═══════════════════════════════════════════════════════════════
+
+show_file_info() {
+    local file="$1"
+    local size
+    local hash
+
+    size=$(du -h "$file" | cut -f1)
+    hash=$(sha256sum "$file" | cut -d' ' -f1 | cut -c1-16)
+
+    echo -e "  ${SIZE_ICON} $(msg SIZE): ${CYAN}${size}${NC}"
+    echo -e "  ${BULLET} SHA256: ${GRAY}${hash}...${NC}"
+}
+
+# ═══════════════════════════════════════════════════════════════
+# FUNCIÓN PRINCIPAL
+# ═══════════════════════════════════════════════════════════════
+
+cleanup() {
+    if [ -n "$TEMP_DIR" ] && [ -d "$TEMP_DIR" ]; then
+        rm -rf "$TEMP_DIR"
+    fi
+}
+
+trap cleanup EXIT
+
+main() {
+    # Detectar idioma del sistema
+    detect_language
+
+    # Detectar sistema y gestor de paquetes
+    detect_system
+
+    # Verificar argumentos
+    if [ $# -eq 0 ]; then
+        print_header
+        echo -e "${RED}${CROSS} $(msg ERROR_NO_FILE)${NC}\n"
+        echo -e "${BOLD}$(msg USAGE)${NC}"
+        echo -e "  $0 <file>"
+        echo -e "  $0 <file> <output_file>"
+        echo ""
+        echo -e "${BOLD}$(msg EXAMPLES)${NC}"
+        echo -e "  $0 documento.pdf"
+        echo -e "  $0 video.mp4 video_clean.mp4"
+        echo -e "  $0 imagen.jpg"
+        echo ""
+        exit 1
+    fi
+
+    ORIGINAL_FILE="$1"
+
+    # Verificar que el archivo existe
+    if [ ! -f "$ORIGINAL_FILE" ]; then
+        print_header
+        echo -e "${RED}${CROSS} $(msg ERROR_FILE_NOT_EXISTS "$ORIGINAL_FILE")${NC}\n"
+        exit 1
+    fi
+
+    # Determinar archivo de salida
+    if [ $# -ge 2 ]; then
+        OUTPUT_FILE="$2"
+    else
+        local basename="${ORIGINAL_FILE%.*}"
+        local extension="${ORIGINAL_FILE##*.}"
+        OUTPUT_FILE="${basename}_clean.${extension}"
+    fi
+
+    # Crear directorio temporal
+    TEMP_DIR=$(mktemp -d)
+
+    # Verificar y actualizar dependencias automáticamente
+    check_and_update_dependencies
+
+    # Mostrar interfaz
+    print_header
+
+    echo -e "${BOLD}${FILE_ICON} $(msg FILE_TO_PROCESS)${NC}"
+    echo -e "  ${ARROW} ${WHITE}${ORIGINAL_FILE}${NC}"
+    show_file_info "$ORIGINAL_FILE"
+    echo ""
+
+    detect_file_type "$ORIGINAL_FILE"
+
+    # Mostrar metadatos ANTES
+    show_metadata "$ORIGINAL_FILE" "$(msg METADATA_BEFORE)" "$RED"
+
+    # Realizar limpieza
+    perform_cleaning "$ORIGINAL_FILE" "$OUTPUT_FILE"
+
+    # Mostrar metadatos DESPUÉS
+    show_metadata "$OUTPUT_FILE" "$(msg METADATA_AFTER)" "$GREEN"
+
+    # Resumen final
+    print_separator
+    echo -e "${BOLD}${GREEN}${SPARKLES} $(msg PROCESS_COMPLETED)${NC}"
+    print_separator
+    echo ""
+    echo -e "  ${FILE_ICON} $(msg ORIGINAL_FILE) ${GRAY}${ORIGINAL_FILE}${NC}"
+    echo -e "  ${SPARKLES} $(msg CLEAN_FILE)   ${GREEN}${OUTPUT_FILE}${NC}"
+    echo ""
+    show_file_info "$OUTPUT_FILE"
+    echo ""
+    echo -e "${CYAN}${INFO} $(msg ORIGINAL_PRESERVED)${NC}"
+    echo ""
+}
+
+# Ejecutar
+main "$@"

@@ -1,0 +1,110 @@
+# Archivo de configuración de ejemplo para Adamantium
+# Copia este archivo a ~/.adamantiumrc para personalizar el comportamiento
+
+# ═══════════════════════════════════════════════════════════════
+# CONFIGURACIÓN GENERAL
+# ═══════════════════════════════════════════════════════════════
+
+# Sufijo para archivos limpios (por defecto: _clean)
+OUTPUT_SUFFIX="_clean"
+
+# Crear backup antes de limpiar (true/false)
+CREATE_BACKUP=false
+
+# Directorio para backups (si CREATE_BACKUP=true)
+BACKUP_DIR="$HOME/.adamantium_backups"
+
+# ═══════════════════════════════════════════════════════════════
+# OPCIONES DE LIMPIEZA
+# ═══════════════════════════════════════════════════════════════
+
+# Nivel de limpieza para multimedia:
+# - basic: Solo ExifTool
+# - deep: ExifTool + ffmpeg (recomendado)
+# - paranoid: Recodificación completa (pérdida de calidad)
+MULTIMEDIA_CLEAN_LEVEL="deep"
+
+# Eliminar metadatos XMP (true/false)
+REMOVE_XMP=true
+
+# Eliminar metadatos IPTC (true/false)
+REMOVE_IPTC=true
+
+# Eliminar metadatos EXIF (true/false)
+REMOVE_EXIF=true
+
+# ═══════════════════════════════════════════════════════════════
+# OPCIONES DE VISUALIZACIÓN
+# ═══════════════════════════════════════════════════════════════
+
+# Mostrar metadatos antes de limpiar (true/false)
+SHOW_BEFORE=true
+
+# Mostrar metadatos después de limpiar (true/false)
+SHOW_AFTER=true
+
+# Número máximo de líneas de metadatos a mostrar
+MAX_METADATA_LINES=30
+
+# Usar colores en la interfaz (true/false)
+USE_COLORS=true
+
+# ═══════════════════════════════════════════════════════════════
+# OPCIONES AVANZADAS
+# ═══════════════════════════════════════════════════════════════
+
+# Verificar integridad del archivo después de limpiar (true/false)
+VERIFY_INTEGRITY=true
+
+# Calcular hash SHA256 antes y después (true/false)
+CALCULATE_HASH=false
+
+# Modo verbose - Mostrar comandos ejecutados (true/false)
+VERBOSE=false
+
+# Generar log de operaciones (true/false)
+ENABLE_LOGGING=false
+
+# Ruta del archivo de log (si ENABLE_LOGGING=true)
+LOG_FILE="$HOME/.adamantium.log"
+
+# ═══════════════════════════════════════════════════════════════
+# FILTROS DE METADATOS
+# ═══════════════════════════════════════════════════════════════
+
+# Preservar ciertos metadatos (separados por comas)
+# Ejemplo: PRESERVE_TAGS="FileType,MIMEType,ImageWidth,ImageHeight"
+PRESERVE_TAGS=""
+
+# Metadatos a eliminar prioritariamente (separados por comas)
+# Estos se destacarán en rojo en la interfaz
+SENSITIVE_TAGS="GPS,GPSLatitude,GPSLongitude,GPSAltitude,Author,Creator,Artist,Company,LastModifiedBy,OwnerName,SerialNumber,DeviceSerialNumber,InternalSerialNumber,LensSerialNumber"
+
+# ═══════════════════════════════════════════════════════════════
+# INTEGRACIÓN CON OTRAS HERRAMIENTAS
+# ═══════════════════════════════════════════════════════════════
+
+# Ruta personalizada a exiftool (dejar vacío para usar el del sistema)
+EXIFTOOL_PATH=""
+
+# Ruta personalizada a ffmpeg (dejar vacío para usar el del sistema)
+FFMPEG_PATH=""
+
+# Opciones adicionales para exiftool
+EXIFTOOL_EXTRA_OPTS=""
+
+# Opciones adicionales para ffmpeg
+FFMPEG_EXTRA_OPTS=""
+
+# ═══════════════════════════════════════════════════════════════
+# NOTAS
+# ═══════════════════════════════════════════════════════════════
+#
+# Esta configuración es para futuras versiones de Adamantium.
+# Actualmente, el script usa valores predeterminados.
+#
+# Para activar esta configuración:
+# 1. Copia este archivo: cp .adamantiumrc.example ~/.adamantiumrc
+# 2. Edita ~/.adamantiumrc con tus preferencias
+# 3. Adamantium lo cargará automáticamente
+#
