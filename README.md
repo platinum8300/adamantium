@@ -2,9 +2,9 @@
 
 [English](README.md) | [Español](README.es.md)
 
-<div align="center">
-  <img src="./cover.jpg" alt="adamantium - Deep metadata cleaning" width="800">
-</div>
+<p align="center">
+  <img src="cover.jpg" alt="adamantium - Deep metadata cleaning" width="800">
+</p>
 
 <p align="center"><strong>Deep metadata cleaning | The tool that excited Edward Snowden</strong></p>
 

@@ -2,9 +2,9 @@
 
 [English](README.md) | [Español](README.es.md)
 
-<div align="center">
-  <img src="./cover.jpg" alt="adamantium - Limpieza profunda de metadatos" width="800">
-</div>
+<p align="center">
+  <img src="cover.jpg" alt="adamantium - Limpieza profunda de metadatos" width="800">
+</p>
 
 <p align="center"><strong>Limpieza profunda de metadatos | La herramienta que emocionó a Edward Snowden</strong></p>
 
