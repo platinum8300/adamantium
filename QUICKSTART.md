@@ -33,6 +33,19 @@ adamantium foto.jpg
 # Genera: foto_clean.jpg
 ```
 
+### ✨ Nuevas opciones v1.1
+
+```bash
+# Verificar con hash SHA256
+adamantium foto.jpg --verify
+
+# Previsualizar sin ejecutar
+adamantium documento.pdf --dry-run
+
+# Ambas opciones combinadas
+adamantium video.mp4 --verify
+```
+
 ### Especificar nombre de salida
 
 ```bash
@@ -173,7 +186,22 @@ PROCESO COMPLETADO
 ### Ver ayuda
 
 ```bash
+adamantium --help
+# o simplemente:
 adamantium
+```
+
+### ✨ Opciones avanzadas v1.1
+
+```bash
+# Verificación de hash
+adamantium archivo.pdf --verify
+
+# Modo previsualización
+adamantium archivo.pdf --dry-run
+
+# Sin detección de duplicados
+adamantium archivo.pdf --no-duplicate-check
 ```
 
 ### Probar con archivos de ejemplo
@@ -286,6 +314,6 @@ Ahora que tienes adamantium instalado:
 
 ---
 
-**Versión**: 1.0.0
-**Fecha**: 2025-10-23
+**Versión**: 1.1.0
+**Fecha**: 2025-11-16
 **Ubicación**: `/media/experimental/Software/adamantium/`

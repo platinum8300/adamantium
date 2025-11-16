@@ -7,13 +7,14 @@ Esta guía contiene ejemplos prácticos para usar adamantium en diferentes escen
 ## Índice
 
 1. [Uso básico](#uso-básico)
-2. [Imágenes](#imágenes)
-3. [Videos](#videos)
-4. [Audio](#audio)
-5. [Documentos PDF](#documentos-pdf)
-6. [Documentos Office](#documentos-office)
-7. [Procesamiento por lotes](#procesamiento-por-lotes)
-8. [Casos de uso avanzados](#casos-de-uso-avanzados)
+2. [✨ Nuevas features v1.1](#nuevas-features-v11)
+3. [Imágenes](#imágenes)
+4. [Videos](#videos)
+5. [Audio](#audio)
+6. [Documentos PDF](#documentos-pdf)
+7. [Documentos Office](#documentos-office)
+8. [Procesamiento por lotes](#procesamiento-por-lotes)
+9. [Casos de uso avanzados](#casos-de-uso-avanzados)
 
 ---
 
@@ -34,6 +35,117 @@ adamantium original.pdf documento_anonimo.pdf
 ```bash
 adamantium
 # Muestra la ayuda y ejemplos
+```
+
+---
+
+## ✨ Nuevas features v1.1
+
+### Verificación de hash (--verify)
+
+```bash
+# Verificar que la limpieza fue exitosa comparando hashes SHA256
+adamantium foto.jpg --verify
+
+# Salida muestra:
+#   ● Hash original (SHA256):
+#     a3f5d8e29b7c1a4f...
+#
+#   ● Hash limpio (SHA256):
+#     b7e9c4f18d2a5c3e...
+#
+#   ✓ Los archivos son diferentes (limpieza exitosa)
+```
+
+### Modo previsualización (--dry-run)
+
+```bash
+# Ver qué se limpiaría SIN hacer cambios
+adamantium documento.pdf --dry-run
+
+# Muestra:
+# - Todos los metadatos encontrados
+# - Qué archivo se crearía
+# - NO crea ningún archivo nuevo
+
+# Útil para:
+# - Verificar antes de limpiar
+# - Auditorías de privacidad
+# - Testing de nuevos tipos de archivo
+```
+
+### Detección de duplicados
+
+```bash
+# adamantium detecta automáticamente archivos ya limpios
+adamantium foto_clean.jpg
+
+# Muestra advertencia:
+# ⚠ ADVERTENCIA: Este archivo parece ya estar limpio
+# No se encontraron metadatos sensibles
+
+# Para omitir esta verificación:
+adamantium foto_clean.jpg --no-duplicate-check
+```
+
+### Combinación de opciones
+
+```bash
+# Preview con verificación (solo muestra, no ejecuta verify)
+adamantium video.mp4 --dry-run
+
+# Limpiar con verificación
+adamantium imagen.png --verify
+
+# Limpiar sin detección de duplicados, con verificación
+adamantium archivo.jpg --no-duplicate-check --verify
+
+# Las opciones pueden ir antes o después del archivo
+adamantium --verify foto.jpg
+adamantium foto.jpg --verify  # Ambas formas son válidas
+```
+
+### Casos de uso de --dry-run
+
+```bash
+# 1. Auditoría de privacidad
+# Ver qué información tiene un archivo SIN modificarlo
+adamantium archivo_importante.pdf --dry-run > auditoria.txt
+
+# 2. Testing de compatibilidad
+# Probar con un archivo nuevo sin riesgo
+adamantium archivo_desconocido.xyz --dry-run
+
+# 3. Educación
+# Demostrar metadatos a otras personas
+adamantium foto_gps.jpg --dry-run
+
+# 4. Scripting
+# Verificar archivos en un pipeline
+if adamantium "$file" --dry-run | grep -q "GPS"; then
+    echo "Este archivo tiene GPS!"
+fi
+```
+
+### Casos de uso de --verify
+
+```bash
+# 1. Archivos críticos
+# Asegurar que se limpió correctamente
+adamantium documento_confidencial.pdf --verify
+
+# 2. Validación forense
+# Comprobar que el archivo cambió
+adamantium evidencia.jpg --verify > verificacion.log
+
+# 3. Automatización con verificación
+for file in *.jpg; do
+    adamantium "$file" --verify || echo "Error limpiando $file"
+done
+
+# 4. Debugging
+# Si sospechas que no se limpia bien
+adamantium archivo_problematico.mp4 --verify
 ```
 
 ---

@@ -28,6 +28,12 @@ adamantium es una herramienta de línea de comandos con interfaz TUI (Text User 
 - **Detección automática**: Identifica el tipo de archivo y aplica el método óptimo
 - **Contador de metadatos**: Muestra cuántos campos se encontraron y eliminaron
 
+### ✨ Nuevo en v1.1
+
+- **--verify**: Comparación de hash (SHA256) para verificar limpieza exitosa
+- **--dry-run**: Modo previsualización - ve qué se limpiaría sin hacer cambios
+- **Detección de duplicados**: Advertencia automática si el archivo ya parece limpio
+
 ---
 
 ## 📋 Requisitos
@@ -124,9 +130,15 @@ cd adamantium
 ### Sintaxis básica
 
 ```bash
-adamantium <archivo>                    # Genera archivo_clean.ext
-adamantium <archivo> <archivo_salida>   # Especifica el nombre de salida
+adamantium [opciones] <archivo> [archivo_salida]
 ```
+
+### Opciones
+
+- `--verify` - Verificar limpieza con comparación de hash SHA256
+- `--dry-run` - Modo previsualización (sin hacer cambios)
+- `--no-duplicate-check` - Omitir detección de duplicados
+- `-h, --help` - Mostrar mensaje de ayuda
 
 ### Ejemplos
 
@@ -134,6 +146,12 @@ adamantium <archivo> <archivo_salida>   # Especifica el nombre de salida
 # Limpiar un PDF
 adamantium documento.pdf
 # Genera: documento_clean.pdf
+
+# Limpiar con verificación de hash
+adamantium foto.jpg --verify
+
+# Previsualizar limpieza sin ejecutar
+adamantium video.mp4 --dry-run
 
 # Limpiar un video con nombre personalizado
 adamantium video.mp4 video_seguro.mp4
@@ -146,8 +164,8 @@ adamantium foto.jpg
 adamantium presentacion.pptx
 # Genera: presentacion_clean.pptx
 
-# Limpiar un archivo de audio
-adamantium cancion.mp3 cancion_sin_metadatos.mp3
+# Limpiar un archivo de audio con verificación
+adamantium cancion.mp3 cancion_sin_metadatos.mp3 --verify
 ```
 
 ---
@@ -347,14 +365,23 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 
 ## 🔮 Hoja de Ruta
 
-### v1.5 (Interactividad y Verificación)
+### v1.1 (Verificación y Previsualización) ✅ COMPLETADO
+
+- [x] Opción `--verify` para comparación de hashes antes/después
+- [x] Modo `--dry-run` para previsualizar cambios sin aplicarlos
+- [x] Detección de duplicados por hash
+
+### v1.2 (Mejoras en Batch)
+
+- [ ] Modo batch mejorado con barra de progreso
+- [ ] Selección múltiple de archivos en modo batch
+- [ ] Procesamiento recursivo de directorios con progreso
+
+### v1.5 (Interactividad y Archivos)
 
 - [ ] Modo interactivo con selección de archivos
-- [ ] Opción `--verify` para comparación de hashes antes/después
 - [ ] Soporte para archivos comprimidos (ZIP, TAR, RAR, 7Z)
-- [ ] Modo `--dry-run` para previsualizar cambios sin aplicarlos
-- [ ] Modo batch mejorado con barra de progreso
-- [ ] Detección de duplicados por hash
+- [ ] Interfaz TUI de navegación de archivos
 
 ### v2.0 (Integración y Automatización)
 

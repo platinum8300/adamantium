@@ -10,7 +10,7 @@
 # ═══════════════════════════════════════════════════════════════
 # Deep metadata cleaning | The tool that excited Edward Snowden
 # Full Mode: ExifTool + ffmpeg
-# Version: 1.0
+# Version: 1.1
 # ═══════════════════════════════════════════════════════════════
 
 set -euo pipefail
@@ -56,6 +56,9 @@ ORIGINAL_FILE=""
 OUTPUT_FILE=""
 FILE_TYPE=""
 IS_MULTIMEDIA=false
+DRY_RUN=false
+VERIFY_HASH=false
+CHECK_DUPLICATES=true
 
 # Versiones mínimas requeridas (se actualizan automáticamente desde upstream)
 REQUIRED_EXIFTOOL_VERSION="13.39"
@@ -93,6 +96,7 @@ declare -A MSG_ES=(
     [ERROR_NO_FILE]="Error: Debes proporcionar un archivo"
     [USAGE]="Uso:"
     [EXAMPLES]="Ejemplos:"
+    [OPTIONS]="Opciones:"
     [ERROR_FILE_NOT_EXISTS]="Error: El archivo '%s' no existe"
     [FILE_TO_PROCESS]="Archivo a procesar:"
     [TYPE_DETECTED]="Tipo detectado:"
@@ -140,6 +144,17 @@ declare -A MSG_ES=(
     [TOTAL]="Total"
     [SEPARATOR]="─────────────────────────────────────────────────────────────"
     [PACKAGE_MANAGER_NOT_DETECTED]="No se pudo detectar el gestor de paquetes"
+    [DRY_RUN_MODE]="MODO SIMULACIÓN (DRY-RUN)"
+    [DRY_RUN_NOTICE]="No se realizarán cambios, solo previsualización"
+    [WOULD_CREATE]="Se crearía:"
+    [HASH_VERIFICATION]="VERIFICACIÓN DE HASH"
+    [HASH_ORIGINAL]="Hash original (SHA256):"
+    [HASH_CLEAN]="Hash limpio (SHA256):"
+    [HASH_DIFFERENT]="Los archivos son diferentes (limpieza exitosa)"
+    [HASH_IDENTICAL]="ADVERTENCIA: Los hashes son idénticos (sin cambios)"
+    [DUPLICATE_WARNING]="ADVERTENCIA: Este archivo parece ya estar limpio"
+    [DUPLICATE_REASON]="No se encontraron metadatos sensibles"
+    [DUPLICATE_CONTINUE]="¿Deseas continuar de todos modos?"
 )
 
 # Mensajes en inglés (idioma por defecto)
@@ -147,6 +162,7 @@ declare -A MSG_EN=(
     [ERROR_NO_FILE]="Error: You must provide a file"
     [USAGE]="Usage:"
     [EXAMPLES]="Examples:"
+    [OPTIONS]="Options:"
     [ERROR_FILE_NOT_EXISTS]="Error: File '%s' does not exist"
     [FILE_TO_PROCESS]="File to process:"
     [TYPE_DETECTED]="Detected type:"
@@ -194,6 +210,17 @@ declare -A MSG_EN=(
     [TOTAL]="Total"
     [SEPARATOR]="─────────────────────────────────────────────────────────────"
     [PACKAGE_MANAGER_NOT_DETECTED]="Could not detect package manager"
+    [DRY_RUN_MODE]="DRY-RUN MODE (SIMULATION)"
+    [DRY_RUN_NOTICE]="No changes will be made, preview only"
+    [WOULD_CREATE]="Would create:"
+    [HASH_VERIFICATION]="HASH VERIFICATION"
+    [HASH_ORIGINAL]="Original hash (SHA256):"
+    [HASH_CLEAN]="Clean hash (SHA256):"
+    [HASH_DIFFERENT]="Files are different (cleaning successful)"
+    [HASH_IDENTICAL]="WARNING: Hashes are identical (no changes)"
+    [DUPLICATE_WARNING]="WARNING: This file appears to be already clean"
+    [DUPLICATE_REASON]="No sensitive metadata found"
+    [DUPLICATE_CONTINUE]="Do you want to continue anyway?"
 )
 
 # Función para obtener mensaje traducido
@@ -669,6 +696,66 @@ show_metadata() {
 }
 
 # ═══════════════════════════════════════════════════════════════
+# FUNCIONES DE HASH Y VERIFICACIÓN
+# ═══════════════════════════════════════════════════════════════
+
+calculate_hash() {
+    local file="$1"
+    sha256sum "$file" 2>/dev/null | cut -d' ' -f1
+}
+
+detect_duplicate() {
+    local file="$1"
+
+    # Obtener metadatos
+    local metadata
+    metadata=$(exiftool "$file" 2>/dev/null)
+
+    if [ -z "$metadata" ]; then
+        return 1  # No se pudo leer, no es duplicado
+    fi
+
+    # Contar metadatos sensibles (excluyendo metadatos básicos del archivo)
+    local sensitive_count
+    sensitive_count=$(echo "$metadata" | grep -vE "ExifTool|File Name|Directory|File Size|File Permissions|File Inode|File Access Date|File Modification" | grep -c ":" || echo "0")
+
+    # Si hay menos de 3 campos de metadatos (muy pocos), probablemente ya está limpio
+    if [ "$sensitive_count" -lt 3 ]; then
+        return 0  # Es un posible duplicado/ya limpio
+    fi
+
+    return 1  # No es duplicado
+}
+
+verify_hashes() {
+    local original_file="$1"
+    local clean_file="$2"
+
+    echo ""
+    print_separator
+    echo -e "${BOLD}${CYAN}$(msg HASH_VERIFICATION)${NC}"
+    print_separator
+    echo ""
+
+    local hash_original=$(calculate_hash "$original_file")
+    local hash_clean=$(calculate_hash "$clean_file")
+
+    echo -e "  ${CYAN}●${NC} $(msg HASH_ORIGINAL)"
+    echo -e "    ${GRAY}${hash_original}${NC}"
+    echo ""
+    echo -e "  ${CYAN}●${NC} $(msg HASH_CLEAN)"
+    echo -e "    ${GRAY}${hash_clean}${NC}"
+    echo ""
+
+    if [ "$hash_original" != "$hash_clean" ]; then
+        echo -e "${GREEN}${CHECK}${NC} $(msg HASH_DIFFERENT)"
+    else
+        echo -e "${YELLOW}${WARN}${NC} $(msg HASH_IDENTICAL)"
+    fi
+    echo ""
+}
+
+# ═══════════════════════════════════════════════════════════════
 # FUNCIONES DE LIMPIEZA
 # ═══════════════════════════════════════════════════════════════
 
@@ -766,23 +853,75 @@ main() {
     # Detectar sistema y gestor de paquetes
     detect_system
 
-    # Verificar argumentos
-    if [ $# -eq 0 ]; then
+    # Parsear argumentos
+    local file_arg=""
+    local output_arg=""
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --verify)
+                VERIFY_HASH=true
+                shift
+                ;;
+            --dry-run)
+                DRY_RUN=true
+                shift
+                ;;
+            --no-duplicate-check)
+                CHECK_DUPLICATES=false
+                shift
+                ;;
+            -h|--help)
+                print_header
+                echo -e "${BOLD}$(msg USAGE)${NC}"
+                echo -e "  $0 [$(msg OPTIONS)] <file> [output_file]"
+                echo ""
+                echo -e "${BOLD}$(msg OPTIONS)${NC}"
+                echo -e "  ${CYAN}--verify${NC}              $(msg HASH_VERIFICATION | tr '[:upper:]' '[:lower:]')"
+                echo -e "  ${CYAN}--dry-run${NC}             $(msg DRY_RUN_NOTICE | tr '[:upper:]' '[:lower:]')"
+                echo -e "  ${CYAN}--no-duplicate-check${NC}  Skip duplicate detection"
+                echo -e "  ${CYAN}-h, --help${NC}            Show this help"
+                echo ""
+                echo -e "${BOLD}$(msg EXAMPLES)${NC}"
+                echo -e "  $0 documento.pdf"
+                echo -e "  $0 video.mp4 video_clean.mp4"
+                echo -e "  $0 imagen.jpg --verify"
+                echo -e "  $0 foto.png --dry-run"
+                echo ""
+                exit 0
+                ;;
+            -*)
+                echo -e "${RED}${CROSS} Unknown option: $1${NC}\n"
+                echo -e "Use ${CYAN}--help${NC} for usage information"
+                exit 1
+                ;;
+            *)
+                if [ -z "$file_arg" ]; then
+                    file_arg="$1"
+                elif [ -z "$output_arg" ]; then
+                    output_arg="$1"
+                fi
+                shift
+                ;;
+        esac
+    done
+
+    # Verificar que se proporcionó un archivo
+    if [ -z "$file_arg" ]; then
         print_header
         echo -e "${RED}${CROSS} $(msg ERROR_NO_FILE)${NC}\n"
         echo -e "${BOLD}$(msg USAGE)${NC}"
-        echo -e "  $0 <file>"
-        echo -e "  $0 <file> <output_file>"
+        echo -e "  $0 [options] <file> [output_file]"
         echo ""
         echo -e "${BOLD}$(msg EXAMPLES)${NC}"
         echo -e "  $0 documento.pdf"
         echo -e "  $0 video.mp4 video_clean.mp4"
-        echo -e "  $0 imagen.jpg"
+        echo -e "  $0 imagen.jpg --verify"
         echo ""
         exit 1
     fi
 
-    ORIGINAL_FILE="$1"
+    ORIGINAL_FILE="$file_arg"
 
     # Verificar que el archivo existe
     if [ ! -f "$ORIGINAL_FILE" ]; then
@@ -792,8 +931,8 @@ main() {
     fi
 
     # Determinar archivo de salida
-    if [ $# -ge 2 ]; then
-        OUTPUT_FILE="$2"
+    if [ -n "$output_arg" ]; then
+        OUTPUT_FILE="$output_arg"
     else
         local basename="${ORIGINAL_FILE%.*}"
         local extension="${ORIGINAL_FILE##*.}"
@@ -809,6 +948,13 @@ main() {
     # Mostrar interfaz
     print_header
 
+    # Modo DRY-RUN
+    if [ "$DRY_RUN" = true ]; then
+        echo -e "${YELLOW}${WARN} ${BOLD}$(msg DRY_RUN_MODE)${NC}"
+        echo -e "${GRAY}$(msg DRY_RUN_NOTICE)${NC}"
+        echo ""
+    fi
+
     echo -e "${BOLD}${FILE_ICON} $(msg FILE_TO_PROCESS)${NC}"
     echo -e "  ${ARROW} ${WHITE}${ORIGINAL_FILE}${NC}"
     show_file_info "$ORIGINAL_FILE"
@@ -816,14 +962,41 @@ main() {
 
     detect_file_type "$ORIGINAL_FILE"
 
+    # Detección de duplicados
+    if [ "$CHECK_DUPLICATES" = true ]; then
+        if detect_duplicate "$ORIGINAL_FILE"; then
+            echo ""
+            echo -e "${YELLOW}${WARN} ${BOLD}$(msg DUPLICATE_WARNING)${NC}"
+            echo -e "${GRAY}$(msg DUPLICATE_REASON)${NC}"
+            echo ""
+        fi
+    fi
+
     # Mostrar metadatos ANTES
     show_metadata "$ORIGINAL_FILE" "$(msg METADATA_BEFORE)" "$RED"
+
+    # En modo DRY-RUN, solo mostrar qué se haría
+    if [ "$DRY_RUN" = true ]; then
+        echo ""
+        print_separator
+        echo -e "${CYAN}${INFO} $(msg WOULD_CREATE) ${GREEN}${OUTPUT_FILE}${NC}"
+        print_separator
+        echo ""
+        echo -e "${GRAY}$(msg DRY_RUN_NOTICE)${NC}"
+        echo ""
+        exit 0
+    fi
 
     # Realizar limpieza
     perform_cleaning "$ORIGINAL_FILE" "$OUTPUT_FILE"
 
     # Mostrar metadatos DESPUÉS
     show_metadata "$OUTPUT_FILE" "$(msg METADATA_AFTER)" "$GREEN"
+
+    # Verificación de hash (si está habilitado)
+    if [ "$VERIFY_HASH" = true ]; then
+        verify_hashes "$ORIGINAL_FILE" "$OUTPUT_FILE"
+    fi
 
     # Resumen final
     print_separator

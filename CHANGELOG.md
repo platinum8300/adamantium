@@ -4,6 +4,72 @@ All notable changes to adamantium will be documented in this file.
 
 ---
 
+## [1.1] - 2025-11-16
+
+### 🎉 NEW FEATURES - Verification and Preview
+
+adamantium v1.1 introduces powerful verification and preview capabilities, giving users more control and confidence in the metadata cleaning process.
+
+### ✨ New Features
+
+- **`--verify` option** - SHA256 hash verification
+  - Compare original and cleaned file hashes
+  - Visual confirmation that files are different
+  - Ensures cleaning was successful
+  - Example: `adamantium photo.jpg --verify`
+
+- **`--dry-run` mode** - Preview without execution
+  - See what would be cleaned without making changes
+  - Perfect for testing and validation
+  - Shows all metadata that would be removed
+  - Example: `adamantium document.pdf --dry-run`
+
+- **Duplicate Detection** - Automatic warning system
+  - Detects if file appears already clean
+  - Warns when minimal metadata present
+  - Prevents unnecessary reprocessing
+  - Can be disabled with `--no-duplicate-check`
+
+### 🔧 Improvements
+
+- **Enhanced argument parsing** - Modern option handling
+  - Support for GNU-style long options (`--verify`, `--dry-run`)
+  - Better error messages for invalid options
+  - Improved help system (`-h`, `--help`)
+
+- **Internationalization updates** - New translations
+  - Added Spanish translations for all new features
+  - English translations for new features
+  - Consistent bilingual experience
+
+- **Code organization** - Better structure
+  - New section for hash and verification functions
+  - Cleaner main() function with better flow
+  - Improved error handling
+
+### 📚 Documentation
+
+- Updated README.md with new features
+- Updated README.es.md with Spanish translations
+- Updated EXAMPLES.md with new usage patterns
+- Updated QUICKSTART.md with new options
+- Added comprehensive usage examples
+
+### 🐛 Bug Fixes
+
+- Fixed argument parsing to support options before/after filenames
+- Improved file detection logic
+- Better handling of edge cases in metadata detection
+
+### 📊 Statistics
+
+- **Version**: 1.1
+- **New Functions**: 3 (calculate_hash, detect_duplicate, verify_hashes)
+- **New Messages**: 10 (bilingual)
+- **New Options**: 3 (--verify, --dry-run, --no-duplicate-check)
+
+---
+
 ## [1.0] - 2025-10-24
 
 ### 🎉 FIRST STABLE RELEASE - Production Ready

@@ -12,7 +12,7 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Platform: Linux](https://img.shields.io/badge/Platform-Linux-blue.svg)](https://www.linux.org/)
-[![Version: 1.0](https://img.shields.io/badge/Version-1.0-green.svg)](https://github.com/yourusername/adamantium/releases)
+[![Version: 1.1](https://img.shields.io/badge/Version-1.1-green.svg)](https://github.com/yourusername/adamantium/releases)
 
 ---
 
@@ -33,6 +33,12 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
 - **Preserves Original File**: Always keeps your original file intact
 - **Automatic Detection**: Identifies file type and applies optimal method
 - **Metadata Counter**: Shows how many fields were found and removed
+
+### ✨ New in v1.1
+
+- **--verify**: Hash comparison (SHA256) to verify cleaning was successful
+- **--dry-run**: Preview mode - see what would be cleaned without making changes
+- **Duplicate Detection**: Automatic warning if file appears already clean
 
 ---
 
@@ -132,9 +138,15 @@ For detailed installation instructions, see [INSTALLATION.md](INSTALLATION.md).
 ### Basic Syntax
 
 ```bash
-adamantium <file>                    # Generates file_clean.ext
-adamantium <file> <output_file>      # Specifies output name
+adamantium [options] <file> [output_file]
 ```
+
+### Options
+
+- `--verify` - Verify cleaning with SHA256 hash comparison
+- `--dry-run` - Preview mode (no changes made)
+- `--no-duplicate-check` - Skip duplicate detection
+- `-h, --help` - Show help message
 
 ### Examples
 
@@ -142,6 +154,12 @@ adamantium <file> <output_file>      # Specifies output name
 # Clean a PDF
 adamantium document.pdf
 # Generates: document_clean.pdf
+
+# Clean with hash verification
+adamantium photo.jpg --verify
+
+# Preview cleaning without executing
+adamantium video.mp4 --dry-run
 
 # Clean a video with custom name
 adamantium video.mp4 safe_video.mp4
@@ -154,8 +172,8 @@ adamantium photo.jpg
 adamantium presentation.pptx
 # Generates: presentation_clean.pptx
 
-# Clean an audio file
-adamantium song.mp3 song_no_metadata.mp3
+# Clean an audio file with verification
+adamantium song.mp3 song_no_metadata.mp3 --verify
 ```
 
 ---
@@ -288,14 +306,23 @@ See [EXAMPLES.md](EXAMPLES.md) for more practical examples.
 
 ## 🔮 Roadmap
 
-### v1.5 (Interactivity and Verification)
+### v1.1 (Verification and Preview) ✅ COMPLETED
+
+- [x] `--verify` option for before/after hash comparison
+- [x] `--dry-run` mode to preview without applying
+- [x] Duplicate detection by hash
+
+### v1.2 (Batch Improvements)
+
+- [ ] Improved batch mode with progress bar
+- [ ] Multiple file selection in batch mode
+- [ ] Recursive directory processing with progress
+
+### v1.5 (Interactivity and Archives)
 
 - [ ] Interactive mode with file selection
-- [ ] `--verify` option for before/after hash comparison
 - [ ] Support for compressed files (ZIP, TAR, RAR, 7Z)
-- [ ] `--dry-run` mode to preview without applying
-- [ ] Improved batch mode with progress bar
-- [ ] Duplicate detection by hash
+- [ ] File browser TUI interface
 
 ### v2.0 (Integration and Automation)
 
