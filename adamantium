@@ -60,6 +60,15 @@ DRY_RUN=false
 VERIFY_HASH=false
 CHECK_DUPLICATES=true
 
+# Variables para batch mode
+BATCH_MODE=false
+BATCH_JOBS=0
+BATCH_PATTERNS=()
+BATCH_RECURSIVE=false
+BATCH_CONFIRM=true
+BATCH_VERBOSE=false
+BATCH_QUIET=false
+
 # Versiones mínimas requeridas (se actualizan automáticamente desde upstream)
 REQUIRED_EXIFTOOL_VERSION="13.39"
 REQUIRED_FFMPEG_VERSION="8.0"
@@ -155,6 +164,26 @@ declare -A MSG_ES=(
     [DUPLICATE_WARNING]="ADVERTENCIA: Este archivo parece ya estar limpio"
     [DUPLICATE_REASON]="No se encontraron metadatos sensibles"
     [DUPLICATE_CONTINUE]="¿Deseas continuar de todos modos?"
+    [BATCH_MODE]="MODO POR LOTES"
+    [BATCH_PROCESSING]="Procesamiento por lotes"
+    [FILES_SELECTED]="archivos seleccionados"
+    [FILES_FOUND]="Archivos encontrados"
+    [SELECT_FILES]="Seleccionar archivos"
+    [PATTERN]="Patrón"
+    [JOBS]="Trabajos paralelos"
+    [PROCESSING_FILE]="Procesando"
+    [BATCH_SUMMARY]="RESUMEN DEL LOTE"
+    [SUMMARY]="Resumen"
+    [SUCCESSFUL]="Exitosos"
+    [FAILED]="Fallidos"
+    [ELAPSED_TIME]="Tiempo transcurrido"
+    [AVERAGE_SPEED]="Velocidad promedio"
+    [FILES_PER_SECOND]="archivos/seg"
+    [INTERACTIVE_SELECT]="Usar TAB para seleccionar, ENTER para confirmar"
+    [NO_FILES_MATCH]="No se encontraron archivos que coincidan con los patrones"
+    [NO_FILES_TO_PROCESS]="No hay archivos para procesar"
+    [SEARCHING_FILES]="Buscando archivos"
+    [PROCEED_WITH_CLEANING]="¿Proceder con la limpieza?"
 )
 
 # Mensajes en inglés (idioma por defecto)
@@ -221,6 +250,26 @@ declare -A MSG_EN=(
     [DUPLICATE_WARNING]="WARNING: This file appears to be already clean"
     [DUPLICATE_REASON]="No sensitive metadata found"
     [DUPLICATE_CONTINUE]="Do you want to continue anyway?"
+    [BATCH_MODE]="BATCH MODE"
+    [BATCH_PROCESSING]="Batch processing"
+    [FILES_SELECTED]="files selected"
+    [FILES_FOUND]="Files found"
+    [SELECT_FILES]="Select files"
+    [PATTERN]="Pattern"
+    [JOBS]="Parallel jobs"
+    [PROCESSING_FILE]="Processing"
+    [BATCH_SUMMARY]="BATCH SUMMARY"
+    [SUMMARY]="Summary"
+    [SUCCESSFUL]="Successful"
+    [FAILED]="Failed"
+    [ELAPSED_TIME]="Elapsed time"
+    [AVERAGE_SPEED]="Average speed"
+    [FILES_PER_SECOND]="files/sec"
+    [INTERACTIVE_SELECT]="Use TAB to select, ENTER to confirm"
+    [NO_FILES_MATCH]="No files match the patterns"
+    [NO_FILES_TO_PROCESS]="No files to process"
+    [SEARCHING_FILES]="Searching for files"
+    [PROCEED_WITH_CLEANING]="Proceed with cleaning?"
 )
 
 # Función para obtener mensaje traducido
@@ -859,6 +908,38 @@ main() {
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
+            --batch)
+                BATCH_MODE=true
+                shift
+                ;;
+            --jobs|-j)
+                BATCH_JOBS="$2"
+                shift 2
+                ;;
+            --pattern)
+                BATCH_PATTERNS+=("$2")
+                shift 2
+                ;;
+            --recursive|-r)
+                BATCH_RECURSIVE=true
+                shift
+                ;;
+            --confirm)
+                BATCH_CONFIRM=true
+                shift
+                ;;
+            --no-confirm)
+                BATCH_CONFIRM=false
+                shift
+                ;;
+            --verbose|-v)
+                BATCH_VERBOSE=true
+                shift
+                ;;
+            --quiet|-q)
+                BATCH_QUIET=true
+                shift
+                ;;
             --verify)
                 VERIFY_HASH=true
                 shift
@@ -875,6 +956,7 @@ main() {
                 print_header
                 echo -e "${BOLD}$(msg USAGE)${NC}"
                 echo -e "  $0 [$(msg OPTIONS)] <file> [output_file]"
+                echo -e "  $0 --batch --pattern PATTERN [$(msg OPTIONS)] [directory]"
                 echo ""
                 echo -e "${BOLD}$(msg OPTIONS)${NC}"
                 echo -e "  ${CYAN}--verify${NC}              $(msg HASH_VERIFICATION | tr '[:upper:]' '[:lower:]')"
@@ -882,11 +964,28 @@ main() {
                 echo -e "  ${CYAN}--no-duplicate-check${NC}  Skip duplicate detection"
                 echo -e "  ${CYAN}-h, --help${NC}            Show this help"
                 echo ""
+                echo -e "${BOLD}$(msg BATCH_MODE):${NC}"
+                echo -e "  ${CYAN}--batch${NC}               Enable batch processing"
+                echo -e "  ${CYAN}--pattern PATTERN${NC}     File pattern (can repeat, e.g., '*.jpg')"
+                echo -e "  ${CYAN}--jobs N, -j N${NC}       Parallel jobs (default: auto-detect)"
+                echo -e "  ${CYAN}--recursive, -r${NC}      Recursive directory search"
+                echo -e "  ${CYAN}--confirm${NC}            Interactive file selection (default)"
+                echo -e "  ${CYAN}--no-confirm${NC}         Skip confirmation (for automation)"
+                echo -e "  ${CYAN}--verbose, -v${NC}        Verbose output"
+                echo -e "  ${CYAN}--quiet, -q${NC}          Minimal output"
+                echo ""
                 echo -e "${BOLD}$(msg EXAMPLES)${NC}"
+                echo -e "  ${GRAY}# Single file mode${NC}"
                 echo -e "  $0 documento.pdf"
                 echo -e "  $0 video.mp4 video_clean.mp4"
                 echo -e "  $0 imagen.jpg --verify"
                 echo -e "  $0 foto.png --dry-run"
+                echo ""
+                echo -e "  ${GRAY}# Batch mode${NC}"
+                echo -e "  $0 --batch --pattern '*.jpg' ~/Photos"
+                echo -e "  $0 --batch --pattern '*.jpg' --pattern '*.png' ."
+                echo -e "  $0 --batch -r -j 8 --pattern '*.pdf' ~/Documents"
+                echo -e "  $0 --batch --no-confirm --pattern '*.mp4' /media/videos"
                 echo ""
                 exit 0
                 ;;
@@ -905,6 +1004,38 @@ main() {
                 ;;
         esac
     done
+
+    # Dispatch a batch mode si está activado
+    if [ "$BATCH_MODE" = true ]; then
+        # Determinar directorio lib
+        local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+        local lib_dir="${script_dir}/lib"
+
+        # Cargar batch_core
+        if [ ! -f "${lib_dir}/batch_core.sh" ]; then
+            echo -e "${RED}${CROSS} Error: Batch libraries not found in ${lib_dir}${NC}" >&2
+            exit 1
+        fi
+
+        # Exportar variables necesarias para batch
+        export BATCH_MODE BATCH_JOBS BATCH_PATTERNS BATCH_RECURSIVE BATCH_CONFIRM BATCH_VERBOSE BATCH_QUIET
+        export RED GREEN YELLOW BLUE MAGENTA CYAN WHITE GRAY BOLD NC
+        export CHECK CROSS ARROW BULLET WARN INFO CLEAN SHIELD FILE_ICON SIZE_ICON
+        export VIDEO_ICON IMAGE_ICON PDF_ICON OFFICE_ICON SPARKLES SEARCH_ICON
+        export LOCATION_ICON CAMERA_ICON COMPUTER_ICON CALENDAR_ICON TOOL_ICON
+        export LANG_CODE
+
+        # Exportar función msg para que las librerías puedan usarla
+        export -f msg
+
+        # Cargar y ejecutar batch mode
+        source "${lib_dir}/batch_core.sh"
+
+        # Ejecutar con el directorio (o usar file_arg como directorio si existe)
+        local target_dir="${file_arg:-.}"
+        batch_main "$target_dir"
+        exit $?
+    fi
 
     # Verificar que se proporcionó un archivo
     if [ -z "$file_arg" ]; then

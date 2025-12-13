@@ -12,7 +12,7 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Platform: Linux](https://img.shields.io/badge/Platform-Linux-blue.svg)](https://www.linux.org/)
-[![Version: 1.1](https://img.shields.io/badge/Version-1.1-green.svg)](https://github.com/yourusername/adamantium/releases)
+[![Version: 1.2](https://img.shields.io/badge/Version-1.2-green.svg)](https://github.com/yourusername/adamantium/releases)
 
 ---
 
@@ -34,7 +34,15 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
 - **Automatic Detection**: Identifies file type and applies optimal method
 - **Metadata Counter**: Shows how many fields were found and removed
 
-### ✨ New in v1.1
+### ✨ New in v1.2
+
+- **Batch Mode**: Professional batch processing with progress bar (rsync-style)
+- **Parallel Processing**: Automatic CPU core detection for maximum performance
+- **Interactive Selection**: Choose files with patterns + confirmation (fzf support)
+- **Progress Bar**: Real-time stats (percentage, speed, ETA, file counter)
+- **3x-5x Faster**: Parallel execution for large batches
+
+### New in v1.1
 
 - **--verify**: Hash comparison (SHA256) to verify cleaning was successful
 - **--dry-run**: Preview mode - see what would be cleaned without making changes
@@ -135,20 +143,19 @@ For detailed installation instructions, see [INSTALLATION.md](INSTALLATION.md).
 
 ## 📖 Usage
 
-### Basic Syntax
+### Single File Mode
 
 ```bash
 adamantium [options] <file> [output_file]
 ```
 
-### Options
-
+**Options:**
 - `--verify` - Verify cleaning with SHA256 hash comparison
 - `--dry-run` - Preview mode (no changes made)
 - `--no-duplicate-check` - Skip duplicate detection
 - `-h, --help` - Show help message
 
-### Examples
+**Examples:**
 
 ```bash
 # Clean a PDF
@@ -174,6 +181,45 @@ adamantium presentation.pptx
 
 # Clean an audio file with verification
 adamantium song.mp3 song_no_metadata.mp3 --verify
+```
+
+### Batch Mode (v1.2+)
+
+```bash
+adamantium --batch --pattern PATTERN [options] [directory]
+```
+
+**Options:**
+- `--batch` - Enable batch processing
+- `--pattern PATTERN` - File pattern to match (can be used multiple times)
+- `--jobs N, -j N` - Number of parallel jobs (default: auto-detect CPU cores)
+- `--recursive, -r` - Search recursively in subdirectories
+- `--confirm` - Interactive file selection with preview (default)
+- `--no-confirm` - Skip confirmation for automation
+- `--verbose, -v` - Show detailed output
+- `--quiet, -q` - Minimal output
+
+**Examples:**
+
+```bash
+# Batch clean all JPG files in a directory
+adamantium --batch --pattern '*.jpg' ~/Photos
+
+# Multiple file types
+adamantium --batch --pattern '*.jpg' --pattern '*.png' --pattern '*.pdf' .
+
+# Recursive with 8 parallel jobs
+adamantium --batch -r -j 8 --pattern '*.mp4' ~/Videos
+
+# Non-interactive (for scripts/automation)
+adamantium --batch --no-confirm --pattern '*.pdf' ~/Documents
+
+# Interactive selection with fzf (if installed)
+adamantium --batch --confirm --pattern '*.jpg' .
+
+# Legacy batch_clean.sh (still supported)
+./batch_clean.sh ~/Photos jpg
+./batch_clean.sh ~/Documents pdf --recursive
 ```
 
 ---

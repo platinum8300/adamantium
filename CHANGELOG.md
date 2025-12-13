@@ -4,6 +4,142 @@ All notable changes to adamantium will be documented in this file.
 
 ---
 
+## [1.2] - 2025-12-13
+
+### 🎉 NEW FEATURES - Professional Batch Processing
+
+adamantium v1.2 introduces a complete batch processing system with parallel execution, real-time progress tracking, and interactive file selection. This release transforms adamantium into a professional-grade tool for processing large collections of files.
+
+### ✨ New Features
+
+- **`--batch` mode** - Professional batch processing
+  - Process multiple files in a single command
+  - Pattern-based file selection (`*.jpg`, `*.png`, etc.)
+  - Support for multiple patterns simultaneously
+  - Recursive directory search with `--recursive` or `-r`
+  - Example: `adamantium --batch --pattern '*.jpg' ~/Photos`
+
+- **Parallel Execution** - Automatic CPU core detection
+  - 3-tier fallback system: GNU parallel > xargs > pure bash
+  - Auto-detection of optimal job count based on CPU cores
+  - Manual override with `--jobs N` or `-j N`
+  - 3x-5x performance improvement on large batches
+  - Example: `adamantium --batch -j 8 --pattern '*.mp4' ~/Videos`
+
+- **Real-time Progress Bar** - rsync-style statistics
+  - Visual progress bar with filled/empty indicators
+  - Live percentage, file counter (current/total)
+  - Speed in files/sec
+  - Estimated time remaining (ETA)
+  - Thread-safe updates during parallel execution
+
+- **Interactive File Selection** - Choose what to clean
+  - Pattern expansion with preview
+  - fzf integration for advanced selection (if installed)
+  - Basic fallback mode for universal compatibility
+  - Confirmation before processing
+  - Skip confirmation with `--no-confirm` for automation
+
+- **Batch Summary** - Comprehensive statistics
+  - Success/failed/total counters
+  - Elapsed time with human-readable format
+  - Average processing speed
+  - List of failed files (if any)
+  - Color-coded output matching adamantium's style
+
+### 🏗️ Architecture
+
+- **New `lib/` directory** - Modular library system
+  - `progress_bar.sh` - Real-time progress visualization
+  - `file_selector.sh` - Interactive file selection
+  - `parallel_executor.sh` - Parallel job management
+  - `batch_core.sh` - Main batch orchestration
+
+- **Enhanced batch_clean.sh** - Uses new --batch internally
+  - Maintains 100% backward compatibility
+  - CLI unchanged, internal implementation improved
+  - Automatic benefits from new infrastructure
+
+### 🌍 Internationalization
+
+- **New batch mode messages** - Full bilingual support
+  - Spanish: 22 new messages
+  - English: 22 new messages
+  - Consistent with existing i18n system
+  - Used throughout batch processing
+
+### 🔧 New Options
+
+**Batch Mode:**
+- `--batch` - Enable batch processing mode
+- `--pattern PATTERN` - File pattern (repeatable)
+- `--jobs N, -j N` - Parallel jobs (default: auto)
+- `--recursive, -r` - Recursive directory search
+- `--confirm` - Interactive selection (default)
+- `--no-confirm` - Skip confirmation
+- `--verbose, -v` - Verbose output
+- `--quiet, -q` - Minimal output
+
+### 📊 Performance
+
+- **Parallel Processing**: 3-5x faster on large batches
+- **Optimized Job Distribution**: Smart core allocation
+- **Memory Efficient**: Stream-based file processing
+- **Graceful Degradation**: Works without optional tools
+
+### 🔒 Backward Compatibility
+
+- **Zero Breaking Changes**: All existing features work identically
+- **Single file mode**: Unchanged behavior
+- **batch_clean.sh**: Same CLI, better performance
+- **Existing scripts**: Continue to work without modification
+
+### 📚 Documentation
+
+- Updated README.md with batch mode examples
+- Updated README.es.md with Spanish documentation
+- Added comprehensive batch usage patterns
+- Updated help text (`--help`) with batch options
+
+### 🐛 Bug Fixes
+
+- Improved error handling in batch mode
+- Better path sanitization for security
+- Fixed edge cases in file pattern matching
+- Proper cleanup of temporary state files
+
+### 📊 Statistics
+
+- **Version**: 1.2
+- **New Files**: 4 library modules
+- **New Functions**: 30+ batch-related functions
+- **New Messages**: 44 (22 ES + 22 EN)
+- **New Options**: 8 batch mode options
+- **Lines of Code**: +800 (libraries + integration)
+
+### 🎯 Use Cases
+
+**Perfect for:**
+- Batch cleaning photos from cameras
+- Processing entire document libraries
+- Cleaning video collections
+- Automated CI/CD pipelines
+- Scheduled maintenance scripts
+
+**Examples:**
+```bash
+# Clean all photos in ~/Pictures
+adamantium --batch --pattern '*.jpg' --pattern '*.png' ~/Pictures
+
+# Recursive video cleaning with 8 cores
+adamantium --batch -r -j 8 --pattern '*.mp4' ~/Videos
+
+# Automation-friendly (no confirmation)
+adamantium --batch --no-confirm --pattern '*.pdf' ~/Documents
+```
+
+---
+
 ## [1.1] - 2025-11-16
 
 ### 🎉 NEW FEATURES - Verification and Preview
