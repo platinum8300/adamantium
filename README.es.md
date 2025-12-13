@@ -405,7 +405,7 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 
 ## 📜 Licencia
 
-Este proyecto es de código abierto y libre para usar, modificar y distribuir.
+Este proyecto está licenciado bajo la Licencia Pública General Affero de GNU v3.0 (AGPL-3.0) - consulta el archivo [LICENSE](LICENSE) para más detalles.
 
 ---
 

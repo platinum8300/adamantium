@@ -189,7 +189,7 @@ adamantium video.mp4 clean.mp4   # Custom output name
 - **Fast** - Efficient processing with smart caching
 - **International** - Multi-language support
 - **Universal** - Works on all major Linux distributions
-- **Open Source** - MIT License
+- **Open Source** - AGPL-3.0 License
 
 ### 📊 Statistics
 
@@ -234,7 +234,7 @@ adamantium video.mp4 clean.mp4   # Custom output name
 
 ## 📜 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0) - see the [LICENSE](LICENSE) file for details.
 
 ---
 
