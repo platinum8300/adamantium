@@ -358,11 +358,13 @@ See [EXAMPLES.md](EXAMPLES.md) for more practical examples.
 - [x] `--dry-run` mode to preview without applying
 - [x] Duplicate detection by hash
 
-### v1.2 (Batch Improvements)
+### v1.2 (Batch Improvements) ✅ COMPLETED
 
-- [ ] Improved batch mode with progress bar
-- [ ] Multiple file selection in batch mode
-- [ ] Recursive directory processing with progress
+- [x] Improved batch mode with progress bar
+- [x] Multiple file selection in batch mode
+- [x] Recursive directory processing with progress
+- [x] Parallel execution with automatic CPU core detection
+- [x] Interactive file selection with fzf integration
 
 ### v1.5 (Interactivity and Archives)
 
