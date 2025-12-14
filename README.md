@@ -366,11 +366,18 @@ See [EXAMPLES.md](EXAMPLES.md) for more practical examples.
 - [x] Parallel execution with automatic CPU core detection
 - [x] Interactive file selection with fzf integration
 
-### v1.5 (Interactivity and Archives)
+### v1.3 (Interactive Mode) ✅ COMPLETED
 
-- [ ] Interactive mode with file selection
+- [x] Interactive mode with full TUI menu (`--interactive`, `-i`)
+- [x] Gum integration for beautiful terminal UI
+- [x] Smart fallback system (gum → fzf → bash)
+- [x] Built-in tool checker for dependencies
+
+### v1.4 (Compressed Archives)
+
 - [ ] Support for compressed files (ZIP, TAR, RAR, 7Z)
-- [ ] File browser TUI interface
+- [ ] Extract, clean, and recompress workflow
+- [ ] Password-protected archives support
 
 ### v2.0 (Integration and Automation)
 

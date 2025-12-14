@@ -371,17 +371,26 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 - [x] Modo `--dry-run` para previsualizar cambios sin aplicarlos
 - [x] Detección de duplicados por hash
 
-### v1.2 (Mejoras en Batch)
+### v1.2 (Mejoras en Batch) ✅ COMPLETADO
 
-- [ ] Modo batch mejorado con barra de progreso
-- [ ] Selección múltiple de archivos en modo batch
-- [ ] Procesamiento recursivo de directorios con progreso
+- [x] Modo batch mejorado con barra de progreso
+- [x] Selección múltiple de archivos en modo batch
+- [x] Procesamiento recursivo de directorios con progreso
+- [x] Ejecución paralela con detección automática de núcleos CPU
+- [x] Selección interactiva de archivos con integración fzf
 
-### v1.5 (Interactividad y Archivos)
+### v1.3 (Modo Interactivo) ✅ COMPLETADO
 
-- [ ] Modo interactivo con selección de archivos
+- [x] Modo interactivo con menú TUI completo (`--interactive`, `-i`)
+- [x] Integración con gum para interfaz terminal moderna
+- [x] Sistema de fallback inteligente (gum → fzf → bash)
+- [x] Verificador de herramientas integrado
+
+### v1.4 (Archivos Comprimidos)
+
 - [ ] Soporte para archivos comprimidos (ZIP, TAR, RAR, 7Z)
-- [ ] Interfaz TUI de navegación de archivos
+- [ ] Flujo de extracción, limpieza y recompresión
+- [ ] Soporte para archivos protegidos con contraseña
 
 ### v2.0 (Integración y Automatización)
 
