@@ -1043,7 +1043,12 @@ main() {
 
     # Dispatch a interactive mode si está activado
     if [ "$INTERACTIVE_MODE" = true ]; then
-        local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+        local script_path="${BASH_SOURCE[0]}"
+        # Resolver enlace simbólico si existe
+        if [ -L "$script_path" ]; then
+            script_path="$(readlink -f "$script_path")"
+        fi
+        local script_dir="$(cd "$(dirname "$script_path")" && pwd)"
         local lib_dir="${script_dir}/lib"
 
         if [ ! -f "${lib_dir}/interactive_mode.sh" ]; then
