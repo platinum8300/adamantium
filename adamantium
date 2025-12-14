@@ -10,7 +10,7 @@
 # ═══════════════════════════════════════════════════════════════
 # Deep metadata cleaning | The tool that excited Edward Snowden
 # Full Mode: ExifTool + ffmpeg
-# Version: 1.1
+# Version: 1.3
 # ═══════════════════════════════════════════════════════════════
 
 set -euo pipefail
@@ -68,6 +68,9 @@ BATCH_RECURSIVE=false
 BATCH_CONFIRM=true
 BATCH_VERBOSE=false
 BATCH_QUIET=false
+
+# Variables para interactive mode
+INTERACTIVE_MODE=false
 
 # Versiones mínimas requeridas (se actualizan automáticamente desde upstream)
 REQUIRED_EXIFTOOL_VERSION="13.39"
@@ -184,6 +187,18 @@ declare -A MSG_ES=(
     [NO_FILES_TO_PROCESS]="No hay archivos para procesar"
     [SEARCHING_FILES]="Buscando archivos"
     [PROCEED_WITH_CLEANING]="¿Proceder con la limpieza?"
+    [INTERACTIVE_WELCOME]="Bienvenido al modo interactivo de adamantium"
+    [INTERACTIVE_MENU_TITLE]="Menú Principal"
+    [INTERACTIVE_SINGLE_FILE]="Limpiar archivo individual"
+    [INTERACTIVE_BATCH]="Procesamiento por lotes"
+    [INTERACTIVE_SETTINGS]="Configuración"
+    [INTERACTIVE_HELP]="Ayuda"
+    [INTERACTIVE_ABOUT]="Acerca de"
+    [INTERACTIVE_EXIT]="Salir"
+    [INTERACTIVE_SELECT_OPTION]="Selecciona una opción"
+    [INTERACTIVE_GOODBYE]="¡Hasta luego! Tu privacidad está protegida."
+    [INTERACTIVE_ENTER_PATH]="Introduce la ruta del directorio"
+    [INTERACTIVE_SELECT_FILE]="Selecciona un archivo"
 )
 
 # Mensajes en inglés (idioma por defecto)
@@ -270,6 +285,18 @@ declare -A MSG_EN=(
     [NO_FILES_TO_PROCESS]="No files to process"
     [SEARCHING_FILES]="Searching for files"
     [PROCEED_WITH_CLEANING]="Proceed with cleaning?"
+    [INTERACTIVE_WELCOME]="Welcome to adamantium interactive mode"
+    [INTERACTIVE_MENU_TITLE]="Main Menu"
+    [INTERACTIVE_SINGLE_FILE]="Clean single file"
+    [INTERACTIVE_BATCH]="Batch processing"
+    [INTERACTIVE_SETTINGS]="Settings"
+    [INTERACTIVE_HELP]="Help"
+    [INTERACTIVE_ABOUT]="About"
+    [INTERACTIVE_EXIT]="Exit"
+    [INTERACTIVE_SELECT_OPTION]="Select an option"
+    [INTERACTIVE_GOODBYE]="Goodbye! Your privacy is protected."
+    [INTERACTIVE_ENTER_PATH]="Enter directory path"
+    [INTERACTIVE_SELECT_FILE]="Select a file"
 )
 
 # Función para obtener mensaje traducido
@@ -952,6 +979,10 @@ main() {
                 CHECK_DUPLICATES=false
                 shift
                 ;;
+            --interactive|-i)
+                INTERACTIVE_MODE=true
+                shift
+                ;;
             -h|--help)
                 print_header
                 echo -e "${BOLD}$(msg USAGE)${NC}"
@@ -962,6 +993,7 @@ main() {
                 echo -e "  ${CYAN}--verify${NC}              $(msg HASH_VERIFICATION | tr '[:upper:]' '[:lower:]')"
                 echo -e "  ${CYAN}--dry-run${NC}             $(msg DRY_RUN_NOTICE | tr '[:upper:]' '[:lower:]')"
                 echo -e "  ${CYAN}--no-duplicate-check${NC}  Skip duplicate detection"
+                echo -e "  ${CYAN}--interactive, -i${NC}     Launch interactive TUI mode"
                 echo -e "  ${CYAN}-h, --help${NC}            Show this help"
                 echo ""
                 echo -e "${BOLD}$(msg BATCH_MODE):${NC}"
@@ -987,6 +1019,10 @@ main() {
                 echo -e "  $0 --batch -r -j 8 --pattern '*.pdf' ~/Documents"
                 echo -e "  $0 --batch --no-confirm --pattern '*.mp4' /media/videos"
                 echo ""
+                echo -e "  ${GRAY}# Interactive mode${NC}"
+                echo -e "  $0 --interactive"
+                echo -e "  $0 -i"
+                echo ""
                 exit 0
                 ;;
             -*)
@@ -1004,6 +1040,33 @@ main() {
                 ;;
         esac
     done
+
+    # Dispatch a interactive mode si está activado
+    if [ "$INTERACTIVE_MODE" = true ]; then
+        local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+        local lib_dir="${script_dir}/lib"
+
+        if [ ! -f "${lib_dir}/interactive_mode.sh" ]; then
+            echo -e "${RED}${CROSS} Error: Interactive mode libraries not found in ${lib_dir}${NC}" >&2
+            exit 1
+        fi
+
+        # Exportar variables necesarias para interactive mode
+        export RED GREEN YELLOW BLUE MAGENTA CYAN WHITE GRAY BOLD NC
+        export CHECK CROSS ARROW BULLET WARN INFO CLEAN SHIELD FILE_ICON SIZE_ICON
+        export VIDEO_ICON IMAGE_ICON PDF_ICON OFFICE_ICON SPARKLES SEARCH_ICON
+        export LOCATION_ICON CAMERA_ICON COMPUTER_ICON CALENDAR_ICON TOOL_ICON
+        export LANG_CODE
+
+        # Exportar funciones necesarias
+        export -f msg
+        export -f print_header
+
+        # Cargar y ejecutar interactive mode
+        source "${lib_dir}/interactive_mode.sh"
+        interactive_main
+        exit $?
+    fi
 
     # Dispatch a batch mode si está activado
     if [ "$BATCH_MODE" = true ]; then
