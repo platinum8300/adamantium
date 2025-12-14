@@ -4,6 +4,112 @@ All notable changes to adamantium will be documented in this file.
 
 ---
 
+## [1.3] - 2025-12-14
+
+### 🎉 NEW FEATURES - Interactive Mode
+
+adamantium v1.3 introduces a complete interactive mode with a beautiful TUI (Text User Interface) powered by gum, with intelligent fallback to fzf or pure bash for universal compatibility.
+
+### ✨ New Features
+
+- **Interactive Mode** (`--interactive`, `-i`) - Full TUI menu experience
+  - Beautiful menu-driven interface for easy navigation
+  - Single file cleaning with metadata preview
+  - Batch processing configuration wizard
+  - Settings management (toggle verify/dry-run modes)
+  - Built-in help and about screens
+  - Example: `adamantium --interactive` or `adamantium -i`
+
+- **Gum Integration** - Modern terminal UI
+  - Powered by [gum](https://github.com/charmbracelet/gum) from Charmbracelet
+  - Beautiful selection menus with color highlighting
+  - File browser for easy file selection
+  - Confirmation dialogs with visual styling
+  - Spinner animations for processing feedback
+
+- **Smart TUI Fallback** - Universal compatibility
+  - Automatic backend detection: gum → fzf → bash
+  - Full functionality maintained with any backend
+  - Graceful degradation without visual features
+  - Zero configuration required
+
+- **Tool Checker** - Built-in dependency verification
+  - Check all required tools (exiftool, ffmpeg)
+  - Check optional TUI tools (gum, fzf)
+  - Check archive tools for future versions (unzip, 7z, unrar)
+  - Version display for installed tools
+
+### 🏗️ Architecture
+
+- **New `lib/gum_wrapper.sh`** (~426 lines)
+  - Abstraction layer for gum with automatic fallbacks
+  - Functions: `gum_choose()`, `gum_confirm()`, `gum_input()`, `gum_file()`
+  - Additional: `gum_spin()`, `gum_style()`, `gum_pager()`, `gum_filter()`
+  - Installation instructions helper
+
+- **New `lib/interactive_mode.sh`** (~493 lines)
+  - Main interactive mode orchestration
+  - Functions: `interactive_main()`, `interactive_show_menu()`
+  - File operations: `interactive_single_file()`, `interactive_batch_mode()`
+  - Configuration: `interactive_settings()`, `interactive_check_tools()`
+  - Information: `interactive_help()`, `interactive_about()`
+
+### 🌍 Internationalization
+
+- **New interactive mode messages** - Full bilingual support
+  - Spanish: 12 new messages
+  - English: 12 new messages
+  - Messages: INTERACTIVE_WELCOME, INTERACTIVE_MENU_TITLE, INTERACTIVE_SINGLE_FILE,
+    INTERACTIVE_BATCH, INTERACTIVE_SETTINGS, INTERACTIVE_HELP, INTERACTIVE_ABOUT,
+    INTERACTIVE_EXIT, INTERACTIVE_SELECT_OPTION, INTERACTIVE_GOODBYE,
+    INTERACTIVE_ENTER_PATH, INTERACTIVE_SELECT_FILE
+
+### 🔧 New Options
+
+- `--interactive, -i` - Launch interactive TUI mode
+
+### 📚 Documentation
+
+- Updated README.md with Interactive Mode section
+- Updated README.es.md with Spanish documentation
+- Added TUI backends explanation
+- Added installation instructions for gum
+
+### 🔒 Backward Compatibility
+
+- **Zero Breaking Changes**: All existing features work identically
+- **Single file mode**: Unchanged behavior
+- **Batch mode**: Unchanged behavior
+- **All v1.2 and v1.1 options**: Continue to work
+
+### 📊 Statistics
+
+- **Version**: 1.3
+- **New Files**: 2 library modules (gum_wrapper.sh, interactive_mode.sh)
+- **New Functions**: 20+ interactive-related functions
+- **New Messages**: 24 (12 ES + 12 EN)
+- **New Options**: 1 (--interactive/-i)
+- **Lines of Code**: +920 (libraries + integration)
+
+### 🎯 Use Cases
+
+**Perfect for:**
+- Users who prefer visual interfaces over command-line
+- Quick file cleaning without remembering commands
+- Exploring adamantium features interactively
+- Configuring options without editing files
+
+**Examples:**
+```bash
+# Launch interactive mode
+adamantium -i
+
+# Or with full option
+adamantium --interactive
+```
+
+---
+
 ## [1.2] - 2025-12-13
 
 ### 🎉 NEW FEATURES - Professional Batch Processing
@@ -339,14 +445,22 @@ adamantium video.mp4 clean.mp4   # Custom output name
 
 ## 🗺️ Roadmap - Future Versions
 
-### v1.5 (Interactivity and Verification)
+### Completed Features
 
-- [ ] Interactive mode with file selection
-- [ ] `--verify` option (hash comparison before/after)
+- [x] **v1.1** - `--verify` option (hash comparison before/after)
+- [x] **v1.1** - `--dry-run` mode (preview without applying)
+- [x] **v1.1** - Duplicate detection by hash
+- [x] **v1.2** - Improved batch mode with progress bar
+- [x] **v1.2** - Parallel processing (3-5x faster)
+- [x] **v1.3** - Interactive mode with file selection
+- [x] **v1.3** - gum/fzf TUI integration
+
+### v1.4 (Compressed Archives)
+
 - [ ] Support for compressed files (ZIP, TAR, RAR, 7Z)
-- [ ] `--dry-run` mode (preview without applying)
-- [ ] Improved batch mode with progress bar
-- [ ] Duplicate detection by hash
+- [ ] Extract, clean, and recompress workflow
+- [ ] Password-protected archives support
+- [ ] Archive content preview
 
 ### v2.0 (Integration and Automation)
 
