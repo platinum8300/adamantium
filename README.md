@@ -373,6 +373,11 @@ See [EXAMPLES.md](EXAMPLES.md) for more practical examples.
 - [x] Smart fallback system (gum → fzf → bash)
 - [x] Built-in tool checker for dependencies
 
+### v1.3.1 (Bug Fix) ✅ COMPLETED
+
+- [x] Fix ExifTool source compilation on RPM-based distros (Fedora, RHEL, CentOS)
+- [x] Automatic Perl build dependencies installation
+
 ### v1.4 (Compressed Archives)
 
 - [ ] Support for compressed files (ZIP, TAR, RAR, 7Z)

@@ -36,7 +36,7 @@ interactive_show_menu() {
         "🚪 $(msg INTERACTIVE_EXIT)"
     )
 
-    gum_choose "🛡️  ADAMANTIUM v1.3 - $(msg INTERACTIVE_MENU_TITLE)" "${options[@]}"
+    gum_choose "🛡️  ADAMANTIUM v1.3.1 - $(msg INTERACTIVE_MENU_TITLE)" "${options[@]}"
 }
 
 # ─────────────────────────────────────────────────────────────
@@ -382,7 +382,7 @@ EOF
     echo ""
     echo -e "  ${CYAN}╔═══════════════════════════════════════════════════════════╗${NC}"
     echo -e "  ${CYAN}║${NC}                                                           ${CYAN}║${NC}"
-    echo -e "  ${CYAN}║${NC}   ${BOLD}Version:${NC}     1.3 (Interactive Mode)                   ${CYAN}║${NC}"
+    echo -e "  ${CYAN}║${NC}   ${BOLD}Version:${NC}     1.3.1 (Interactive Mode)                 ${CYAN}║${NC}"
     echo -e "  ${CYAN}║${NC}   ${BOLD}License:${NC}     AGPL-3.0                                 ${CYAN}║${NC}"
     echo -e "  ${CYAN}║${NC}   ${BOLD}Repository:${NC}  github.com/platinum8300/adamantium       ${CYAN}║${NC}"
     echo -e "  ${CYAN}║${NC}   ${BOLD}TUI Backend:${NC} ${TUI_BACKEND}                                        ${CYAN}║${NC}"

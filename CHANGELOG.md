@@ -4,6 +4,49 @@ All notable changes to adamantium will be documented in this file.
 
 ---
 
+## [1.3.1] - 2025-12-15
+
+### 🐛 BUG FIX - ExifTool Source Compilation on RPM-based Distros
+
+This patch release fixes a critical bug that prevented automatic ExifTool source compilation on Fedora, RHEL, CentOS, and other RPM-based distributions.
+
+### 🔧 Fix Details
+
+**Problem:**
+- ExifTool compilation from source failed on Fedora and RPM-based distributions
+- The hybrid update system would fall back to repository versions instead of installing the latest from exiftool.org
+- Root cause: Missing `ExtUtils::MakeMaker` Perl module, which is included by default on Arch-based systems but packaged separately on RPM-based distributions
+
+**Solution:**
+- Added automatic detection of missing Perl build dependencies
+- New `perl-makemaker` package mapping in `get_package_name()` function
+- Automatic installation of build dependencies before source compilation:
+  - **Fedora/RHEL/CentOS**: `perl-ExtUtils-MakeMaker`
+  - **Debian/Ubuntu**: `perl-modules`
+  - **Arch/CachyOS/Manjaro**: `base-devel` (already included with perl)
+  - **openSUSE**: `perl-ExtUtils-MakeMaker`
+  - **Alpine**: `perl-utils`
+
+### 🌍 Internationalization
+
+- **New messages** - Full bilingual support
+  - Spanish: `INSTALLING_BUILD_DEPS`, `BUILD_DEPS_ERROR`
+  - English: `INSTALLING_BUILD_DEPS`, `BUILD_DEPS_ERROR`
+
+### 📊 Statistics
+
+- **Version**: 1.3.1
+- **Type**: Patch release (bug fix)
+- **Affected Distributions**: Fedora, RHEL, CentOS, openSUSE, and other RPM-based distros
+- **Impact**: Users can now get the latest ExifTool version automatically on all supported distributions
+
+### 🔒 Backward Compatibility
+
+- **Zero Breaking Changes**: All existing features work identically
+- **New behavior**: Build dependencies are automatically installed only when needed
+
+---
+
 ## [1.3] - 2025-12-14
 
 ### 🎉 NEW FEATURES - Interactive Mode
@@ -454,6 +497,7 @@ adamantium video.mp4 clean.mp4   # Custom output name
 - [x] **v1.2** - Parallel processing (3-5x faster)
 - [x] **v1.3** - Interactive mode with file selection
 - [x] **v1.3** - gum/fzf TUI integration
+- [x] **v1.3.1** - ExifTool source compilation fix for RPM-based distros
 
 ### v1.4 (Compressed Archives)
 

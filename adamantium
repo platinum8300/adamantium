@@ -10,7 +10,7 @@
 # ═══════════════════════════════════════════════════════════════
 # Deep metadata cleaning | The tool that excited Edward Snowden
 # Full Mode: ExifTool + ffmpeg
-# Version: 1.3
+# Version: 1.3.1
 # ═══════════════════════════════════════════════════════════════
 
 set -euo pipefail
@@ -145,6 +145,8 @@ declare -A MSG_ES=(
     [DOWNLOAD_ERROR]="Error al descargar ExifTool"
     [INSTALLED_FROM_SOURCE]="instalado correctamente desde fuente"
     [POST_INSTALL_ERROR]="Error en la verificación post-instalación"
+    [INSTALLING_BUILD_DEPS]="Instalando dependencias de compilación..."
+    [BUILD_DEPS_ERROR]="Error al instalar dependencias de compilación"
     [HEADER_SUBTITLE]="Limpieza profunda de metadatos | La herramienta que emocionó a Edward Snowden"
     [MULTIMEDIA]="multimedia"
     [IMAGE]="imagen"
@@ -243,6 +245,8 @@ declare -A MSG_EN=(
     [DOWNLOAD_ERROR]="Error downloading ExifTool"
     [INSTALLED_FROM_SOURCE]="installed correctly from source"
     [POST_INSTALL_ERROR]="Post-installation verification error"
+    [INSTALLING_BUILD_DEPS]="Installing build dependencies..."
+    [BUILD_DEPS_ERROR]="Error installing build dependencies"
     [HEADER_SUBTITLE]="Deep metadata cleaning | The tool that excited Edward Snowden"
     [MULTIMEDIA]="multimedia"
     [IMAGE]="image"
@@ -377,6 +381,17 @@ get_package_name() {
         ffmpeg)
             echo "ffmpeg"  # Mismo nombre en todas las distros
             ;;
+        perl-makemaker)
+            # Necesario para compilar ExifTool desde fuente
+            case "$PACKAGE_MANAGER" in
+                pacman) echo "base-devel" ;;  # Arch incluye MakeMaker en perl
+                apt) echo "perl-modules" ;;
+                dnf|yum) echo "perl-ExtUtils-MakeMaker" ;;
+                zypper) echo "perl-ExtUtils-MakeMaker" ;;
+                apk) echo "perl-utils" ;;
+                *) echo "perl-ExtUtils-MakeMaker" ;;
+            esac
+            ;;
         *)
             echo "$pkg"
             ;;
@@ -479,6 +494,15 @@ install_exiftool_from_source() {
     local temp_dir=$(mktemp -d)
 
     echo -e "${CYAN}${ARROW}${NC} $(msg INSTALLING_FROM_SOURCE) ${WHITE}${target_version}${NC} $(msg FROM_SOURCE_SITE)"
+
+    # Verificar e instalar dependencias de compilación si faltan
+    if ! perl -e 'use ExtUtils::MakeMaker' &>/dev/null; then
+        echo -e "${GRAY}   $(msg INSTALLING_BUILD_DEPS)${NC}"
+        if ! install_package "perl-makemaker"; then
+            echo -e "${RED}${CROSS}${NC} $(msg BUILD_DEPS_ERROR)"
+            return 1
+        fi
+    fi
 
     cd "$temp_dir" || return 1
 

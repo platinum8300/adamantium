@@ -386,6 +386,11 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 - [x] Sistema de fallback inteligente (gum → fzf → bash)
 - [x] Verificador de herramientas integrado
 
+### v1.3.1 (Corrección de Bug) ✅ COMPLETADO
+
+- [x] Corrección de compilación de ExifTool desde fuente en distros basadas en RPM (Fedora, RHEL, CentOS)
+- [x] Instalación automática de dependencias de compilación de Perl
+
 ### v1.4 (Archivos Comprimidos)
 
 - [ ] Soporte para archivos comprimidos (ZIP, TAR, RAR, 7Z)
