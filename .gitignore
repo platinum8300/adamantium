@@ -42,6 +42,9 @@ Thumbs.db
 .adamantiumrc.local
 config.local
 
+# IDE and tool configurations (local only)
+.claude/
+
 # Archivos de respaldo
 *.bak
 *.orig

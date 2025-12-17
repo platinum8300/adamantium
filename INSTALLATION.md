@@ -336,9 +336,89 @@ If you encounter issues:
 
 ## Version Information
 
-- **Current version:** 1.4.0
-- **Release date:** 2025-10-24
+- **Current version:** 1.3.1
+- **Release date:** 2025-12-15
 - **Minimum requirements:**
   - ExifTool 13.39+
   - ffmpeg 8.0+
   - Bash 4.0+
+
+---
+
+## 🔄 Automatic Dependency Updates
+
+Starting from **adamantium v1.1.0**, the system includes automatic dependency verification to ensure:
+
+- ✅ **Security**: Latest vulnerability fixes
+- ✅ **Functionality**: Support for new formats and features
+- ✅ **Compatibility**: Avoid issues with modern metadata
+
+### How It Works
+
+1. **Startup verification**: Every time you run `adamantium`
+2. **Version detection**: Compares installed versions with required minimums
+3. **Warning if outdated**: Shows a message if updates are needed
+4. **Continues processing**: Works even with older versions (with warnings)
+
+### Required Versions
+
+adamantium maintains minimum required versions:
+
+| Dependency | Minimum Version | Purpose |
+|------------|-----------------|---------|
+| ExifTool | 13.39+ | Metadata manipulation (EXIF, IPTC, XMP) |
+| ffmpeg | 8.0+ | Multimedia container processing |
+| Bash | 4.0+ | Script execution |
+
+### Manual Update Commands
+
+```bash
+# Arch Linux / Manjaro / CachyOS
+sudo pacman -Syu perl-image-exiftool ffmpeg
+
+# Ubuntu / Debian
+sudo apt-get update && sudo apt-get upgrade libimage-exiftool-perl ffmpeg
+
+# Fedora / RHEL
+sudo dnf upgrade perl-Image-ExifTool ffmpeg
+
+# openSUSE
+sudo zypper update exiftool ffmpeg
+
+# Alpine
+sudo apk upgrade exiftool ffmpeg
+```
+
+### Version Comparison Logic
+
+adamantium compares versions in **X.Y** format (major.minor):
+
+| Installed | Required | Action |
+|-----------|----------|--------|
+| 13.36 | 13.39 | ⚠️ Warning shown |
+| 13.39 | 13.39 | ✅ OK |
+| 13.40 | 13.39 | ✅ OK (newer is fine) |
+
+### Checking Your Versions
+
+```bash
+# Check ExifTool version
+exiftool -ver
+
+# Check ffmpeg version
+ffmpeg -version | head -1
+
+# Check bash version
+bash --version | head -1
+```
+
+### FAQ
+
+**Q: Can I use adamantium offline?**
+A: Yes, if dependencies are already installed. Version checks are local.
+
+**Q: What if update fails?**
+A: adamantium continues with current versions but shows a warning.
+
+**Q: Does checking affect performance?**
+A: Minimal (~0.1 seconds) - only compares local version numbers.

@@ -16,7 +16,8 @@
 ## ⚡ Instalación rápida (30 segundos)
 
 ```bash
-cd /media/experimental/Software/adamantium
+git clone https://github.com/platinum8300/adamantium.git
+cd adamantium
 ./install.sh
 ```
 
@@ -33,7 +34,7 @@ adamantium foto.jpg
 # Genera: foto_clean.jpg
 ```
 
-### ✨ Nuevas opciones v1.1
+### ✨ Opciones de verificación (v1.1+)
 
 ```bash
 # Verificar con hash SHA256
@@ -46,16 +47,37 @@ adamantium documento.pdf --dry-run
 adamantium video.mp4 --verify
 ```
 
+### 📦 Modo Batch (v1.2+)
+
+```bash
+# Limpiar todos los JPG de un directorio
+adamantium --batch --pattern '*.jpg' ~/Fotos
+
+# Múltiples tipos con recursividad
+adamantium --batch -r --pattern '*.jpg' --pattern '*.png' .
+
+# Paralelo con 8 trabajos
+adamantium --batch -j 8 --pattern '*.mp4' ~/Videos
+```
+
+### 🖥️ Modo Interactivo (v1.3+)
+
+```bash
+# Lanzar modo interactivo
+adamantium -i
+adamantium --interactive
+```
+
+El modo interactivo proporciona un menú TUI guiado para:
+- Limpieza de archivos individuales
+- Procesamiento batch
+- Configuración de opciones
+- Verificación de herramientas
+
 ### Especificar nombre de salida
 
 ```bash
 adamantium documento.pdf documento_anonimo.pdf
-```
-
-### Limpiar múltiples archivos
-
-```bash
-batch_clean.sh ~/Fotos jpg
 ```
 
 ---
@@ -191,29 +213,30 @@ adamantium --help
 adamantium
 ```
 
-### ✨ Opciones avanzadas v1.1
+### ✨ Opciones avanzadas
 
 ```bash
-# Verificación de hash
+# Verificación de hash (v1.1+)
 adamantium archivo.pdf --verify
 
-# Modo previsualización
+# Modo previsualización (v1.1+)
 adamantium archivo.pdf --dry-run
 
-# Sin detección de duplicados
-adamantium archivo.pdf --no-duplicate-check
+# Modo batch con selección interactiva (v1.2+)
+adamantium --batch --confirm --pattern '*.pdf' ~/Documentos
+
+# Modo interactivo completo (v1.3+)
+adamantium -i
 ```
 
-### Probar con archivos de ejemplo
+### Limpiar directorio completo
 
 ```bash
-./test_adamantium.sh
-```
+# Modo batch recomendado (v1.2+)
+adamantium --batch -r --pattern '*.pdf' ~/Documentos
 
-### Limpiar directorio completo (recursivo)
-
-```bash
-batch_clean.sh ~/Documentos pdf --recursive
+# Script legacy (aún soportado)
+./batch_clean.sh ~/Documentos pdf --recursive
 ```
 
 ---
@@ -253,7 +276,7 @@ sudo pacman -S ffmpeg
 ### Reinstalar adamantium
 
 ```bash
-cd /media/experimental/Software/adamantium
+cd adamantium
 ./install.sh
 ```
 
@@ -314,6 +337,6 @@ Ahora que tienes adamantium instalado:
 
 ---
 
-**Versión**: 1.1.0
-**Fecha**: 2025-11-16
-**Ubicación**: `/media/experimental/Software/adamantium/`
+**Versión**: 1.3.1
+**Fecha**: 2025-12-15
+**Repositorio**: https://github.com/platinum8300/adamantium

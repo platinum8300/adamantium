@@ -10,6 +10,10 @@
 
 adamantium es una herramienta de línea de comandos con interfaz TUI (Text User Interface) diseñada para eliminar metadatos de manera completa y segura de diversos tipos de archivos.
 
+[![Licencia: AGPL v3](https://img.shields.io/badge/Licencia-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![Plataforma: Linux](https://img.shields.io/badge/Plataforma-Linux-blue.svg)](https://www.linux.org/)
+[![Versión: 1.3.1](https://img.shields.io/badge/Versión-1.3.1-green.svg)](https://github.com/platinum8300/adamantium/releases)
+
 ---
 
 ## 🎯 Características
@@ -28,11 +32,13 @@ adamantium es una herramienta de línea de comandos con interfaz TUI (Text User 
 - **Detección automática**: Identifica el tipo de archivo y aplica el método óptimo
 - **Contador de metadatos**: Muestra cuántos campos se encontraron y eliminaron
 
-### ✨ Nuevo en v1.1
+### ✨ Nuevo en v1.3.x (Modo Interactivo)
 
-- **--verify**: Comparación de hash (SHA256) para verificar limpieza exitosa
-- **--dry-run**: Modo previsualización - ve qué se limpiaría sin hacer cambios
-- **Detección de duplicados**: Advertencia automática si el archivo ya parece limpio
+- **Modo Interactivo** (`--interactive`, `-i`): Experiencia completa con menú TUI guiado
+- **Integración con Gum**: Interfaz terminal moderna con [Charmbracelet/gum](https://github.com/charmbracelet/gum)
+- **Sistema de Fallback Inteligente**: Detección automática de backend (gum → fzf → bash)
+- **Verificador de Herramientas**: Sistema de comprobación de dependencias integrado
+- **Corrección RPM** (v1.3.1): Compilación de ExifTool corregida para Fedora/RHEL/CentOS
 
 ---
 
@@ -168,6 +174,62 @@ adamantium presentacion.pptx
 adamantium cancion.mp3 cancion_sin_metadatos.mp3 --verify
 ```
 
+### Modo Batch (v1.2+)
+
+```bash
+adamantium --batch --pattern PATRON [opciones] [directorio]
+```
+
+**Opciones:**
+- `--batch` - Habilitar procesamiento por lotes
+- `--pattern PATRON` - Patrón de archivos a buscar (puede usarse múltiples veces)
+- `--jobs N, -j N` - Número de trabajos paralelos (por defecto: auto-detectar núcleos CPU)
+- `--recursive, -r` - Buscar recursivamente en subdirectorios
+- `--confirm` - Selección interactiva con vista previa (por defecto)
+- `--no-confirm` - Omitir confirmación para automatización
+- `--verbose, -v` - Mostrar salida detallada
+- `--quiet, -q` - Salida mínima
+
+**Ejemplos:**
+
+```bash
+# Limpiar todos los JPG de un directorio
+adamantium --batch --pattern '*.jpg' ~/Fotos
+
+# Múltiples tipos de archivo
+adamantium --batch --pattern '*.jpg' --pattern '*.png' --pattern '*.pdf' .
+
+# Recursivo con 8 trabajos paralelos
+adamantium --batch -r -j 8 --pattern '*.mp4' ~/Videos
+
+# Sin confirmación (para scripts/automatización)
+adamantium --batch --no-confirm --pattern '*.pdf' ~/Documentos
+
+# Selección interactiva con fzf (si está instalado)
+adamantium --batch --confirm --pattern '*.jpg' .
+```
+
+### Modo Interactivo (v1.3+)
+
+```bash
+adamantium -i
+adamantium --interactive
+```
+
+El modo interactivo proporciona un menú TUI completo con las siguientes opciones:
+
+1. **Limpiar archivo individual** - Selecciona y limpia un archivo con vista previa
+2. **Modo batch** - Accede al procesamiento por lotes con selección interactiva
+3. **Configuración** - Ajusta opciones como verify, dry-run, etc.
+4. **Verificar herramientas** - Comprueba que todas las dependencias están instaladas
+5. **Ayuda** - Muestra información de ayuda
+6. **Acerca de** - Información sobre adamantium
+
+**Backends soportados:**
+- **gum** (Recomendado): Interfaz moderna y visualmente atractiva
+- **fzf**: Alternativa ligera con búsqueda fuzzy
+- **bash**: Fallback universal sin dependencias adicionales
+
 ---
 
 ## 🎨 Interfaz TUI
@@ -258,44 +320,21 @@ adamantium elimina metadatos como:
 
 ### Procesamiento por lotes
 
-Para limpiar múltiples archivos, puedes usar un loop:
+Para limpiar múltiples archivos, usa el **modo batch** integrado (v1.2+):
 
 ```bash
 # Limpiar todos los JPG de un directorio
-for file in *.jpg; do
-    adamantium "$file"
-done
+adamantium --batch --pattern '*.jpg' ~/Fotos
 
-# Limpiar todos los MP4
-for file in *.mp4; do
-    adamantium "$file" "clean_${file}"
-done
+# Múltiples patrones con recursividad
+adamantium --batch -r --pattern '*.jpg' --pattern '*.png' .
+
+# Script legacy (aún soportado)
+./batch_clean.sh ~/Fotos jpg
+./batch_clean.sh ~/Documentos pdf --recursive
 ```
 
-### Script de ejemplo para lotes
-
-```bash
-#!/bin/bash
-# batch_clean.sh
-
-if [ $# -eq 0 ]; then
-    echo "Uso: $0 <directorio> <extensión>"
-    echo "Ejemplo: $0 ./fotos jpg"
-    exit 1
-fi
-
-DIR="$1"
-EXT="$2"
-
-for file in "${DIR}"/*."${EXT}"; do
-    if [ -f "$file" ]; then
-        echo "Procesando: $file"
-        adamantium "$file"
-    fi
-done
-
-echo "✓ Limpieza por lotes completada"
-```
+Para más ejemplos, consulta la sección [Modo Batch](#modo-batch-v12) o el archivo [EXAMPLES.md](EXAMPLES.md).
 
 ---
 
@@ -414,6 +453,33 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 - [ ] API REST para uso remoto
 - [ ] Sistema de plugins para extensibilidad
 - [ ] GUI opcional (GTK4/Qt6)
+
+---
+
+## 📜 Historial de Versiones
+
+### v1.2 (Procesamiento por Lotes)
+
+- **Modo Batch**: Procesamiento profesional por lotes con barra de progreso (estilo rsync)
+- **Procesamiento Paralelo**: Detección automática de núcleos CPU para máximo rendimiento
+- **Selección Interactiva**: Selección de archivos con patrones + confirmación (soporte fzf)
+- **Barra de Progreso**: Estadísticas en tiempo real (porcentaje, velocidad, ETA, contador)
+- **3x-5x Más Rápido**: Ejecución paralela para lotes grandes
+
+### v1.1 (Verificación y Previsualización)
+
+- **--verify**: Comparación de hash (SHA256) para verificar limpieza exitosa
+- **--dry-run**: Modo previsualización - ve qué se limpiaría sin hacer cambios
+- **Detección de Duplicados**: Advertencia automática si el archivo ya parece limpio
+
+### v1.0 (Lanzamiento Inicial)
+
+- Funcionalidad principal de limpieza de metadatos con ExifTool + ffmpeg
+- Soporte multi-formato (imágenes, videos, audio, PDFs, Office)
+- Interfaz TUI moderna con colores y emojis
+- Detección automática de tipo de archivo
+- Instalador multi-distribución
+- Soporte bilingüe (Inglés/Español)
 
 ---
 

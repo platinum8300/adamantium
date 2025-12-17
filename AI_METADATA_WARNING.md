@@ -91,7 +91,7 @@ Estos metadatos son **evidencia digital**:
 
 ## 🛡️ Solución: adamantium
 
-adamantium **v1.0.1+** detecta y elimina:
+adamantium **v1.0+** detecta y elimina:
 
 ✅ Campo `Parameters` completo
 ✅ Prompts y negative prompts
@@ -355,4 +355,4 @@ Si aparece **algún resultado**, reporta el bug en el proyecto.
 
 **🛡️ adamantium - Protege tu privacidad al compartir arte generado con IA**
 
-*Actualizado: v1.0.1 - 2025-10-23*
+*Actualizado: v1.3.1 - 2025-12-15*

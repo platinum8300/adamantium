@@ -12,7 +12,7 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Platform: Linux](https://img.shields.io/badge/Platform-Linux-blue.svg)](https://www.linux.org/)
-[![Version: 1.2](https://img.shields.io/badge/Version-1.2-green.svg)](https://github.com/yourusername/adamantium/releases)
+[![Version: 1.3.1](https://img.shields.io/badge/Version-1.3.1-green.svg)](https://github.com/platinum8300/adamantium/releases)
 
 ---
 
@@ -34,19 +34,13 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
 - **Automatic Detection**: Identifies file type and applies optimal method
 - **Metadata Counter**: Shows how many fields were found and removed
 
-### ✨ New in v1.2
+### ✨ New in v1.3.x (Interactive Mode)
 
-- **Batch Mode**: Professional batch processing with progress bar (rsync-style)
-- **Parallel Processing**: Automatic CPU core detection for maximum performance
-- **Interactive Selection**: Choose files with patterns + confirmation (fzf support)
-- **Progress Bar**: Real-time stats (percentage, speed, ETA, file counter)
-- **3x-5x Faster**: Parallel execution for large batches
-
-### New in v1.1
-
-- **--verify**: Hash comparison (SHA256) to verify cleaning was successful
-- **--dry-run**: Preview mode - see what would be cleaned without making changes
-- **Duplicate Detection**: Automatic warning if file appears already clean
+- **Interactive Mode** (`--interactive`, `-i`): Full TUI menu experience for guided operation
+- **Gum Integration**: Modern terminal UI powered by [Charmbracelet/gum](https://github.com/charmbracelet/gum)
+- **Smart Fallback**: Automatic backend detection (gum → fzf → bash)
+- **Tool Checker**: Built-in dependency verification system
+- **RPM Fix** (v1.3.1): ExifTool source compilation fixed for Fedora/RHEL/CentOS
 
 ---
 
@@ -414,6 +408,33 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
 - Code standards
 - Pull request process
 - Testing requirements
+
+---
+
+## 📜 Version History
+
+### v1.2 (Batch Processing)
+
+- **Batch Mode**: Professional batch processing with progress bar (rsync-style)
+- **Parallel Processing**: Automatic CPU core detection for maximum performance
+- **Interactive Selection**: Choose files with patterns + confirmation (fzf support)
+- **Progress Bar**: Real-time stats (percentage, speed, ETA, file counter)
+- **3x-5x Faster**: Parallel execution for large batches
+
+### v1.1 (Verification & Preview)
+
+- **--verify**: Hash comparison (SHA256) to verify cleaning was successful
+- **--dry-run**: Preview mode - see what would be cleaned without making changes
+- **Duplicate Detection**: Automatic warning if file appears already clean
+
+### v1.0 (Initial Release)
+
+- Core metadata cleaning functionality with ExifTool + ffmpeg
+- Multi-format support (images, videos, audio, PDFs, Office)
+- Modern TUI interface with colors and emojis
+- Automatic file type detection
+- Multi-distribution installer
+- Bilingual support (English/Spanish)
 
 ---
 

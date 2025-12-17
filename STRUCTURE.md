@@ -3,14 +3,25 @@
 ```
 adamantium/
 ├── adamantium                  # Script principal (ejecutable)
-├── README.md                   # Documentación principal
+├── README.md                   # Documentación principal (EN)
+├── README.es.md                # Documentación principal (ES)
 ├── CHANGELOG.md                # Historial de cambios
 ├── EXAMPLES.md                 # Ejemplos de uso
 ├── STRUCTURE.md                # Este archivo
+├── INSTALLATION.md             # Guía de instalación detallada
+├── QUICKSTART.md               # Guía de inicio rápido
+├── CONTRIBUTING.md             # Guía de contribución
+├── AI_METADATA_WARNING.md      # Advertencia sobre metadatos IA
 ├── install.sh                  # Instalador automático
-├── batch_clean.sh              # Procesamiento por lotes
-├── test_adamantium.sh          # Suite de pruebas
-└── .adamantiumrc.example       # Configuración de ejemplo
+├── batch_clean.sh              # Procesamiento por lotes (legacy)
+├── lib/                        # Módulos de biblioteca (v1.2+)
+│   ├── batch_core.sh           # Orquestación de batch processing
+│   ├── file_selector.sh        # Selección interactiva de archivos
+│   ├── parallel_executor.sh    # Ejecución paralela
+│   ├── progress_bar.sh         # Barra de progreso estilo rsync
+│   ├── gum_wrapper.sh          # Abstracción de gum (v1.3)
+│   └── interactive_mode.sh     # Modo interactivo TUI (v1.3)
+└── .adamantiumrc.example       # Configuración de ejemplo (futuro)
 ```
 
 ---
@@ -23,16 +34,32 @@ adamantium/
 **Propósito**: Script principal de limpieza de metadatos
 
 **Características**:
-- Interfaz TUI completa con colores
-- Detección automática de tipos de archivo
+- Interfaz TUI completa con colores y emojis
+- Detección automática de tipos de archivo (MIME)
 - Combinación de ExifTool + ffmpeg para limpieza profunda
 - Visualización de metadatos antes y después
 - Preservación del archivo original
+- Verificación con hash SHA256 (v1.1+)
+- Modo preview/dry-run (v1.1+)
+- Modo batch con barra de progreso (v1.2+)
+- Modo interactivo TUI completo (v1.3+)
 
 **Uso**:
 ```bash
+# Modo básico
 ./adamantium <archivo>
 ./adamantium <archivo> <salida>
+
+# Con opciones (v1.1+)
+./adamantium --verify foto.jpg
+./adamantium --dry-run documento.pdf
+
+# Modo batch (v1.2+)
+./adamantium --batch --pattern '*.jpg' ~/Fotos
+
+# Modo interactivo (v1.3+)
+./adamantium -i
+./adamantium --interactive
 ```
 
 ---
@@ -260,19 +287,28 @@ adamantium
 ### Obligatorias
 
 1. **exiftool** (perl-image-exiftool)
-   - Versión mínima: 12.0+
+   - Versión mínima: 13.39+
    - Uso: Eliminación de metadatos EXIF/IPTC/XMP
    - Instalación: `sudo pacman -S perl-image-exiftool`
 
 2. **ffmpeg**
-   - Versión mínima: 4.0+
+   - Versión mínima: 8.0+
    - Uso: Limpieza de contenedores multimedia
    - Instalación: `sudo pacman -S ffmpeg`
 
 3. **bash** 4.0+
-   - Ya incluido en CachyOS
+   - Ya incluido en la mayoría de distribuciones
 
-### Opcionales (para test_adamantium.sh)
+### Opcionales (v1.2+)
+
+1. **fzf** - Selección interactiva de archivos en modo batch
+   - Instalación: `sudo pacman -S fzf`
+
+2. **gum** (v1.3+) - Interfaz terminal moderna (Charmbracelet)
+   - Instalación: Ver [gum releases](https://github.com/charmbracelet/gum/releases)
+   - Fallback automático a fzf o bash si no está instalado
+
+### Opcionales (para desarrollo/testing)
 
 1. **ImageMagick** (convert)
    - Para crear imágenes de prueba
@@ -362,33 +398,46 @@ CLEAN="${MAGENTA}◆${NC}"    # Proceso de limpieza
 
 ## Roadmap de desarrollo
 
-### v1.0.0 (Actual)
+### v1.0 ✅ COMPLETADO
 - [x] Script principal funcional
 - [x] Soporte multimedia (ExifTool + ffmpeg)
 - [x] Interfaz TUI completa
-- [x] Instalador
-- [x] Script de lotes
-- [x] Documentación completa
+- [x] Instalador multi-distribución
+- [x] Script de lotes básico
+- [x] Documentación completa bilingüe
 
-### v1.1.0 (Próxima versión)
-- [ ] Cargar configuración desde `~/.adamantiumrc`
-- [ ] Opción `--dry-run`
-- [ ] Opción `--verify` (comparación de hashes)
-- [ ] Modo verbose (`-v`)
-- [ ] Logging opcional
+### v1.1 ✅ COMPLETADO
+- [x] Opción `--verify` (comparación de hashes SHA256)
+- [x] Opción `--dry-run` (modo preview)
+- [x] Detección de duplicados
+- [x] Mensajes i18n mejorados
 
-### v1.2.0
-- [ ] Modo interactivo con selección de archivos
-- [ ] Integración con Nautilus/Dolphin
+### v1.2 ✅ COMPLETADO
+- [x] Modo batch mejorado con barra de progreso
+- [x] Procesamiento paralelo (detección automática de CPU cores)
+- [x] Selección interactiva con fzf
+- [x] Módulos en `lib/`: batch_core, file_selector, parallel_executor, progress_bar
+
+### v1.3 ✅ COMPLETADO
+- [x] Modo interactivo completo (`--interactive`, `-i`)
+- [x] Integración con gum (Charmbracelet)
+- [x] Sistema fallback inteligente (gum → fzf → bash)
+- [x] Verificador de herramientas integrado
+- [x] Módulos: gum_wrapper, interactive_mode
+
+### v1.3.1 ✅ COMPLETADO
+- [x] Corrección compilación ExifTool en distros RPM
+- [x] Instalación automática de dependencias Perl
+
+### v1.4 (Próxima)
+- [ ] Soporte para archivos comprimidos (ZIP, TAR, RAR, 7Z)
+- [ ] Flujo de extracción, limpieza y recompresión
+
+### v2.0 (Futuro)
+- [ ] Integración con file managers (Nautilus/Dolphin)
 - [ ] Generación de reportes JSON/CSV
-- [ ] Soporte para archivos ZIP/TAR
-
-### v2.0.0
-- [ ] Reescritura en Python (mejor manejo de errores)
-- [ ] GUI opcional (GTK4)
-- [ ] Plugins extensibles
-- [ ] API REST
-- [ ] Soporte para bases de datos (SQLite, MySQL)
+- [ ] Configuración personalizada `~/.adamantiumrc`
+- [ ] GUI opcional (GTK4/Qt6)
 
 ---
 
@@ -396,9 +445,8 @@ CLEAN="${MAGENTA}◆${NC}"    # Proceso de limpieza
 
 **adamantium** - Herramienta de limpieza profunda de metadatos
 
-Desarrollado por: [Tu nombre]
-Versión: 1.0.0
-Fecha: 2025-10-23
+Versión: 1.3.1
+Fecha: 2025-12-15
 
 Herramientas utilizadas:
 - ExifTool por Phil Harvey
@@ -420,4 +468,4 @@ Para bugs, sugerencias o contribuciones:
 
 ---
 
-**Última actualización**: 2025-10-23
+**Última actualización**: 2025-12-15

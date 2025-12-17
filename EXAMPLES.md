@@ -7,14 +7,16 @@ Esta guía contiene ejemplos prácticos para usar adamantium en diferentes escen
 ## Índice
 
 1. [Uso básico](#uso-básico)
-2. [✨ Nuevas features v1.1](#nuevas-features-v11)
-3. [Imágenes](#imágenes)
-4. [Videos](#videos)
-5. [Audio](#audio)
-6. [Documentos PDF](#documentos-pdf)
-7. [Documentos Office](#documentos-office)
-8. [Procesamiento por lotes](#procesamiento-por-lotes)
-9. [Casos de uso avanzados](#casos-de-uso-avanzados)
+2. [✨ Features v1.1 - Verificación](#features-v11---verificación)
+3. [📦 Features v1.2 - Batch Mode](#features-v12---batch-mode)
+4. [🖥️ Features v1.3 - Modo Interactivo](#features-v13---modo-interactivo)
+5. [Imágenes](#imágenes)
+6. [Videos](#videos)
+7. [Audio](#audio)
+8. [Documentos PDF](#documentos-pdf)
+9. [Documentos Office](#documentos-office)
+10. [Procesamiento por lotes](#procesamiento-por-lotes)
+11. [Casos de uso avanzados](#casos-de-uso-avanzados)
 
 ---
 
@@ -39,7 +41,7 @@ adamantium
 
 ---
 
-## ✨ Nuevas features v1.1
+## ✨ Features v1.1 - Verificación
 
 ### Verificación de hash (--verify)
 
@@ -146,6 +148,165 @@ done
 # 4. Debugging
 # Si sospechas que no se limpia bien
 adamantium archivo_problematico.mp4 --verify
+```
+
+---
+
+## 📦 Features v1.2 - Batch Mode
+
+### Procesamiento batch básico
+
+```bash
+# Limpiar todos los JPG de un directorio
+adamantium --batch --pattern '*.jpg' ~/Fotos
+
+# Limpiar todos los PDF de un directorio
+adamantium --batch --pattern '*.pdf' ~/Documentos
+```
+
+### Múltiples patrones de archivo
+
+```bash
+# Limpiar varios tipos de imagen
+adamantium --batch --pattern '*.jpg' --pattern '*.png' --pattern '*.gif' .
+
+# Imágenes y PDFs juntos
+adamantium --batch --pattern '*.jpg' --pattern '*.pdf' ~/Descargas
+```
+
+### Procesamiento recursivo
+
+```bash
+# Buscar en subdirectorios
+adamantium --batch -r --pattern '*.mp4' ~/Videos
+
+# Todos los documentos Office recursivamente
+adamantium --batch --recursive --pattern '*.docx' --pattern '*.xlsx' ~/Trabajo
+```
+
+### Control de paralelización
+
+```bash
+# Usar 8 trabajos paralelos
+adamantium --batch -j 8 --pattern '*.jpg' ~/Fotos
+
+# Usar todos los núcleos disponibles (por defecto)
+adamantium --batch --pattern '*.mp4' ~/Videos
+
+# Un solo trabajo (secuencial)
+adamantium --batch -j 1 --pattern '*.pdf' ~/Documentos
+```
+
+### Selección interactiva con fzf
+
+```bash
+# Con confirmación (por defecto) - muestra lista para seleccionar
+adamantium --batch --confirm --pattern '*.jpg' .
+
+# Sin confirmación para automatización
+adamantium --batch --no-confirm --pattern '*.pdf' ~/Documentos
+```
+
+### Modos de salida
+
+```bash
+# Modo verboso - muestra detalles de cada archivo
+adamantium --batch -v --pattern '*.jpg' ~/Fotos
+
+# Modo silencioso - solo errores
+adamantium --batch -q --pattern '*.pdf' ~/Documentos
+```
+
+### Ejemplos prácticos de batch
+
+```bash
+# Limpiar todas las fotos antes de subir a redes sociales
+adamantium --batch -r --pattern '*.jpg' --pattern '*.png' ~/Instagram
+
+# Procesar videos de GoPro
+adamantium --batch --pattern 'GH*.MP4' /media/GoPro/DCIM
+
+# Limpiar documentos para enviar por email
+adamantium --batch --pattern '*.pdf' --pattern '*.docx' ~/Enviar
+
+# Procesamiento masivo de fotos con verificación
+adamantium --batch -r --pattern '*.jpg' ~/Fotos 2>&1 | tee limpieza.log
+```
+
+---
+
+## 🖥️ Features v1.3 - Modo Interactivo
+
+### Iniciar modo interactivo
+
+```bash
+# Forma corta
+adamantium -i
+
+# Forma larga
+adamantium --interactive
+```
+
+### Opciones del menú interactivo
+
+El modo interactivo proporciona un menú TUI con las siguientes opciones:
+
+1. **🧹 Limpiar archivo individual**
+   - Navega y selecciona un archivo
+   - Muestra preview de metadatos
+   - Limpia con confirmación
+
+2. **📦 Modo batch**
+   - Selección de directorio
+   - Configuración de patrones
+   - Procesamiento con barra de progreso
+
+3. **⚙️ Configuración**
+   - Activar/desactivar --verify
+   - Activar/desactivar --dry-run
+   - Configurar jobs paralelos
+
+4. **🔧 Verificar herramientas**
+   - Comprueba ExifTool instalado
+   - Comprueba ffmpeg instalado
+   - Muestra versiones
+
+5. **❓ Ayuda**
+   - Muestra información de uso
+
+6. **ℹ️ Acerca de**
+   - Información de versión
+
+### Backends soportados
+
+```bash
+# Con gum instalado (recomendado)
+# Interfaz moderna con estilo
+
+# Con fzf (alternativa)
+# Búsqueda fuzzy rápida
+
+# Sin ninguno (fallback bash)
+# Funciona en cualquier sistema
+```
+
+### Ejemplo de flujo interactivo
+
+```bash
+$ adamantium -i
+
+╔═══════════════════════════════════════════════════════════════╗
+║  ADAMANTIUM - Modo Interactivo                                ║
+╚═══════════════════════════════════════════════════════════════╝
+
+? Selecciona una opción:
+  > 🧹 Limpiar archivo
+    📦 Modo batch
+    ⚙️  Configuración
+    🔧 Verificar herramientas
+    ❓ Ayuda
+    ℹ️  Acerca de
+    ❌ Salir
 ```
 
 ---
