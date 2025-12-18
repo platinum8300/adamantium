@@ -12,7 +12,7 @@ adamantium es una herramienta de línea de comandos con interfaz TUI (Text User 
 
 [![Licencia: AGPL v3](https://img.shields.io/badge/Licencia-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Plataforma: Linux](https://img.shields.io/badge/Plataforma-Linux-blue.svg)](https://www.linux.org/)
-[![Versión: 1.3.1](https://img.shields.io/badge/Versión-1.3.1-green.svg)](https://github.com/platinum8300/adamantium/releases)
+[![Versión: 1.4](https://img.shields.io/badge/Versión-1.4-green.svg)](https://github.com/platinum8300/adamantium/releases)
 
 ---
 
@@ -32,7 +32,16 @@ adamantium es una herramienta de línea de comandos con interfaz TUI (Text User 
 - **Detección automática**: Identifica el tipo de archivo y aplica el método óptimo
 - **Contador de metadatos**: Muestra cuántos campos se encontraron y eliminaron
 
-### ✨ Nuevo en v1.3.x (Modo Interactivo)
+### 📦 Nuevo en v1.4 (Archivos Comprimidos)
+
+- **Soporte de Archivos**: Limpia metadatos de archivos dentro de ZIP, TAR, 7Z, RAR
+- **Protección con Contraseña**: Soporte completo para archivos cifrados
+- **Archivos Anidados**: Procesa archivos comprimidos dentro de otros recursivamente
+- **Vista Previa**: Muestra contenidos sin procesar (`--archive-preview`)
+- **RAR a 7Z**: Archivos RAR se convierten a 7Z (formato abierto)
+- **Integración Interactiva**: Nueva opción "📦 Limpiar archivo comprimido" en TUI
+
+### ✨ Funciones v1.3.x (Modo Interactivo)
 
 - **Modo Interactivo** (`--interactive`, `-i`): Experiencia completa con menú TUI guiado
 - **Integración con Gum**: Interfaz terminal moderna con [Charmbracelet/gum](https://github.com/charmbracelet/gum)
@@ -334,6 +343,47 @@ adamantium --batch -r --pattern '*.jpg' --pattern '*.png' .
 ./batch_clean.sh ~/Documentos pdf --recursive
 ```
 
+### Modo Archivo (v1.4+)
+
+```bash
+adamantium [opciones] <archivo_comprimido> [archivo_salida]
+```
+
+**Opciones:**
+- `--archive-password PWD` - Contraseña para archivos cifrados
+- `--archive-preview` - Ver contenidos sin procesar
+
+**Formatos Soportados:**
+- ZIP (.zip)
+- 7-Zip (.7z)
+- RAR (.rar) - Salida convertida a 7Z
+- TAR (.tar)
+- TAR comprimido (.tar.gz, .tgz, .tar.bz2, .tbz2, .tar.xz, .txz)
+
+**Ejemplos:**
+
+```bash
+# Limpiar archivos dentro de un ZIP
+adamantium fotos.zip
+# Genera: fotos_clean.zip
+
+# Ver contenidos sin procesar
+adamantium documentos.7z --archive-preview
+
+# Procesar archivo con contraseña
+adamantium confidencial.zip --archive-password 'clave123'
+
+# Limpiar archivo RAR (salida será .7z)
+adamantium archivos.rar
+# Genera: archivos_clean.7z
+
+# Limpiar archivo TAR.GZ
+adamantium backup.tar.gz
+# Genera: backup_clean.tar.gz
+```
+
+**Nota:** Los archivos RAR se convierten a formato 7Z porque RAR es propietario. 7Z ofrece compresión similar o mejor y es un estándar abierto.
+
 Para más ejemplos, consulta la sección [Modo Batch](#modo-batch-v12) o el archivo [EXAMPLES.md](EXAMPLES.md).
 
 ---
@@ -430,11 +480,14 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 - [x] Corrección de compilación de ExifTool desde fuente en distros basadas en RPM (Fedora, RHEL, CentOS)
 - [x] Instalación automática de dependencias de compilación de Perl
 
-### v1.4 (Archivos Comprimidos)
+### v1.4 (Archivos Comprimidos) ✅ COMPLETADO
 
-- [ ] Soporte para archivos comprimidos (ZIP, TAR, RAR, 7Z)
-- [ ] Flujo de extracción, limpieza y recompresión
-- [ ] Soporte para archivos protegidos con contraseña
+- [x] Soporte para archivos comprimidos (ZIP, TAR, RAR, 7Z)
+- [x] Flujo de extracción, limpieza y recompresión
+- [x] Soporte para archivos protegidos con contraseña
+- [x] Vista previa de contenidos
+- [x] Procesamiento de archivos anidados
+- [x] Integración en modo interactivo
 
 ### v2.0 (Integración y Automatización)
 

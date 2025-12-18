@@ -29,6 +29,7 @@ ADAMANTIUM_BIN=""
 interactive_show_menu() {
     local options=(
         "📄 $(msg INTERACTIVE_SINGLE_FILE)"
+        "📦 $(msg INTERACTIVE_ARCHIVE)"
         "📁 $(msg INTERACTIVE_BATCH)"
         "⚙️  $(msg INTERACTIVE_SETTINGS)"
         "❓ $(msg INTERACTIVE_HELP)"
@@ -36,7 +37,7 @@ interactive_show_menu() {
         "🚪 $(msg INTERACTIVE_EXIT)"
     )
 
-    gum_choose "🛡️  ADAMANTIUM v1.3.1 - $(msg INTERACTIVE_MENU_TITLE)" "${options[@]}"
+    gum_choose "🛡️  ADAMANTIUM v1.4 - $(msg INTERACTIVE_MENU_TITLE)" "${options[@]}"
 }
 
 # ─────────────────────────────────────────────────────────────
@@ -201,6 +202,112 @@ interactive_batch_mode() {
         echo ""
         echo -e "${YELLOW}${WARN} Batch processing cancelled${NC}"
     fi
+
+    echo ""
+    interactive_press_enter
+}
+
+# ─────────────────────────────────────────────────────────────
+# LIMPIAR ARCHIVO COMPRIMIDO (v1.4)
+# ─────────────────────────────────────────────────────────────
+
+interactive_archive_mode() {
+    echo ""
+    echo -e "${CYAN}${ARCHIVE_ICON} $(msg INTERACTIVE_ARCHIVE)${NC}"
+    echo ""
+
+    # Seleccionar archivo
+    echo -e "${CYAN}$(msg INTERACTIVE_SELECT_FILE):${NC}"
+    local file=$(gum_file ".")
+
+    # Verificar si se canceló
+    [ -z "$file" ] && {
+        echo -e "${YELLOW}${WARN} Selection cancelled${NC}"
+        sleep 1
+        return 1
+    }
+
+    # Verificar que el archivo existe
+    [ ! -f "$file" ] && {
+        echo -e "${RED}${CROSS} File not found: $file${NC}"
+        sleep 2
+        return 1
+    }
+
+    # Verificar que es un archivo comprimido
+    local ext="${file##*.}"
+    ext=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
+    local is_archive=false
+
+    case "$ext" in
+        zip|7z|rar|tar|tgz|tbz|tbz2|txz)
+            is_archive=true
+            ;;
+        gz|bz2|xz)
+            if [[ "$file" =~ \.(tar\.(gz|bz2|xz))$ ]]; then
+                is_archive=true
+            fi
+            ;;
+    esac
+
+    if [ "$is_archive" = false ]; then
+        echo -e "${RED}${CROSS} Not a supported archive format: $ext${NC}"
+        echo -e "${GRAY}Supported: ZIP, 7Z, RAR, TAR, TAR.GZ, TAR.BZ2, TAR.XZ${NC}"
+        sleep 2
+        return 1
+    fi
+
+    # Mostrar info del archivo
+    echo ""
+    echo -e "${CYAN}╔═══════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${CYAN}║${NC} ${BOLD}${ARCHIVE_ICON} Archive selected${NC}"
+    echo -e "${CYAN}╠═══════════════════════════════════════════════════════════╣${NC}"
+    echo -e "${CYAN}║${NC} ${ARROW} $(basename "$file")"
+    echo -e "${CYAN}║${NC} ${SIZE_ICON} Size: $(du -h "$file" 2>/dev/null | cut -f1)"
+    echo -e "${CYAN}║${NC} ${BULLET} Format: ${YELLOW}${ext}${NC}"
+    echo -e "${CYAN}╚═══════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+
+    # Preguntar por contraseña si es necesario
+    local password=""
+    if gum_confirm "Does this archive require a password?"; then
+        echo -e "${CYAN}$(msg ARCHIVE_ENTER_PASSWORD):${NC}"
+        read -s -p "  " password
+        echo ""
+    fi
+
+    # ¿Preview o procesar?
+    echo ""
+    local action_options=(
+        "🧹 Clean archive contents"
+        "👁️  Preview only (dry-run)"
+        "← Cancel"
+    )
+
+    local action=$(gum_choose "Select action" "${action_options[@]}")
+
+    case "$action" in
+        *"Clean"*)
+            echo ""
+            # Construir comando
+            local args=("$file")
+            [ -n "$password" ] && args=(--archive-password "$password" "${args[@]}")
+            [ "$INTERACTIVE_VERIFY" = true ] && args=(--verify "${args[@]}")
+
+            # Ejecutar
+            "$ADAMANTIUM_BIN" "${args[@]}"
+            ;;
+        *"Preview"*)
+            echo ""
+            local args=(--archive-preview "$file")
+            [ -n "$password" ] && args=(--archive-password "$password" "${args[@]}")
+
+            "$ADAMANTIUM_BIN" "${args[@]}"
+            ;;
+        *)
+            echo -e "${YELLOW}${WARN} Operation cancelled${NC}"
+            ;;
+    esac
 
     echo ""
     interactive_press_enter
@@ -382,7 +489,7 @@ EOF
     echo ""
     echo -e "  ${CYAN}╔═══════════════════════════════════════════════════════════╗${NC}"
     echo -e "  ${CYAN}║${NC}                                                           ${CYAN}║${NC}"
-    echo -e "  ${CYAN}║${NC}   ${BOLD}Version:${NC}     1.3.1 (Interactive Mode)                 ${CYAN}║${NC}"
+    echo -e "  ${CYAN}║${NC}   ${BOLD}Version:${NC}     1.4 (Interactive Mode)                   ${CYAN}║${NC}"
     echo -e "  ${CYAN}║${NC}   ${BOLD}License:${NC}     AGPL-3.0                                 ${CYAN}║${NC}"
     echo -e "  ${CYAN}║${NC}   ${BOLD}Repository:${NC}  github.com/platinum8300/adamantium       ${CYAN}║${NC}"
     echo -e "  ${CYAN}║${NC}   ${BOLD}TUI Backend:${NC} ${TUI_BACKEND}                                        ${CYAN}║${NC}"
@@ -451,6 +558,9 @@ interactive_main() {
         case "$choice" in
             *"$(msg INTERACTIVE_SINGLE_FILE)"*)
                 interactive_single_file
+                ;;
+            *"$(msg INTERACTIVE_ARCHIVE)"*)
+                interactive_archive_mode
                 ;;
             *"$(msg INTERACTIVE_BATCH)"*)
                 interactive_batch_mode

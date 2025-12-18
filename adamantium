@@ -10,7 +10,7 @@
 # ═══════════════════════════════════════════════════════════════
 # Deep metadata cleaning | The tool that excited Edward Snowden
 # Full Mode: ExifTool + ffmpeg
-# Version: 1.3.1
+# Version: 1.4
 # ═══════════════════════════════════════════════════════════════
 
 set -euo pipefail
@@ -49,6 +49,7 @@ readonly CAMERA_ICON="📷"
 readonly COMPUTER_ICON="💻"
 readonly CALENDAR_ICON="📅"
 readonly TOOL_ICON="🔧"
+readonly ARCHIVE_ICON="📦"
 
 # Variables globales
 TEMP_DIR=""
@@ -71,6 +72,11 @@ BATCH_QUIET=false
 
 # Variables para interactive mode
 INTERACTIVE_MODE=false
+
+# Variables para archive mode (v1.4)
+ARCHIVE_MODE=false
+ARCHIVE_PASSWORD=""
+ARCHIVE_PREVIEW=false
 
 # Versiones mínimas requeridas (se actualizan automáticamente desde upstream)
 REQUIRED_EXIFTOOL_VERSION="13.39"
@@ -201,6 +207,27 @@ declare -A MSG_ES=(
     [INTERACTIVE_GOODBYE]="¡Hasta luego! Tu privacidad está protegida."
     [INTERACTIVE_ENTER_PATH]="Introduce la ruta del directorio"
     [INTERACTIVE_SELECT_FILE]="Selecciona un archivo"
+    [ARCHIVE_DETECTED]="Archivo comprimido detectado"
+    [ARCHIVE_FORMAT]="Formato"
+    [ARCHIVE_PASSWORD_REQUIRED]="Este archivo requiere contraseña"
+    [ARCHIVE_ENTER_PASSWORD]="Introduce la contraseña"
+    [ARCHIVE_EXTRACTING]="Extrayendo contenidos"
+    [ARCHIVE_CLEANING_CONTENTS]="Limpiando metadatos de contenidos"
+    [ARCHIVE_RECOMPRESSING]="Recomprimiendo archivo"
+    [ARCHIVE_FILES_CLEANED]="Archivos limpiados"
+    [ARCHIVE_FILES_SKIPPED]="Archivos omitidos"
+    [ARCHIVE_CONTENTS_PREVIEW]="Vista previa de contenidos"
+    [ARCHIVE_CLEANABLE_FILES]="Archivos limpiables"
+    [ARCHIVE_OTHER_FILES]="Otros archivos"
+    [ARCHIVE_WRONG_PASSWORD]="Contraseña incorrecta"
+    [ARCHIVE_RAR_TO_7Z]="RAR será convertido a 7Z (formato libre)"
+    [ARCHIVE_NESTED]="Archivo anidado"
+    [ARCHIVE_NESTED_PROCESSED]="Archivos anidados procesados"
+    [ARCHIVE_UNSUPPORTED]="Formato de archivo no soportado"
+    [ARCHIVE_EXTRACT_ERROR]="Error al extraer archivo"
+    [ARCHIVE_RECOMPRESS_ERROR]="Error al recomprimir archivo"
+    [ARCHIVE_PASSWORD_PROTECTED]="Protegido con contraseña"
+    [INTERACTIVE_ARCHIVE]="Limpiar archivo comprimido"
 )
 
 # Mensajes en inglés (idioma por defecto)
@@ -301,6 +328,27 @@ declare -A MSG_EN=(
     [INTERACTIVE_GOODBYE]="Goodbye! Your privacy is protected."
     [INTERACTIVE_ENTER_PATH]="Enter directory path"
     [INTERACTIVE_SELECT_FILE]="Select a file"
+    [ARCHIVE_DETECTED]="Compressed archive detected"
+    [ARCHIVE_FORMAT]="Format"
+    [ARCHIVE_PASSWORD_REQUIRED]="This archive requires a password"
+    [ARCHIVE_ENTER_PASSWORD]="Enter password"
+    [ARCHIVE_EXTRACTING]="Extracting contents"
+    [ARCHIVE_CLEANING_CONTENTS]="Cleaning metadata from contents"
+    [ARCHIVE_RECOMPRESSING]="Recompressing archive"
+    [ARCHIVE_FILES_CLEANED]="Files cleaned"
+    [ARCHIVE_FILES_SKIPPED]="Files skipped"
+    [ARCHIVE_CONTENTS_PREVIEW]="Archive contents preview"
+    [ARCHIVE_CLEANABLE_FILES]="Cleanable files"
+    [ARCHIVE_OTHER_FILES]="Other files"
+    [ARCHIVE_WRONG_PASSWORD]="Wrong password"
+    [ARCHIVE_RAR_TO_7Z]="RAR will be converted to 7Z (open format)"
+    [ARCHIVE_NESTED]="Nested archive"
+    [ARCHIVE_NESTED_PROCESSED]="Nested archives processed"
+    [ARCHIVE_UNSUPPORTED]="Unsupported archive format"
+    [ARCHIVE_EXTRACT_ERROR]="Error extracting archive"
+    [ARCHIVE_RECOMPRESS_ERROR]="Error recompressing archive"
+    [ARCHIVE_PASSWORD_PROTECTED]="Password protected"
+    [INTERACTIVE_ARCHIVE]="Clean compressed archive"
 )
 
 # Función para obtener mensaje traducido
@@ -492,6 +540,7 @@ compare_versions() {
 install_exiftool_from_source() {
     local target_version=$1
     local temp_dir=$(mktemp -d)
+    local original_dir="$(pwd 2>/dev/null || echo /)"
 
     echo -e "${CYAN}${ARROW}${NC} $(msg INSTALLING_FROM_SOURCE) ${WHITE}${target_version}${NC} $(msg FROM_SOURCE_SITE)"
 
@@ -504,26 +553,38 @@ install_exiftool_from_source() {
         fi
     fi
 
-    cd "$temp_dir" || return 1
+    cd "$temp_dir" || { cd "$original_dir" 2>/dev/null || cd /; return 1; }
 
     # Descargar
     if ! wget -q "https://exiftool.org/Image-ExifTool-${target_version}.tar.gz" 2>/dev/null; then
         echo -e "${RED}${CROSS}${NC} $(msg DOWNLOAD_ERROR) ${target_version}"
+        cd "$original_dir" 2>/dev/null || cd /
         rm -rf "$temp_dir"
         return 1
     fi
 
     # Extraer
-    tar -xzf "Image-ExifTool-${target_version}.tar.gz" || { rm -rf "$temp_dir"; return 1; }
-    cd "Image-ExifTool-${target_version}" || { rm -rf "$temp_dir"; return 1; }
+    if ! tar -xzf "Image-ExifTool-${target_version}.tar.gz"; then
+        cd "$original_dir" 2>/dev/null || cd /
+        rm -rf "$temp_dir"
+        return 1
+    fi
+
+    if ! cd "Image-ExifTool-${target_version}"; then
+        cd "$original_dir" 2>/dev/null || cd /
+        rm -rf "$temp_dir"
+        return 1
+    fi
 
     # Instalar
-    perl Makefile.PL &>/dev/null || { rm -rf "$temp_dir"; return 1; }
-    make &>/dev/null || { rm -rf "$temp_dir"; return 1; }
-    sudo make install &>/dev/null || { rm -rf "$temp_dir"; return 1; }
+    if ! perl Makefile.PL &>/dev/null || ! make &>/dev/null || ! sudo make install &>/dev/null; then
+        cd "$original_dir" 2>/dev/null || cd /
+        rm -rf "$temp_dir"
+        return 1
+    fi
 
     # Limpiar
-    cd /
+    cd "$original_dir" 2>/dev/null || cd /
     rm -rf "$temp_dir"
 
     # Verificar instalación
@@ -671,6 +732,7 @@ spinner() {
 detect_file_type() {
     local file="$1"
     local mimetype
+    local filename=$(basename "$file")
 
     mimetype=$(file -b --mime-type "$file")
 
@@ -701,15 +763,51 @@ detect_file_type() {
             IS_MULTIMEDIA=false
             type_icon="$OFFICE_ICON"
             ;;
-        *)
-            FILE_TYPE="$(msg UNKNOWN)"
+        application/zip|application/x-7z-compressed|application/x-rar*|application/vnd.rar)
+            FILE_TYPE="archive"
             IS_MULTIMEDIA=false
-            type_icon="$BULLET"
+            ARCHIVE_MODE=true
+            type_icon="$ARCHIVE_ICON"
+            ;;
+        application/x-tar|application/gzip|application/x-bzip2|application/x-xz)
+            # Verificar si es tar comprimido
+            if [[ "$filename" =~ \.(tar|tar\.gz|tgz|tar\.bz2|tbz2|tbz|tar\.xz|txz)$ ]]; then
+                FILE_TYPE="archive"
+                IS_MULTIMEDIA=false
+                ARCHIVE_MODE=true
+                type_icon="$ARCHIVE_ICON"
+            else
+                FILE_TYPE="$(msg UNKNOWN)"
+                IS_MULTIMEDIA=false
+                type_icon="$BULLET"
+            fi
+            ;;
+        *)
+            # Fallback: detectar por extensión para archivos comprimidos
+            local ext="${filename##*.}"
+            ext=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
+            case "$ext" in
+                zip|7z|rar|tar|tgz|tbz|tbz2|txz)
+                    FILE_TYPE="archive"
+                    IS_MULTIMEDIA=false
+                    ARCHIVE_MODE=true
+                    type_icon="$ARCHIVE_ICON"
+                    ;;
+                *)
+                    FILE_TYPE="$(msg UNKNOWN)"
+                    IS_MULTIMEDIA=false
+                    type_icon="$BULLET"
+                    ;;
+            esac
             ;;
     esac
 
     echo -e "  ${type_icon} $(msg TYPE_DETECTED): ${YELLOW}${FILE_TYPE}${NC} ${GRAY}(${mimetype})${NC}"
-    echo -e "  ${TOOL_ICON} $(msg PROCESSING): ${CYAN}$([ "$IS_MULTIMEDIA" = true ] && msg EXIFTOOL_FFMPEG || msg EXIFTOOL_ONLY)${NC}"
+    if [ "$ARCHIVE_MODE" = true ]; then
+        echo -e "  ${TOOL_ICON} $(msg PROCESSING): ${CYAN}Archive Handler${NC}"
+    else
+        echo -e "  ${TOOL_ICON} $(msg PROCESSING): ${CYAN}$([ "$IS_MULTIMEDIA" = true ] && msg EXIFTOOL_FFMPEG || msg EXIFTOOL_ONLY)${NC}"
+    fi
 }
 
 # ═══════════════════════════════════════════════════════════════
@@ -1007,6 +1105,14 @@ main() {
                 INTERACTIVE_MODE=true
                 shift
                 ;;
+            --archive-password)
+                ARCHIVE_PASSWORD="$2"
+                shift 2
+                ;;
+            --archive-preview)
+                ARCHIVE_PREVIEW=true
+                shift
+                ;;
             -h|--help)
                 print_header
                 echo -e "${BOLD}$(msg USAGE)${NC}"
@@ -1018,6 +1124,8 @@ main() {
                 echo -e "  ${CYAN}--dry-run${NC}             $(msg DRY_RUN_NOTICE | tr '[:upper:]' '[:lower:]')"
                 echo -e "  ${CYAN}--no-duplicate-check${NC}  Skip duplicate detection"
                 echo -e "  ${CYAN}--interactive, -i${NC}     Launch interactive TUI mode"
+                echo -e "  ${CYAN}--archive-password${NC}    Password for encrypted archives"
+                echo -e "  ${CYAN}--archive-preview${NC}     Preview archive contents without processing"
                 echo -e "  ${CYAN}-h, --help${NC}            Show this help"
                 echo ""
                 echo -e "${BOLD}$(msg BATCH_MODE):${NC}"
@@ -1046,6 +1154,11 @@ main() {
                 echo -e "  ${GRAY}# Interactive mode${NC}"
                 echo -e "  $0 --interactive"
                 echo -e "  $0 -i"
+                echo ""
+                echo -e "  ${GRAY}# Archive mode (v1.4)${NC}"
+                echo -e "  $0 photos.zip"
+                echo -e "  $0 documents.7z --archive-preview"
+                echo -e "  $0 secret.rar --archive-password 'mypass'"
                 echo ""
                 exit 0
                 ;;
@@ -1085,6 +1198,7 @@ main() {
         export CHECK CROSS ARROW BULLET WARN INFO CLEAN SHIELD FILE_ICON SIZE_ICON
         export VIDEO_ICON IMAGE_ICON PDF_ICON OFFICE_ICON SPARKLES SEARCH_ICON
         export LOCATION_ICON CAMERA_ICON COMPUTER_ICON CALENDAR_ICON TOOL_ICON
+        export ARCHIVE_ICON
         export LANG_CODE
 
         # Exportar funciones necesarias
@@ -1184,6 +1298,45 @@ main() {
     echo ""
 
     detect_file_type "$ORIGINAL_FILE"
+
+    # Dispatch a archive mode si se detectó un archivo comprimido
+    if [ "$ARCHIVE_MODE" = true ]; then
+        # Usar readlink -f para obtener path absoluto sin depender del directorio actual
+        local script_dir="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+        local lib_dir="${script_dir}/lib"
+
+        if [ ! -f "${lib_dir}/archive_handler.sh" ]; then
+            echo -e "${RED}${CROSS} Error: Archive handler not found in ${lib_dir}${NC}" >&2
+            exit 1
+        fi
+
+        # Exportar variables necesarias para archive mode
+        export RED GREEN YELLOW BLUE MAGENTA CYAN WHITE GRAY BOLD NC
+        export CHECK CROSS ARROW BULLET WARN INFO CLEAN SHIELD FILE_ICON SIZE_ICON
+        export VIDEO_ICON IMAGE_ICON PDF_ICON OFFICE_ICON SPARKLES SEARCH_ICON
+        export LOCATION_ICON CAMERA_ICON COMPUTER_ICON CALENDAR_ICON TOOL_ICON
+        export ARCHIVE_ICON
+        export LANG_CODE DRY_RUN VERIFY_HASH
+        export ARCHIVE_PASSWORD ARCHIVE_PREVIEW
+
+        # Exportar función msg
+        export -f msg
+
+        # Cargar y ejecutar archive handler
+        source "${lib_dir}/archive_handler.sh"
+
+        # Configurar opciones
+        ARCHIVE_DRY_RUN="$DRY_RUN"
+        ARCHIVE_VERIFY="$VERIFY_HASH"
+
+        if [ "$ARCHIVE_PREVIEW" = true ]; then
+            ARCHIVE_DRY_RUN=true
+        fi
+
+        # Procesar archivo comprimido
+        archive_main "$ORIGINAL_FILE" "$OUTPUT_FILE" "$ARCHIVE_PASSWORD"
+        exit $?
+    fi
 
     # Detección de duplicados
     if [ "$CHECK_DUPLICATES" = true ]; then

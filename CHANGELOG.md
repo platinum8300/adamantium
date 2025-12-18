@@ -4,6 +4,134 @@ All notable changes to adamantium will be documented in this file.
 
 ---
 
+## [1.4] - 2025-12-18
+
+### 🎉 NEW FEATURES - Compressed Archives Support
+
+adamantium v1.4 introduces complete support for compressed archives with automatic metadata cleaning of all contents, password protection support, and nested archive processing.
+
+### ✨ New Features
+
+- **Compressed Archive Support** - Clean metadata from files inside archives
+  - Supported formats: ZIP, TAR, TAR.GZ, TAR.BZ2, TAR.XZ, 7Z, RAR
+  - Automatic extraction → cleaning → recompression workflow
+  - Preserves archive structure and permissions
+  - Example: `adamantium photos.zip`
+
+- **Password-Protected Archives** - Full encryption support
+  - Works with encrypted ZIP, 7Z, and RAR files
+  - Interactive password prompt when needed
+  - CLI option: `--archive-password`
+  - Recompression maintains password protection
+  - Example: `adamantium secret.7z --archive-password 'mypass'`
+
+- **Nested Archive Processing** - Recursive cleaning
+  - Automatically detects archives inside archives
+  - Processes nested archives recursively
+  - All levels are cleaned and recompressed
+  - RAR archives converted to 7Z (open format)
+
+- **Archive Preview Mode** - See before processing
+  - Preview archive contents without extraction
+  - Shows cleanable vs non-cleanable files
+  - CLI option: `--archive-preview`
+  - Example: `adamantium documents.zip --archive-preview`
+
+- **Interactive Mode Integration** - New menu option
+  - New "📦 Clean compressed archive" option in TUI
+  - File browser for archive selection
+  - Password input with secure masking
+  - Preview or clean action selection
+
+### 🏗️ Architecture
+
+- **New `lib/archive_handler.sh`** (~500 lines)
+  - Complete archive processing module
+  - Functions: `archive_detect_type()`, `archive_extract()`, `archive_clean_contents()`
+  - Functions: `archive_recompress()`, `archive_list_contents()`, `archive_needs_password()`
+  - Supports 3-tier tool fallback: 7z → unzip/tar → native tools
+
+### 🌍 Internationalization
+
+- **New archive messages** - Full bilingual support
+  - Spanish: 23 new messages
+  - English: 23 new messages
+  - Messages for: detection, extraction, cleaning, recompression, errors
+
+### 🔧 New Options
+
+- `--archive-password PWD` - Password for encrypted archives
+- `--archive-preview` - Preview archive contents without processing
+
+### 📦 Supported Archive Formats
+
+| Format | Extension | Password | Notes |
+|--------|-----------|----------|-------|
+| ZIP | .zip | ✅ | Most common format |
+| 7-Zip | .7z | ✅ | Best compression |
+| RAR | .rar | ✅ | Converted to 7Z on output |
+| TAR | .tar | ❌ | Unix standard |
+| TAR+GZ | .tar.gz, .tgz | ❌ | Compressed TAR |
+| TAR+BZ2 | .tar.bz2, .tbz2 | ❌ | Better compression |
+| TAR+XZ | .tar.xz, .txz | ❌ | Best compression |
+
+### 🔄 Archive Processing Workflow
+
+```
+1. Detect archive type (MIME + extension)
+2. Check for password protection
+3. Extract to secure temp directory
+4. Iterate over extracted files:
+   - Clean metadata from supported files (images, docs, media)
+   - Process nested archives recursively
+5. Recompress with same format (RAR → 7Z)
+6. Clean up temporary files
+7. Show summary statistics
+```
+
+### 📊 Statistics
+
+- **Version**: 1.4
+- **New Files**: 1 library module (archive_handler.sh)
+- **New Functions**: 15+ archive-related functions
+- **New Messages**: 46 (23 ES + 23 EN)
+- **New Options**: 2 (--archive-password, --archive-preview)
+- **Lines of Code**: +500 (archive_handler.sh + integrations)
+
+### 🎯 Use Cases
+
+**Perfect for:**
+- Cleaning photos before sharing a ZIP album
+- Removing metadata from document bundles
+- Processing backup archives
+- Sanitizing downloaded archive files
+- Batch cleaning compressed collections
+
+**Examples:**
+```bash
+# Clean all files in a ZIP archive
+adamantium photos.zip
+
+# Preview contents without processing
+adamantium documents.7z --archive-preview
+
+# Process password-protected archive
+adamantium confidential.rar --archive-password 'secret123'
+
+# Interactive mode
+adamantium -i  # Select "📦 Clean compressed archive"
+```
+
+### 🔒 Backward Compatibility
+
+- **Zero Breaking Changes**: All existing features work identically
+- **Single file mode**: Unchanged behavior
+- **Batch mode**: Unchanged behavior
+- **Interactive mode**: Enhanced with archive option
+- **All v1.3 options**: Continue to work
+
+---
+
 ## [1.3.1] - 2025-12-15
 
 ### 🐛 BUG FIX - ExifTool Source Compilation on RPM-based Distros
@@ -499,12 +627,14 @@ adamantium video.mp4 clean.mp4   # Custom output name
 - [x] **v1.3** - gum/fzf TUI integration
 - [x] **v1.3.1** - ExifTool source compilation fix for RPM-based distros
 
-### v1.4 (Compressed Archives)
+### v1.4 (Compressed Archives) - COMPLETED
 
-- [ ] Support for compressed files (ZIP, TAR, RAR, 7Z)
-- [ ] Extract, clean, and recompress workflow
-- [ ] Password-protected archives support
-- [ ] Archive content preview
+- [x] Support for compressed files (ZIP, TAR, RAR, 7Z)
+- [x] Extract, clean, and recompress workflow
+- [x] Password-protected archives support
+- [x] Archive content preview
+- [x] Nested archive processing
+- [x] Interactive mode integration
 
 ### v2.0 (Integration and Automation)
 

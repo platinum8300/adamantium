@@ -12,7 +12,7 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Platform: Linux](https://img.shields.io/badge/Platform-Linux-blue.svg)](https://www.linux.org/)
-[![Version: 1.3.1](https://img.shields.io/badge/Version-1.3.1-green.svg)](https://github.com/platinum8300/adamantium/releases)
+[![Version: 1.4](https://img.shields.io/badge/Version-1.4-green.svg)](https://github.com/platinum8300/adamantium/releases)
 
 ---
 
@@ -34,7 +34,16 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
 - **Automatic Detection**: Identifies file type and applies optimal method
 - **Metadata Counter**: Shows how many fields were found and removed
 
-### ✨ New in v1.3.x (Interactive Mode)
+### 📦 New in v1.4 (Compressed Archives)
+
+- **Archive Support**: Clean metadata from files inside ZIP, TAR, 7Z, RAR archives
+- **Password Protection**: Full support for encrypted archives
+- **Nested Archives**: Recursively process archives inside archives
+- **Archive Preview**: Preview contents without processing (`--archive-preview`)
+- **RAR to 7Z**: RAR archives are converted to 7Z (open format)
+- **Interactive Integration**: New "📦 Clean compressed archive" option in TUI
+
+### ✨ v1.3.x Features (Interactive Mode)
 
 - **Interactive Mode** (`--interactive`, `-i`): Full TUI menu experience for guided operation
 - **Gum Integration**: Modern terminal UI powered by [Charmbracelet/gum](https://github.com/charmbracelet/gum)
@@ -216,6 +225,47 @@ adamantium --batch --confirm --pattern '*.jpg' .
 ./batch_clean.sh ~/Documents pdf --recursive
 ```
 
+### Archive Mode (v1.4+)
+
+```bash
+adamantium [options] <archive_file> [output_file]
+```
+
+**Options:**
+- `--archive-password PWD` - Password for encrypted archives
+- `--archive-preview` - Preview archive contents without processing
+
+**Supported Formats:**
+- ZIP (.zip)
+- 7-Zip (.7z)
+- RAR (.rar) - Output converted to 7Z
+- TAR (.tar)
+- Compressed TAR (.tar.gz, .tgz, .tar.bz2, .tbz2, .tar.xz, .txz)
+
+**Examples:**
+
+```bash
+# Clean all files inside a ZIP archive
+adamantium photos.zip
+# Generates: photos_clean.zip
+
+# Preview archive contents without processing
+adamantium documents.7z --archive-preview
+
+# Process password-protected archive
+adamantium confidential.zip --archive-password 'secretpass'
+
+# Clean RAR archive (output will be .7z)
+adamantium files.rar
+# Generates: files_clean.7z
+
+# Clean TAR.GZ archive
+adamantium backup.tar.gz
+# Generates: backup_clean.tar.gz
+```
+
+**Note:** RAR files are converted to 7Z format on output because RAR is a proprietary format. 7Z provides similar or better compression and is an open standard.
+
 ---
 
 ## 🌍 Language Support
@@ -372,11 +422,14 @@ See [EXAMPLES.md](EXAMPLES.md) for more practical examples.
 - [x] Fix ExifTool source compilation on RPM-based distros (Fedora, RHEL, CentOS)
 - [x] Automatic Perl build dependencies installation
 
-### v1.4 (Compressed Archives)
+### v1.4 (Compressed Archives) ✅ COMPLETED
 
-- [ ] Support for compressed files (ZIP, TAR, RAR, 7Z)
-- [ ] Extract, clean, and recompress workflow
-- [ ] Password-protected archives support
+- [x] Support for compressed files (ZIP, TAR, RAR, 7Z)
+- [x] Extract, clean, and recompress workflow
+- [x] Password-protected archives support
+- [x] Archive content preview
+- [x] Nested archive processing
+- [x] Interactive mode integration
 
 ### v2.0 (Integration and Automation)
 

@@ -10,13 +10,14 @@ Esta guía contiene ejemplos prácticos para usar adamantium en diferentes escen
 2. [✨ Features v1.1 - Verificación](#features-v11---verificación)
 3. [📦 Features v1.2 - Batch Mode](#features-v12---batch-mode)
 4. [🖥️ Features v1.3 - Modo Interactivo](#features-v13---modo-interactivo)
-5. [Imágenes](#imágenes)
-6. [Videos](#videos)
-7. [Audio](#audio)
-8. [Documentos PDF](#documentos-pdf)
-9. [Documentos Office](#documentos-office)
-10. [Procesamiento por lotes](#procesamiento-por-lotes)
-11. [Casos de uso avanzados](#casos-de-uso-avanzados)
+5. [🗜️ Features v1.4 - Archivos Comprimidos](#features-v14---archivos-comprimidos)
+6. [Imágenes](#imágenes)
+7. [Videos](#videos)
+8. [Audio](#audio)
+9. [Documentos PDF](#documentos-pdf)
+10. [Documentos Office](#documentos-office)
+11. [Procesamiento por lotes](#procesamiento-por-lotes)
+12. [Casos de uso avanzados](#casos-de-uso-avanzados)
 
 ---
 
@@ -307,6 +308,103 @@ $ adamantium -i
     ❓ Ayuda
     ℹ️  Acerca de
     ❌ Salir
+```
+
+---
+
+## 🗜️ Features v1.4 - Archivos Comprimidos
+
+### Limpiar archivos dentro de un ZIP
+
+```bash
+# Limpiar todos los archivos (fotos, docs, etc.) dentro del ZIP
+adamantium fotos_vacaciones.zip
+# Genera: fotos_vacaciones_clean.zip
+
+# Con nombre personalizado
+adamantium fotos_vacaciones.zip fotos_seguras.zip
+```
+
+### Limpiar archivo 7Z
+
+```bash
+# Limpiar contenidos de un archivo 7Z
+adamantium documentos.7z
+# Genera: documentos_clean.7z
+
+# 7Z con contraseña
+adamantium documentos.7z --archive-password 'miclave123'
+```
+
+### Limpiar archivo RAR (convertido a 7Z)
+
+```bash
+# RAR se procesa y se convierte a 7Z (formato abierto)
+adamantium archivos.rar
+# Genera: archivos_clean.7z
+
+# RAR con contraseña
+adamantium archivos_secretos.rar --archive-password 'secreto'
+# Genera: archivos_secretos_clean.7z
+```
+
+### Limpiar archivos TAR
+
+```bash
+# TAR simple
+adamantium backup.tar
+# Genera: backup_clean.tar
+
+# TAR.GZ (comprimido con gzip)
+adamantium backup.tar.gz
+# Genera: backup_clean.tar.gz
+
+# TAR.BZ2 (comprimido con bzip2)
+adamantium datos.tar.bz2
+# Genera: datos_clean.tar.bz2
+
+# TAR.XZ (comprimido con xz)
+adamantium archivos.tar.xz
+# Genera: archivos_clean.tar.xz
+```
+
+### Vista previa de contenidos
+
+```bash
+# Ver qué archivos contiene sin procesarlos
+adamantium fotos.zip --archive-preview
+
+# Útil para verificar qué se va a limpiar
+adamantium documentos.7z --archive-preview
+```
+
+### Archivos con contraseña
+
+```bash
+# ZIP cifrado
+adamantium secreto.zip --archive-password 'contraseña123'
+
+# 7Z cifrado
+adamantium confidencial.7z --archive-password 'clave_fuerte'
+
+# RAR cifrado (salida será 7Z)
+adamantium privado.rar --archive-password 'pass123'
+```
+
+### Casos de uso típicos
+
+```bash
+# Limpiar álbum de fotos antes de compartir
+adamantium album_familia.zip
+# Elimina GPS, fechas, info de cámara de todas las fotos
+
+# Limpiar backup de documentos de trabajo
+adamantium documentos_trabajo.7z
+# Elimina autor, empresa, comentarios de todos los docs
+
+# Preparar archivo para enviar por email
+adamantium proyecto.zip --archive-preview  # Verificar contenido
+adamantium proyecto.zip                     # Limpiar todo
 ```
 
 ---

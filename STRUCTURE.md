@@ -20,7 +20,8 @@ adamantium/
 │   ├── parallel_executor.sh    # Ejecución paralela
 │   ├── progress_bar.sh         # Barra de progreso estilo rsync
 │   ├── gum_wrapper.sh          # Abstracción de gum (v1.3)
-│   └── interactive_mode.sh     # Modo interactivo TUI (v1.3)
+│   ├── interactive_mode.sh     # Modo interactivo TUI (v1.3)
+│   └── archive_handler.sh      # Procesamiento de archivos comprimidos (v1.4)
 └── .adamantiumrc.example       # Configuración de ejemplo (futuro)
 ```
 
@@ -60,6 +61,11 @@ adamantium/
 # Modo interactivo (v1.3+)
 ./adamantium -i
 ./adamantium --interactive
+
+# Modo archivo (v1.4+)
+./adamantium archivo.zip
+./adamantium archivo.7z --archive-password 'clave'
+./adamantium archivo.rar --archive-preview
 ```
 
 ---
@@ -273,12 +279,13 @@ adamantium
 
 #### Procesamiento según tipo
 
-| Tipo de archivo | Método de limpieza      | Herramientas  |
-|-----------------|-------------------------|---------------|
-| Video/Audio     | 1. ffmpeg → 2. exiftool | Ambas         |
-| Imagen          | exiftool únicamente     | Solo exiftool |
-| PDF             | exiftool únicamente     | Solo exiftool |
-| Office          | exiftool únicamente     | Solo exiftool |
+| Tipo de archivo | Método de limpieza                    | Herramientas      |
+|-----------------|---------------------------------------|-------------------|
+| Video/Audio     | 1. ffmpeg → 2. exiftool               | Ambas             |
+| Imagen          | exiftool únicamente                   | Solo exiftool     |
+| PDF             | exiftool únicamente                   | Solo exiftool     |
+| Office          | exiftool únicamente                   | Solo exiftool     |
+| Archivos (v1.4) | 1. Extraer → 2. Limpiar → 3. Comprimir| 7z/tar + exiftool |
 
 ---
 
@@ -307,6 +314,16 @@ adamantium
 2. **gum** (v1.3+) - Interfaz terminal moderna (Charmbracelet)
    - Instalación: Ver [gum releases](https://github.com/charmbracelet/gum/releases)
    - Fallback automático a fzf o bash si no está instalado
+
+### Opcionales (v1.4+ - Archivos comprimidos)
+
+1. **7z** (p7zip) - Soporte universal de archivos comprimidos
+   - Instalación: `sudo pacman -S p7zip` / `sudo apt install p7zip-full`
+   - Soporta: ZIP, 7Z, TAR, y más
+
+2. **unrar** - Extracción de archivos RAR
+   - Instalación: `sudo pacman -S unrar` / `sudo apt install unrar`
+   - Nota: Solo extracción, RAR se convierte a 7Z
 
 ### Opcionales (para desarrollo/testing)
 
@@ -429,9 +446,13 @@ CLEAN="${MAGENTA}◆${NC}"    # Proceso de limpieza
 - [x] Corrección compilación ExifTool en distros RPM
 - [x] Instalación automática de dependencias Perl
 
-### v1.4 (Próxima)
-- [ ] Soporte para archivos comprimidos (ZIP, TAR, RAR, 7Z)
-- [ ] Flujo de extracción, limpieza y recompresión
+### v1.4 ✅ COMPLETADO
+- [x] Soporte para archivos comprimidos (ZIP, TAR, RAR, 7Z)
+- [x] Flujo de extracción, limpieza y recompresión
+- [x] Archivos protegidos con contraseña
+- [x] Vista previa de contenidos
+- [x] Archivos anidados procesados recursivamente
+- [x] Módulo: archive_handler
 
 ### v2.0 (Futuro)
 - [ ] Integración con file managers (Nautilus/Dolphin)
@@ -445,8 +466,8 @@ CLEAN="${MAGENTA}◆${NC}"    # Proceso de limpieza
 
 **adamantium** - Herramienta de limpieza profunda de metadatos
 
-Versión: 1.3.1
-Fecha: 2025-12-15
+Versión: 1.4
+Fecha: 2025-12-18
 
 Herramientas utilizadas:
 - ExifTool por Phil Harvey
@@ -468,4 +489,4 @@ Para bugs, sugerencias o contribuciones:
 
 ---
 
-**Última actualización**: 2025-12-15
+**Última actualización**: 2025-12-18
