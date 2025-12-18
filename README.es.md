@@ -511,6 +511,23 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 
 ## 📜 Historial de Versiones
 
+### v1.4 (Archivos Comprimidos)
+
+- **Soporte de Archivos**: Soporte completo para archivos ZIP, TAR, 7Z, RAR
+- **Flujo Completo**: Extraer → Limpiar metadatos → Recomprimir
+- **Soporte de Contraseñas**: Manejo de archivos protegidos con contraseña
+- **Archivos Anidados**: Procesamiento recursivo de archivos dentro de archivos
+- **RAR → 7Z**: Conversión automática a formato abierto
+- **Modo Preview**: `--archive-preview` para inspeccionar contenidos antes de procesar
+
+### v1.3 (Modo Interactivo)
+
+- **TUI Interactiva**: Interfaz de usuario basada en texto completa (`-i` / `--interactive`)
+- **Integración gum**: UI de terminal moderna con gum de Charmbracelet
+- **Fallback Inteligente**: Sistema de respaldo automático (gum → fzf → bash)
+- **Verificador de Herramientas**: Comprobador e instalador de dependencias integrado
+- **Navegación por Menú**: Fácil navegación por todas las funciones
+
 ### v1.2 (Procesamiento por Lotes)
 
 - **Modo Batch**: Procesamiento profesional por lotes con barra de progreso (estilo rsync)

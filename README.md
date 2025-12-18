@@ -466,6 +466,23 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
 
 ## 📜 Version History
 
+### v1.4 (Compressed Archives)
+
+- **Archive Support**: Full support for ZIP, TAR, 7Z, RAR compressed files
+- **Complete Workflow**: Extract → Clean metadata → Recompress
+- **Password Support**: Handle password-protected archives
+- **Nested Archives**: Recursive processing of archives within archives
+- **RAR → 7Z**: Automatic conversion to open format
+- **Preview Mode**: `--archive-preview` to inspect contents before processing
+
+### v1.3 (Interactive Mode)
+
+- **Interactive TUI**: Complete text-based user interface (`-i` / `--interactive`)
+- **gum Integration**: Modern terminal UI with Charmbracelet's gum
+- **Smart Fallback**: Automatic fallback system (gum → fzf → bash)
+- **Tool Verifier**: Built-in dependency checker and installer
+- **Menu-driven**: Easy navigation through all features
+
 ### v1.2 (Batch Processing)
 
 - **Batch Mode**: Professional batch processing with progress bar (rsync-style)
