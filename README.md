@@ -12,7 +12,7 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Platform: Linux](https://img.shields.io/badge/Platform-Linux-blue.svg)](https://www.linux.org/)
-[![Version: 1.4](https://img.shields.io/badge/Version-1.4-green.svg)](https://github.com/platinum8300/adamantium/releases)
+[![Version: 2.0](https://img.shields.io/badge/Version-2.0-green.svg)](https://github.com/platinum8300/adamantium/releases)
 
 ---
 
@@ -30,11 +30,26 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
   - 🖼️ **AI Images**: PNG with Stable Diffusion, Flux, DALL-E metadata, etc.
   - 📄 **PDFs**: PDF documents
   - 📝 **Office Documents**: DOCX, XLSX, PPTX, ODT, ODS, etc.
+  - 📦 **Compressed Archives**: ZIP, TAR, 7Z, RAR (v1.4+)
 - **Preserves Original File**: Always keeps your original file intact
 - **Automatic Detection**: Identifies file type and applies optimal method
 - **Metadata Counter**: Shows how many fields were found and removed
 
-### 📦 New in v1.4 (Compressed Archives)
+### 🖥️ New in v2.0 (Integration and Reporting)
+
+- **File Manager Integration**: Right-click context menu for Nautilus (GNOME) and Dolphin (KDE)
+- **JSON/CSV Reports**: Generate structured reports of cleaning operations
+- **Easy Installation**: One-command integration setup (`./integration/install-integration.sh`)
+- **Desktop Notifications**: Visual feedback when operations complete (`--notify`)
+
+### ⚙️ v1.5 Features (Configuration and Automation)
+
+- **Configuration File**: Customize behavior via `~/.adamantiumrc`
+- **Detailed Logging**: Optional logs in `~/.adamantium.log` with rotation
+- **Desktop Notifications**: Support for notify-send (GNOME/GTK) and kdialog (KDE)
+- **20+ Config Options**: Output suffix, log level, notification preferences, and more
+
+### 📦 v1.4 Features (Compressed Archives)
 
 - **Archive Support**: Clean metadata from files inside ZIP, TAR, 7Z, RAR archives
 - **Password Protection**: Full support for encrypted archives
@@ -431,14 +446,22 @@ See [EXAMPLES.md](EXAMPLES.md) for more practical examples.
 - [x] Nested archive processing
 - [x] Interactive mode integration
 
-### v2.0 (Integration and Automation)
+### v1.5 (Configuration and Automation) ✅ COMPLETED
 
-- [ ] File manager integration (Nautilus, Dolphin) via context menu
-- [ ] JSON/CSV report generation
-- [ ] Custom configuration via `~/.adamantiumrc` file
-- [ ] Recursive mode integrated in main script
-- [ ] Optional detailed logs in `~/.adamantium.log`
-- [ ] Desktop notifications on completion
+- [x] Custom configuration via `~/.adamantiumrc` file
+- [x] Optional detailed logs in `~/.adamantium.log`
+- [x] Desktop notifications (notify-send, kdialog)
+- [x] Log rotation and session tracking
+- [x] `--notify` option for file manager integration
+
+### v2.0 (Integration and Reporting) ✅ COMPLETED
+
+- [x] File manager integration (Nautilus, Dolphin) via context menu
+- [x] JSON/CSV report generation
+- [x] Nautilus Python extension for GNOME Files
+- [x] Dolphin service menu for KDE Plasma
+- [x] Integration installer script
+- [x] Comprehensive test suite
 
 ### v3.0 (Advanced and Professional)
 
@@ -466,7 +489,24 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
 
 ## 📜 Version History
 
-### v1.4 (Compressed Archives)
+### v2.0 (Integration and Reporting) - 2025-12-19
+
+- **File Manager Integration**: Right-click context menu for Nautilus (GNOME) and Dolphin (KDE)
+- **JSON/CSV Reports**: Generate structured reports in `~/.adamantium/reports/`
+- **Nautilus Extension**: Python extension for GNOME Files
+- **Dolphin Service Menu**: KDE Plasma integration
+- **Integration Installer**: Easy setup via `./integration/install-integration.sh`
+- **Test Suite**: 31 automated tests for all features
+
+### v1.5 (Configuration and Automation) - 2025-12-19
+
+- **Configuration File**: Customize behavior via `~/.adamantiumrc` (20+ options)
+- **Detailed Logging**: Optional logs in `~/.adamantium.log` with rotation
+- **Desktop Notifications**: notify-send (GNOME/GTK) and kdialog (KDE) support
+- **--notify Option**: Send notifications on completion (for file manager use)
+- **Session Tracking**: Unique session IDs and statistics in logs
+
+### v1.4 (Compressed Archives) - 2025-12-18
 
 - **Archive Support**: Full support for ZIP, TAR, 7Z, RAR compressed files
 - **Complete Workflow**: Extract → Clean metadata → Recompress
@@ -475,7 +515,7 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
 - **RAR → 7Z**: Automatic conversion to open format
 - **Preview Mode**: `--archive-preview` to inspect contents before processing
 
-### v1.3 (Interactive Mode)
+### v1.3 (Interactive Mode) - 2025-12-14
 
 - **Interactive TUI**: Complete text-based user interface (`-i` / `--interactive`)
 - **gum Integration**: Modern terminal UI with Charmbracelet's gum
@@ -483,7 +523,12 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
 - **Tool Verifier**: Built-in dependency checker and installer
 - **Menu-driven**: Easy navigation through all features
 
-### v1.2 (Batch Processing)
+### v1.3.1 (Bug Fix) - 2025-12-15
+
+- **RPM Fix**: ExifTool source compilation fixed for Fedora/RHEL/CentOS
+- **Perl Dependencies**: Automatic installation of build dependencies
+
+### v1.2 (Batch Processing) - 2025-12-13
 
 - **Batch Mode**: Professional batch processing with progress bar (rsync-style)
 - **Parallel Processing**: Automatic CPU core detection for maximum performance
@@ -491,13 +536,13 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
 - **Progress Bar**: Real-time stats (percentage, speed, ETA, file counter)
 - **3x-5x Faster**: Parallel execution for large batches
 
-### v1.1 (Verification & Preview)
+### v1.1 (Verification & Preview) - 2025-11-16
 
 - **--verify**: Hash comparison (SHA256) to verify cleaning was successful
 - **--dry-run**: Preview mode - see what would be cleaned without making changes
 - **Duplicate Detection**: Automatic warning if file appears already clean
 
-### v1.0 (Initial Release)
+### v1.0 (Initial Release) - 2025-10-24
 
 - Core metadata cleaning functionality with ExifTool + ffmpeg
 - Multi-format support (images, videos, audio, PDFs, Office)

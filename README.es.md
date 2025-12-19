@@ -12,7 +12,7 @@ adamantium es una herramienta de línea de comandos con interfaz TUI (Text User 
 
 [![Licencia: AGPL v3](https://img.shields.io/badge/Licencia-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Plataforma: Linux](https://img.shields.io/badge/Plataforma-Linux-blue.svg)](https://www.linux.org/)
-[![Versión: 1.4](https://img.shields.io/badge/Versión-1.4-green.svg)](https://github.com/platinum8300/adamantium/releases)
+[![Versión: 2.0](https://img.shields.io/badge/Versión-2.0-green.svg)](https://github.com/platinum8300/adamantium/releases)
 
 ---
 
@@ -32,7 +32,21 @@ adamantium es una herramienta de línea de comandos con interfaz TUI (Text User 
 - **Detección automática**: Identifica el tipo de archivo y aplica el método óptimo
 - **Contador de metadatos**: Muestra cuántos campos se encontraron y eliminaron
 
-### 📦 Nuevo en v1.4 (Archivos Comprimidos)
+### 🖥️ Nuevo en v2.0 (Integración y Reportes)
+
+- **Integración con Gestores de Archivos**: Menú contextual (clic derecho) para Nautilus (GNOME) y Dolphin (KDE)
+- **Reportes JSON/CSV**: Genera reportes estructurados de las operaciones de limpieza
+- **Instalación Fácil**: Configuración en un comando (`./integration/install-integration.sh`)
+- **Notificaciones de Escritorio**: Feedback visual al completar operaciones (`--notify`)
+
+### ⚙️ Funciones v1.5 (Configuración y Automatización)
+
+- **Archivo de Configuración**: Personaliza comportamiento vía `~/.adamantiumrc`
+- **Logging Detallado**: Logs opcionales en `~/.adamantium.log` con rotación
+- **Notificaciones de Escritorio**: Soporte para notify-send (GNOME/GTK) y kdialog (KDE)
+- **20+ Opciones de Config**: Sufijo de salida, nivel de log, preferencias de notificación, y más
+
+### 📦 Funciones v1.4 (Archivos Comprimidos)
 
 - **Soporte de Archivos**: Limpia metadatos de archivos dentro de ZIP, TAR, 7Z, RAR
 - **Protección con Contraseña**: Soporte completo para archivos cifrados
@@ -489,14 +503,22 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 - [x] Procesamiento de archivos anidados
 - [x] Integración en modo interactivo
 
-### v2.0 (Integración y Automatización)
+### v1.5 (Configuración y Automatización) ✅ COMPLETADO
 
-- [ ] Integración con gestores de archivos (Nautilus, Dolphin) vía menú contextual
-- [ ] Generación de reportes en JSON/CSV
-- [ ] Configuración personalizada vía archivo `~/.adamantiumrc`
-- [ ] Modo recursivo integrado en el script principal
-- [ ] Logs detallados opcionales en `~/.adamantium.log`
-- [ ] Notificaciones de escritorio al completar
+- [x] Configuración personalizada vía archivo `~/.adamantiumrc`
+- [x] Logs detallados opcionales en `~/.adamantium.log`
+- [x] Notificaciones de escritorio (notify-send, kdialog)
+- [x] Rotación de logs y seguimiento de sesiones
+- [x] Opción `--notify` para integración con gestores de archivos
+
+### v2.0 (Integración y Reportes) ✅ COMPLETADO
+
+- [x] Integración con gestores de archivos (Nautilus, Dolphin) vía menú contextual
+- [x] Generación de reportes en JSON/CSV
+- [x] Extensión Python para Nautilus (GNOME Files)
+- [x] Service menu para Dolphin (KDE Plasma)
+- [x] Script instalador de integraciones
+- [x] Suite completa de tests automatizados
 
 ### v3.0 (Avanzado y Profesional)
 
@@ -511,7 +533,24 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 
 ## 📜 Historial de Versiones
 
-### v1.4 (Archivos Comprimidos)
+### v2.0 (Integración y Reportes) - 2025-12-19
+
+- **Integración con Gestores de Archivos**: Menú contextual (clic derecho) para Nautilus (GNOME) y Dolphin (KDE)
+- **Reportes JSON/CSV**: Genera reportes estructurados en `~/.adamantium/reports/`
+- **Extensión Nautilus**: Extensión Python para GNOME Files
+- **Service Menu Dolphin**: Integración con KDE Plasma
+- **Instalador de Integración**: Configuración fácil vía `./integration/install-integration.sh`
+- **Suite de Tests**: 31 tests automatizados para todas las funcionalidades
+
+### v1.5 (Configuración y Automatización) - 2025-12-19
+
+- **Archivo de Configuración**: Personaliza comportamiento vía `~/.adamantiumrc` (20+ opciones)
+- **Logging Detallado**: Logs opcionales en `~/.adamantium.log` con rotación
+- **Notificaciones de Escritorio**: Soporte para notify-send (GNOME/GTK) y kdialog (KDE)
+- **Opción --notify**: Envía notificaciones al completar (para uso desde gestores de archivos)
+- **Seguimiento de Sesiones**: IDs únicos de sesión y estadísticas en logs
+
+### v1.4 (Archivos Comprimidos) - 2025-12-18
 
 - **Soporte de Archivos**: Soporte completo para archivos ZIP, TAR, 7Z, RAR
 - **Flujo Completo**: Extraer → Limpiar metadatos → Recomprimir
@@ -520,7 +559,7 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 - **RAR → 7Z**: Conversión automática a formato abierto
 - **Modo Preview**: `--archive-preview` para inspeccionar contenidos antes de procesar
 
-### v1.3 (Modo Interactivo)
+### v1.3 (Modo Interactivo) - 2025-12-14
 
 - **TUI Interactiva**: Interfaz de usuario basada en texto completa (`-i` / `--interactive`)
 - **Integración gum**: UI de terminal moderna con gum de Charmbracelet
@@ -528,7 +567,12 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 - **Verificador de Herramientas**: Comprobador e instalador de dependencias integrado
 - **Navegación por Menú**: Fácil navegación por todas las funciones
 
-### v1.2 (Procesamiento por Lotes)
+### v1.3.1 (Corrección de Bug) - 2025-12-15
+
+- **Corrección RPM**: Compilación de ExifTool desde fuente corregida para Fedora/RHEL/CentOS
+- **Dependencias Perl**: Instalación automática de dependencias de compilación
+
+### v1.2 (Procesamiento por Lotes) - 2025-12-13
 
 - **Modo Batch**: Procesamiento profesional por lotes con barra de progreso (estilo rsync)
 - **Procesamiento Paralelo**: Detección automática de núcleos CPU para máximo rendimiento
@@ -536,13 +580,13 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 - **Barra de Progreso**: Estadísticas en tiempo real (porcentaje, velocidad, ETA, contador)
 - **3x-5x Más Rápido**: Ejecución paralela para lotes grandes
 
-### v1.1 (Verificación y Previsualización)
+### v1.1 (Verificación y Previsualización) - 2025-11-16
 
 - **--verify**: Comparación de hash (SHA256) para verificar limpieza exitosa
 - **--dry-run**: Modo previsualización - ve qué se limpiaría sin hacer cambios
 - **Detección de Duplicados**: Advertencia automática si el archivo ya parece limpio
 
-### v1.0 (Lanzamiento Inicial)
+### v1.0 (Lanzamiento Inicial) - 2025-10-24
 
 - Funcionalidad principal de limpieza de metadatos con ExifTool + ffmpeg
 - Soporte multi-formato (imágenes, videos, audio, PDFs, Office)
