@@ -1,110 +1,178 @@
-# Archivo de configuración de ejemplo para Adamantium
-# Copia este archivo a ~/.adamantiumrc para personalizar el comportamiento
-
 # ═══════════════════════════════════════════════════════════════
-# CONFIGURACIÓN GENERAL
+# adamantium Configuration File
+# ═══════════════════════════════════════════════════════════════
+#
+# Copy this file to ~/.adamantiumrc to customize adamantium behavior
+# All options have sensible defaults - only set what you want to change
+#
+# Version: 1.5+
 # ═══════════════════════════════════════════════════════════════
 
-# Sufijo para archivos limpios (por defecto: _clean)
+# ───────────────────────────────────────────────────────────────
+# GENERAL OPTIONS
+# ───────────────────────────────────────────────────────────────
+
+# Suffix for cleaned files (default: _clean)
+# Example: photo.jpg -> photo_clean.jpg
 OUTPUT_SUFFIX="_clean"
 
-# Crear backup antes de limpiar (true/false)
+# Create backup before cleaning (true/false)
+# If true, original file is copied to BACKUP_DIR before processing
 CREATE_BACKUP=false
 
-# Directorio para backups (si CREATE_BACKUP=true)
+# Directory for backups (used if CREATE_BACKUP=true)
 BACKUP_DIR="$HOME/.adamantium_backups"
 
-# ═══════════════════════════════════════════════════════════════
-# OPCIONES DE LIMPIEZA
-# ═══════════════════════════════════════════════════════════════
+# ───────────────────────────────────────────────────────────────
+# CLEANING OPTIONS
+# ───────────────────────────────────────────────────────────────
 
-# Nivel de limpieza para multimedia:
-# - basic: Solo ExifTool
-# - deep: ExifTool + ffmpeg (recomendado)
-# - paranoid: Recodificación completa (pérdida de calidad)
+# Cleaning level for multimedia files (video/audio):
+# - basic: ExifTool only (fast, may leave container metadata)
+# - deep: ExifTool + ffmpeg (recommended, thorough cleaning)
+# - paranoid: Full re-encoding (slowest, quality loss)
 MULTIMEDIA_CLEAN_LEVEL="deep"
 
-# Eliminar metadatos XMP (true/false)
+# Remove XMP metadata (true/false)
 REMOVE_XMP=true
 
-# Eliminar metadatos IPTC (true/false)
+# Remove IPTC metadata (true/false)
 REMOVE_IPTC=true
 
-# Eliminar metadatos EXIF (true/false)
+# Remove EXIF metadata (true/false)
 REMOVE_EXIF=true
 
-# ═══════════════════════════════════════════════════════════════
-# OPCIONES DE VISUALIZACIÓN
-# ═══════════════════════════════════════════════════════════════
+# ───────────────────────────────────────────────────────────────
+# DISPLAY OPTIONS
+# ───────────────────────────────────────────────────────────────
 
-# Mostrar metadatos antes de limpiar (true/false)
+# Show metadata before cleaning (true/false)
 SHOW_BEFORE=true
 
-# Mostrar metadatos después de limpiar (true/false)
+# Show metadata after cleaning (true/false)
 SHOW_AFTER=true
 
-# Número máximo de líneas de metadatos a mostrar
+# Maximum metadata lines to display (0 = unlimited)
 MAX_METADATA_LINES=30
 
-# Usar colores en la interfaz (true/false)
+# Use colors in terminal output (true/false)
 USE_COLORS=true
 
-# ═══════════════════════════════════════════════════════════════
-# OPCIONES AVANZADAS
-# ═══════════════════════════════════════════════════════════════
+# ───────────────────────────────────────────────────────────────
+# VERIFICATION OPTIONS
+# ───────────────────────────────────────────────────────────────
 
-# Verificar integridad del archivo después de limpiar (true/false)
+# Verify file integrity after cleaning (true/false)
 VERIFY_INTEGRITY=true
 
-# Calcular hash SHA256 antes y después (true/false)
-CALCULATE_HASH=false
+# Enable hash verification by default (same as --verify)
+VERIFY_HASH_DEFAULT=false
 
-# Modo verbose - Mostrar comandos ejecutados (true/false)
-VERBOSE=false
+# Enable dry-run mode by default (same as --dry-run)
+DRY_RUN_DEFAULT=false
 
-# Generar log de operaciones (true/false)
+# Check for already-clean files by default (true/false)
+CHECK_DUPLICATES_DEFAULT=true
+
+# ───────────────────────────────────────────────────────────────
+# LOGGING OPTIONS (v1.5+)
+# ───────────────────────────────────────────────────────────────
+
+# Enable detailed logging to file (true/false)
 ENABLE_LOGGING=false
 
-# Ruta del archivo de log (si ENABLE_LOGGING=true)
+# Log file path
 LOG_FILE="$HOME/.adamantium.log"
 
-# ═══════════════════════════════════════════════════════════════
-# FILTROS DE METADATOS
-# ═══════════════════════════════════════════════════════════════
+# Log level: debug, info, warn, error
+# - debug: All messages including internal operations
+# - info: Standard operations and results
+# - warn: Warnings and errors only
+# - error: Errors only
+LOG_LEVEL="info"
 
-# Preservar ciertos metadatos (separados por comas)
-# Ejemplo: PRESERVE_TAGS="FileType,MIMEType,ImageWidth,ImageHeight"
+# Maximum log file size in bytes before rotation (default: 10MB)
+LOG_MAX_SIZE=10485760
+
+# Number of rotated log files to keep
+LOG_ROTATE_COUNT=3
+
+# ───────────────────────────────────────────────────────────────
+# NOTIFICATION OPTIONS (v1.5+)
+# ───────────────────────────────────────────────────────────────
+
+# Show desktop notifications on completion (true/false)
+# Requires: notify-send (libnotify) or kdialog
+SHOW_NOTIFICATIONS=false
+
+# Play sound with notifications (true/false)
+# Note: Depends on desktop environment support
+NOTIFICATION_SOUND=false
+
+# ───────────────────────────────────────────────────────────────
+# REPORT OPTIONS (v2.0+)
+# ───────────────────────────────────────────────────────────────
+
+# Directory for generated reports
+REPORT_DIR="$HOME/.adamantium/reports"
+
+# Automatically generate reports (true/false)
+# If true, reports are generated for every operation
+AUTO_REPORT=false
+
+# Default report format: json, csv, or both
+REPORT_FORMAT="json"
+
+# ───────────────────────────────────────────────────────────────
+# METADATA FILTERS
+# ───────────────────────────────────────────────────────────────
+
+# Metadata tags to preserve (comma-separated)
+# These tags will NOT be removed during cleaning
+# Example: "FileType,MIMEType,ImageWidth,ImageHeight"
 PRESERVE_TAGS=""
 
-# Metadatos a eliminar prioritariamente (separados por comas)
-# Estos se destacarán en rojo en la interfaz
-SENSITIVE_TAGS="GPS,GPSLatitude,GPSLongitude,GPSAltitude,Author,Creator,Artist,Company,LastModifiedBy,OwnerName,SerialNumber,DeviceSerialNumber,InternalSerialNumber,LensSerialNumber"
+# Sensitive metadata tags to highlight in red (comma-separated)
+# These are shown prominently as privacy-critical data
+SENSITIVE_TAGS="GPS,GPSLatitude,GPSLongitude,GPSAltitude,Author,Creator,Artist,Company,LastModifiedBy,OwnerName,SerialNumber,DeviceSerialNumber,InternalSerialNumber,LensSerialNumber,Parameters,Prompt"
 
-# ═══════════════════════════════════════════════════════════════
-# INTEGRACIÓN CON OTRAS HERRAMIENTAS
-# ═══════════════════════════════════════════════════════════════
+# ───────────────────────────────────────────────────────────────
+# TOOL PATHS (Advanced)
+# ───────────────────────────────────────────────────────────────
 
-# Ruta personalizada a exiftool (dejar vacío para usar el del sistema)
+# Custom path to exiftool (leave empty for system default)
 EXIFTOOL_PATH=""
 
-# Ruta personalizada a ffmpeg (dejar vacío para usar el del sistema)
+# Custom path to ffmpeg (leave empty for system default)
 FFMPEG_PATH=""
 
-# Opciones adicionales para exiftool
+# Additional options to pass to exiftool
 EXIFTOOL_EXTRA_OPTS=""
 
-# Opciones adicionales para ffmpeg
+# Additional options to pass to ffmpeg
 FFMPEG_EXTRA_OPTS=""
 
+# ───────────────────────────────────────────────────────────────
+# BATCH PROCESSING DEFAULTS
+# ───────────────────────────────────────────────────────────────
+
+# Default number of parallel jobs (0 = auto-detect CPU cores)
+BATCH_JOBS_DEFAULT=0
+
+# Show confirmation prompt in batch mode by default
+BATCH_CONFIRM_DEFAULT=true
+
 # ═══════════════════════════════════════════════════════════════
-# NOTAS
+# USAGE
 # ═══════════════════════════════════════════════════════════════
 #
-# Esta configuración es para futuras versiones de Adamantium.
-# Actualmente, el script usa valores predeterminados.
+# 1. Copy this file to your home directory:
+#    cp .adamantiumrc.example ~/.adamantiumrc
 #
-# Para activar esta configuración:
-# 1. Copia este archivo: cp .adamantiumrc.example ~/.adamantiumrc
-# 2. Edita ~/.adamantiumrc con tus preferencias
-# 3. Adamantium lo cargará automáticamente
+# 2. Edit the options you want to change:
+#    nano ~/.adamantiumrc
 #
+# 3. adamantium will automatically load your configuration
+#
+# Command-line options always override configuration file settings.
+# ═══════════════════════════════════════════════════════════════

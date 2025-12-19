@@ -188,10 +188,31 @@ echo -e "${GREEN}╔════════════════════
 echo -e "${GREEN}║            INSTALACIÓN COMPLETADA CON ÉXITO                   ║${NC}"
 echo -e "${GREEN}╚═══════════════════════════════════════════════════════════════╝${NC}"
 echo ""
+
+# ═══════════════════════════════════════════════════════════════
+# FILE MANAGER INTEGRATION (v2.0)
+# ═══════════════════════════════════════════════════════════════
+
+INTEGRATION_SCRIPT="${SCRIPT_DIR}/integration/install-integration.sh"
+
+if [ -f "$INTEGRATION_SCRIPT" ]; then
+    echo -e "${CYAN}¿Deseas instalar integración con el gestor de archivos?${NC}"
+    echo -e "${GRAY}Esto añadirá opciones de adamantium al menú contextual (clic derecho)${NC}"
+    echo ""
+    read -p "Instalar integración? [s/N]: " install_fm
+
+    if [[ "$install_fm" =~ ^[SsYy]$ ]]; then
+        echo ""
+        bash "$INTEGRATION_SCRIPT"
+        echo ""
+    fi
+fi
+
 echo -e "${CYAN}Ahora puedes ejecutar:${NC}"
 echo -e "  ${YELLOW}adamantium <archivo>${NC}"
 echo ""
 echo -e "${GRAY}Para más información:${NC}"
 echo -e "  ${GRAY}adamantium --help${NC}"
+echo -e "  ${GRAY}adamantium -i${NC}     (modo interactivo)"
 echo -e "  ${GRAY}Documentación: README.md${NC}"
 echo ""

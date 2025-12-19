@@ -10,7 +10,7 @@
 # ═══════════════════════════════════════════════════════════════
 # Deep metadata cleaning | The tool that excited Edward Snowden
 # Full Mode: ExifTool + ffmpeg
-# Version: 1.4
+# Version: 2.0
 # ═══════════════════════════════════════════════════════════════
 
 set -euo pipefail
@@ -77,6 +77,10 @@ INTERACTIVE_MODE=false
 ARCHIVE_MODE=false
 ARCHIVE_PASSWORD=""
 ARCHIVE_PREVIEW=false
+
+# Variables para v1.5 features
+NOTIFY_MODE=false          # --notify flag for file manager integration
+OUTPUT_SUFFIX="_clean"     # Default suffix (can be overridden by config)
 
 # Versiones mínimas requeridas (se actualizan automáticamente desde upstream)
 REQUIRED_EXIFTOOL_VERSION="13.39"
@@ -1051,6 +1055,31 @@ main() {
     # Detectar sistema y gestor de paquetes
     detect_system
 
+    # ═══════════════════════════════════════════════════════════
+    # CARGAR MÓDULOS v1.5
+    # ═══════════════════════════════════════════════════════════
+    local script_path="${BASH_SOURCE[0]}"
+    if [ -L "$script_path" ]; then
+        script_path="$(readlink -f "$script_path")"
+    fi
+    local lib_dir="$(dirname "$script_path")/lib"
+
+    # Cargar módulo de configuración
+    if [ -f "${lib_dir}/config_loader.sh" ]; then
+        source "${lib_dir}/config_loader.sh"
+        config_load
+    fi
+
+    # Cargar módulo de logging
+    if [ -f "${lib_dir}/logger.sh" ]; then
+        source "${lib_dir}/logger.sh"
+    fi
+
+    # Cargar módulo de notificaciones
+    if [ -f "${lib_dir}/notifier.sh" ]; then
+        source "${lib_dir}/notifier.sh"
+    fi
+
     # Parsear argumentos
     local file_arg=""
     local output_arg=""
@@ -1113,6 +1142,10 @@ main() {
                 ARCHIVE_PREVIEW=true
                 shift
                 ;;
+            --notify)
+                NOTIFY_MODE=true
+                shift
+                ;;
             -h|--help)
                 print_header
                 echo -e "${BOLD}$(msg USAGE)${NC}"
@@ -1126,6 +1159,7 @@ main() {
                 echo -e "  ${CYAN}--interactive, -i${NC}     Launch interactive TUI mode"
                 echo -e "  ${CYAN}--archive-password${NC}    Password for encrypted archives"
                 echo -e "  ${CYAN}--archive-preview${NC}     Preview archive contents without processing"
+                echo -e "  ${CYAN}--notify${NC}              Send desktop notification on completion"
                 echo -e "  ${CYAN}-h, --help${NC}            Show this help"
                 echo ""
                 echo -e "${BOLD}$(msg BATCH_MODE):${NC}"
@@ -1177,6 +1211,30 @@ main() {
                 ;;
         esac
     done
+
+    # ═══════════════════════════════════════════════════════════
+    # INICIALIZAR MÓDULOS v1.5
+    # ═══════════════════════════════════════════════════════════
+
+    # Aplicar configuración a variables globales
+    if declare -f config_apply_globals &>/dev/null; then
+        config_apply_globals
+        # Obtener sufijo de salida de la configuración
+        OUTPUT_SUFFIX=$(config_get "OUTPUT_SUFFIX" "_clean")
+    fi
+
+    # Inicializar logging
+    if declare -f log_init &>/dev/null; then
+        log_init
+    fi
+
+    # Inicializar notificaciones
+    if declare -f notify_init &>/dev/null; then
+        if [ "$NOTIFY_MODE" = true ]; then
+            NOTIFY_FORCE=true
+        fi
+        notify_init
+    fi
 
     # Dispatch a interactive mode si está activado
     if [ "$INTERACTIVE_MODE" = true ]; then
@@ -1273,7 +1331,12 @@ main() {
     else
         local basename="${ORIGINAL_FILE%.*}"
         local extension="${ORIGINAL_FILE##*.}"
-        OUTPUT_FILE="${basename}_clean.${extension}"
+        OUTPUT_FILE="${basename}${OUTPUT_SUFFIX}.${extension}"
+    fi
+
+    # Log inicio de operación
+    if declare -f log_operation_start &>/dev/null; then
+        log_operation_start "$ORIGINAL_FILE" "$FILE_TYPE"
     fi
 
     # Crear directorio temporal
@@ -1386,6 +1449,21 @@ main() {
     echo ""
     echo -e "${CYAN}${INFO} $(msg ORIGINAL_PRESERVED)${NC}"
     echo ""
+
+    # Log operación completada
+    if declare -f log_operation_complete &>/dev/null; then
+        log_operation_complete "$ORIGINAL_FILE" "$OUTPUT_FILE" "success"
+    fi
+
+    # Enviar notificación de éxito
+    if declare -f notify_success &>/dev/null; then
+        notify_success "$ORIGINAL_FILE"
+    fi
+
+    # Finalizar sesión de logging
+    if declare -f log_session_end &>/dev/null; then
+        log_session_end
+    fi
 }
 
 # Ejecutar

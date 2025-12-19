@@ -1,0 +1,27 @@
+[Desktop Entry]
+Type=Service
+X-KDE-ServiceTypes=KonqPopupMenu/Plugin
+MimeType=image/jpeg;image/png;image/tiff;image/gif;image/webp;video/mp4;video/x-matroska;video/x-msvideo;video/quicktime;video/webm;audio/mpeg;audio/flac;audio/x-wav;audio/ogg;application/pdf;application/vnd.openxmlformats-officedocument.wordprocessingml.document;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;application/zip;application/x-7z-compressed;
+Actions=clean;preview;batch;
+Icon=security-high
+
+X-KDE-Priority=TopLevel
+X-KDE-StartupNotify=false
+
+[Desktop Action clean]
+Name=Clean Metadata (Adamantium)
+Name[es]=Limpiar Metadatos (Adamantium)
+Icon=security-high
+Exec=adamantium --notify %f
+
+[Desktop Action preview]
+Name=Preview Metadata (Adamantium)
+Name[es]=Vista Previa de Metadatos (Adamantium)
+Icon=dialog-information
+Exec=adamantium --dry-run %f
+
+[Desktop Action batch]
+Name=Clean All Selected (Adamantium)
+Name[es]=Limpiar Todos los Seleccionados (Adamantium)
+Icon=edit-select-all
+Exec=adamantium --batch --no-confirm --notify --pattern "*" %F

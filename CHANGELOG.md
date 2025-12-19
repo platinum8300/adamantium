@@ -4,6 +4,184 @@ All notable changes to adamantium will be documented in this file.
 
 ---
 
+## [2.0] - 2025-12-19
+
+### 🎉 NEW FEATURES - Integration and Reporting
+
+adamantium v2.0 introduces file manager integration for Nautilus and Dolphin, structured report generation in JSON/CSV formats, and completes the automation features started in v1.5.
+
+### ✨ New Features
+
+- **File Manager Integration** - Right-click context menu support
+  - **Nautilus (GNOME Files)**: Python extension with context menu options
+  - **Dolphin (KDE)**: Service menu with clean/preview actions
+  - Actions: Clean Metadata, Preview Metadata, Batch Clean
+  - Automatic detection and installation via script
+  - Example: Right-click → "Clean Metadata (Adamantium)"
+
+- **JSON/CSV Report Generation** - Structured operation logs
+  - Generate detailed reports after cleaning operations
+  - JSON format with full metadata and statistics
+  - CSV format for spreadsheet analysis
+  - Configurable report directory (`~/.adamantium/reports/`)
+  - CLI options: `--report-json`, `--report-csv`
+
+- **Integration Installer** - Easy file manager setup
+  - Automatic detection of installed file managers
+  - One-command installation: `./integration/install-integration.sh`
+  - Support for Nautilus, Dolphin, and future file managers
+  - Uninstall option available
+
+### 🏗️ Architecture
+
+- **New `lib/report_generator.sh`** (~300 lines)
+  - JSON/CSV report generation
+  - Functions: `report_init()`, `report_add_entry()`, `report_finalize()`
+  - Automatic escaping for special characters
+  - Batch operation summary statistics
+
+- **New `integration/` directory**
+  - `nautilus/adamantium-nautilus.py` - Nautilus extension
+  - `dolphin/adamantium-clean.desktop` - Dolphin service menu
+  - `install-integration.sh` - Installation script
+
+### 🔧 New Options
+
+- `--report-json [FILE]` - Generate JSON report
+- `--report-csv [FILE]` - Generate CSV report
+
+### 📊 Statistics
+
+- **Version**: 2.0
+- **New Files**: 4 (report_generator.sh + 3 integration files)
+- **New Functions**: 15+ report and integration functions
+- **Integration Support**: Nautilus, Dolphin
+
+### 🎯 Use Cases
+
+**Perfect for:**
+- Quick metadata cleaning from file manager
+- Generating audit trails for cleaned files
+- Batch processing with detailed reports
+- Desktop integration for non-technical users
+
+**Examples:**
+```bash
+# Install file manager integration
+./integration/install-integration.sh
+
+# Generate JSON report
+adamantium photo.jpg --report-json
+
+# Right-click in Nautilus/Dolphin → "Clean Metadata (Adamantium)"
+```
+
+### 🔒 Backward Compatibility
+
+- **Zero Breaking Changes**: All existing features work identically
+- **v1.5 features**: Full compatibility
+- **All previous options**: Continue to work
+
+---
+
+## [1.5] - 2025-12-19
+
+### 🎉 NEW FEATURES - Configuration and Automation
+
+adamantium v1.5 introduces a complete configuration system, detailed logging, and desktop notifications for a more automated and customizable experience.
+
+### ✨ New Features
+
+- **Configuration File Support** (`~/.adamantiumrc`)
+  - Customize default behavior without command-line flags
+  - Persistent settings for output suffix, verification, logging
+  - Example config provided in `.adamantiumrc.example`
+  - All options documented with sensible defaults
+
+- **Detailed Logging System** (`~/.adamantium.log`)
+  - Optional logging of all operations
+  - Log levels: debug, info, warn, error
+  - Automatic log rotation when max size reached
+  - Session tracking with unique IDs
+  - Configurable via `ENABLE_LOGGING=true`
+
+- **Desktop Notifications**
+  - Visual feedback when operations complete
+  - Support for notify-send (GNOME/GTK) and kdialog (KDE)
+  - Automatic fallback chain
+  - New CLI option: `--notify`
+  - Perfect for file manager integration
+
+### 🏗️ Architecture
+
+- **New `lib/config_loader.sh`** (~200 lines)
+  - Safe config file parsing (no arbitrary code execution)
+  - Default value system with validation
+  - Functions: `config_load()`, `config_get()`, `config_is_true()`
+
+- **New `lib/logger.sh`** (~300 lines)
+  - Complete logging system with rotation
+  - Functions: `log_init()`, `log_info()`, `log_error()`, `log_operation_start()`
+  - Session tracking and statistics
+
+- **New `lib/notifier.sh`** (~150 lines)
+  - Desktop notification abstraction
+  - 3-tier fallback: notify-send → kdialog → none
+  - Functions: `notify_init()`, `notify_success()`, `notify_batch_complete()`
+
+### 🔧 New Options
+
+- `--notify` - Send desktop notification on completion
+
+### 📝 Configuration Options
+
+```bash
+# ~/.adamantiumrc example options
+OUTPUT_SUFFIX="_clean"      # Default output suffix
+ENABLE_LOGGING=false        # Enable detailed logging
+LOG_FILE="$HOME/.adamantium.log"
+LOG_LEVEL="info"            # debug, info, warn, error
+SHOW_NOTIFICATIONS=false    # Desktop notifications
+VERIFY_HASH_DEFAULT=false   # Default --verify behavior
+```
+
+### 📊 Statistics
+
+- **Version**: 1.5
+- **New Files**: 3 library modules
+- **New Functions**: 30+ configuration, logging, notification functions
+- **New Options**: 1 (--notify)
+- **Config Options**: 20+ customizable settings
+
+### 🎯 Use Cases
+
+**Perfect for:**
+- Automated scripts with logging
+- Desktop users wanting visual feedback
+- Custom workflows with specific defaults
+- Audit trails for processed files
+
+**Examples:**
+```bash
+# Enable logging and notifications in config
+echo "ENABLE_LOGGING=true" >> ~/.adamantiumrc
+echo "SHOW_NOTIFICATIONS=true" >> ~/.adamantiumrc
+
+# Use --notify for one-off notifications
+adamantium photo.jpg --notify
+
+# Check logs
+tail -f ~/.adamantium.log
+```
+
+### 🔒 Backward Compatibility
+
+- **Zero Breaking Changes**: All existing features work identically
+- **No config file required**: Uses sensible defaults
+- **All v1.4 options**: Continue to work
+
+---
+
 ## [1.4] - 2025-12-18
 
 ### 🎉 NEW FEATURES - Compressed Archives Support
@@ -636,14 +814,22 @@ adamantium video.mp4 clean.mp4   # Custom output name
 - [x] Nested archive processing
 - [x] Interactive mode integration
 
-### v2.0 (Integration and Automation)
+### v1.5 (Configuration and Automation) - COMPLETED
 
-- [ ] File manager integration (Nautilus, Dolphin)
-- [ ] JSON/CSV report generation
-- [ ] Custom configuration (~/.adamantiumrc)
-- [ ] Integrated recursive mode
-- [ ] Optional detailed logs
-- [ ] Desktop notifications
+- [x] Custom configuration (`~/.adamantiumrc`)
+- [x] Optional detailed logs (`~/.adamantium.log`)
+- [x] Desktop notifications (notify-send, kdialog)
+- [x] Log rotation and session tracking
+- [x] `--notify` option for file manager use
+
+### v2.0 (Integration and Reporting) - COMPLETED
+
+- [x] File manager integration (Nautilus, Dolphin)
+- [x] JSON/CSV report generation
+- [x] Integration installer script
+- [x] Nautilus Python extension
+- [x] Dolphin service menu
+- [x] Comprehensive test suite
 
 ### v3.0 (Advanced and Professional)
 

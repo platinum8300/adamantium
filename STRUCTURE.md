@@ -21,8 +21,20 @@ adamantium/
 │   ├── progress_bar.sh         # Barra de progreso estilo rsync
 │   ├── gum_wrapper.sh          # Abstracción de gum (v1.3)
 │   ├── interactive_mode.sh     # Modo interactivo TUI (v1.3)
-│   └── archive_handler.sh      # Procesamiento de archivos comprimidos (v1.4)
-└── .adamantiumrc.example       # Configuración de ejemplo (futuro)
+│   ├── archive_handler.sh      # Procesamiento de archivos comprimidos (v1.4)
+│   ├── config_loader.sh        # Carga de configuración ~/.adamantiumrc (v1.5)
+│   ├── logger.sh               # Sistema de logging detallado (v1.5)
+│   ├── notifier.sh             # Notificaciones de escritorio (v1.5)
+│   └── report_generator.sh     # Generación de reportes JSON/CSV (v2.0)
+├── integration/                # Integración con gestores de archivos (v2.0)
+│   ├── install-integration.sh  # Instalador de integración
+│   ├── nautilus/               # Extensión para GNOME Files
+│   │   └── adamantium-nautilus.py
+│   └── dolphin/                # Service menu para KDE Dolphin
+│       └── adamantium-clean.desktop
+├── tests/                      # Tests automatizados
+│   └── test_v15_v20_features.sh
+└── .adamantiumrc.example       # Configuración de ejemplo
 ```
 
 ---
@@ -454,11 +466,27 @@ CLEAN="${MAGENTA}◆${NC}"    # Proceso de limpieza
 - [x] Archivos anidados procesados recursivamente
 - [x] Módulo: archive_handler
 
-### v2.0 (Futuro)
-- [ ] Integración con file managers (Nautilus/Dolphin)
-- [ ] Generación de reportes JSON/CSV
-- [ ] Configuración personalizada `~/.adamantiumrc`
+### v1.5 ✅ COMPLETADO
+- [x] Configuración personalizada `~/.adamantiumrc`
+- [x] Sistema de logging detallado `~/.adamantium.log`
+- [x] Notificaciones de escritorio (notify-send, kdialog)
+- [x] Opción `--notify` para integración con file managers
+- [x] Módulos: config_loader, logger, notifier
+
+### v2.0 ✅ COMPLETADO
+- [x] Integración con file managers (Nautilus/Dolphin)
+- [x] Generación de reportes JSON/CSV
+- [x] Extensión Python para Nautilus
+- [x] Service menu para Dolphin
+- [x] Tests automatizados
+- [x] Módulos: report_generator, integration/
+
+### v3.0 (Futuro)
 - [ ] GUI opcional (GTK4/Qt6)
+- [ ] Recodificación opcional para multimedia
+- [ ] Detección de metadatos peligrosos
+- [ ] API REST para uso remoto
+- [ ] Sistema de plugins
 
 ---
 
@@ -466,8 +494,8 @@ CLEAN="${MAGENTA}◆${NC}"    # Proceso de limpieza
 
 **adamantium** - Herramienta de limpieza profunda de metadatos
 
-Versión: 1.4
-Fecha: 2025-12-18
+Versión: 2.0
+Fecha: 2025-12-19
 
 Herramientas utilizadas:
 - ExifTool por Phil Harvey
