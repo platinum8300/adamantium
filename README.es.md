@@ -12,7 +12,7 @@ adamantium es una herramienta de línea de comandos con interfaz TUI (Text User 
 
 [![Licencia: AGPL v3](https://img.shields.io/badge/Licencia-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Plataforma: Linux](https://img.shields.io/badge/Plataforma-Linux-blue.svg)](https://www.linux.org/)
-[![Versión: 2.0](https://img.shields.io/badge/Versión-2.0-green.svg)](https://github.com/platinum8300/adamantium/releases)
+[![Versión: 2.0.1](https://img.shields.io/badge/Versión-2.0.1-green.svg)](https://github.com/platinum8300/adamantium/releases)
 
 ---
 

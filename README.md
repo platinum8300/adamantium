@@ -12,7 +12,7 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Platform: Linux](https://img.shields.io/badge/Platform-Linux-blue.svg)](https://www.linux.org/)
-[![Version: 2.0](https://img.shields.io/badge/Version-2.0-green.svg)](https://github.com/platinum8300/adamantium/releases)
+[![Version: 2.0.1](https://img.shields.io/badge/Version-2.0.1-green.svg)](https://github.com/platinum8300/adamantium/releases)
 
 ---
 
