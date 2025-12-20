@@ -3,7 +3,7 @@
 [English](README.md) | [Español](README.es.md)
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/e1744d91-e727-4627-8ccb-53ded6e7c7c8" alt="adamantium - Limpieza profunda de metadatos" width="800">
+  <img src="https://raw.githubusercontent.com/platinum8300/adamantium/main/cover.jpg" alt="adamantium - Limpieza profunda de metadatos" width="800">
 </p>
 
 <p align="center"><strong>Limpieza profunda de metadatos | La herramienta que emocionó a Edward Snowden</strong></p>
