@@ -463,6 +463,11 @@ See [EXAMPLES.md](EXAMPLES.md) for more practical examples.
 - [x] Integration installer script
 - [x] Comprehensive test suite
 
+### v2.0.1 (Bug Fix) ✅ COMPLETED
+
+- [x] Fix Nautilus extension to open terminal for TUI display
+- [x] Support for 9 terminal emulators
+
 ### v3.0 (Advanced and Professional)
 
 - [ ] Optional re-encoding for multimedia (with quality control)
@@ -488,6 +493,11 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
 ---
 
 ## 📜 Version History
+
+### v2.0.1 (Bug Fix) - 2025-12-20
+
+- **Nautilus Extension Fix**: Both menu options now properly open a terminal window
+- **Terminal Support**: Added support for 9 terminal emulators (kitty, ghostty, gnome-terminal, konsole, alacritty, xfce4-terminal, tilix, terminator, xterm)
 
 ### v2.0 (Integration and Reporting) - 2025-12-19
 

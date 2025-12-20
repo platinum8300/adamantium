@@ -520,6 +520,11 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 - [x] Script instalador de integraciones
 - [x] Suite completa de tests automatizados
 
+### v2.0.1 (Corrección de Bug) ✅ COMPLETADO
+
+- [x] Corrección de extensión Nautilus para abrir terminal con TUI
+- [x] Soporte para 9 emuladores de terminal
+
 ### v3.0 (Avanzado y Profesional)
 
 - [ ] Recodificación opcional para multimedia (con control de calidad)
@@ -532,6 +537,11 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 ---
 
 ## 📜 Historial de Versiones
+
+### v2.0.1 (Corrección de Bug) - 2025-12-20
+
+- **Corrección Extensión Nautilus**: Ambas opciones del menú ahora abren correctamente una ventana de terminal
+- **Soporte de Terminales**: Soporte para 9 emuladores de terminal (kitty, ghostty, gnome-terminal, konsole, alacritty, xfce4-terminal, tilix, terminator, xterm)
 
 ### v2.0 (Integración y Reportes) - 2025-12-19
 
