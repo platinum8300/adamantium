@@ -19,6 +19,7 @@ Requirements:
 """
 
 import os
+import shutil
 import subprocess
 import locale
 from urllib.parse import unquote
@@ -63,6 +64,9 @@ SUPPORTED_MIMETYPES = [
     'application/x-tar',
     'application/gzip',
 ]
+
+# Terminal emulators to try, in order of preference
+TERMINALS = ['kitty', 'ghostty', 'gnome-terminal', 'konsole', 'alacritty', 'xfce4-terminal', 'tilix', 'terminator', 'xterm']
 
 
 def get_locale():
@@ -112,6 +116,58 @@ def is_supported(file_info):
     """Check if file type is supported for metadata cleaning."""
     mime_type = file_info.get_mime_type()
     return mime_type in SUPPORTED_MIMETYPES
+
+
+def find_terminal():
+    """Find an available terminal emulator."""
+    for term in TERMINALS:
+        if shutil.which(term):
+            return term
+    return None
+
+
+def run_in_terminal(command, wait_for_key=False):
+    """Run a command in an available terminal emulator."""
+    terminal = find_terminal()
+    if not terminal:
+        subprocess.Popen([
+            'notify-send',
+            '-i', 'dialog-error',
+            'Adamantium',
+            'No terminal emulator found.'
+        ])
+        return False
+
+    if wait_for_key:
+        full_command = f'{command}; echo ""; echo "Press Enter to close..."; read'
+    else:
+        full_command = command
+
+    # Build terminal command based on terminal type
+    if terminal == 'kitty':
+        term_cmd = ['kitty', 'bash', '-c', full_command]
+    elif terminal == 'ghostty':
+        term_cmd = ['ghostty', '-e', 'bash', '-c', full_command]
+    elif terminal == 'gnome-terminal':
+        term_cmd = ['gnome-terminal', '--', 'bash', '-c', full_command]
+    elif terminal == 'konsole':
+        term_cmd = ['konsole', '-e', 'bash', '-c', full_command]
+    elif terminal == 'alacritty':
+        term_cmd = ['alacritty', '-e', 'bash', '-c', full_command]
+    elif terminal == 'xfce4-terminal':
+        term_cmd = ['xfce4-terminal', '-e', f"bash -c '{full_command}'"]
+    elif terminal == 'tilix':
+        term_cmd = ['tilix', '-e', f"bash -c '{full_command}'"]
+    elif terminal == 'terminator':
+        term_cmd = ['terminator', '-e', f"bash -c '{full_command}'"]
+    else:  # xterm and others
+        term_cmd = ['xterm', '-e', f"bash -c '{full_command}'"]
+
+    try:
+        subprocess.Popen(term_cmd)
+        return True
+    except Exception:
+        return False
 
 
 class AdamantiumMenuProvider(GObject.GObject, Nautilus.MenuProvider):
@@ -171,40 +227,20 @@ class AdamantiumMenuProvider(GObject.GObject, Nautilus.MenuProvider):
 
     def _on_clean_activate(self, menu, files):
         """Handle click on 'Clean Metadata' option."""
+        paths = []
         for file_info in files:
             path = get_file_path(file_info)
             if path:
-                try:
-                    # Run adamantium with --notify flag for desktop notification
-                    subprocess.Popen(
-                        ['adamantium', '--notify', path],
-                        stdout=subprocess.DEVNULL,
-                        stderr=subprocess.DEVNULL
-                    )
-                except FileNotFoundError:
-                    # adamantium not in PATH
-                    subprocess.Popen([
-                        'notify-send',
-                        '-i', 'dialog-error',
-                        'Adamantium Error',
-                        'adamantium command not found. Please install adamantium first.'
-                    ])
+                paths.append(f'"{path}"')
+
+        if paths:
+            # Run adamantium for each file in terminal
+            command = ' && '.join([f'adamantium {p}' for p in paths])
+            run_in_terminal(command, wait_for_key=True)
 
     def _on_preview_activate(self, menu, file_info):
         """Handle click on 'Preview Metadata' option."""
         path = get_file_path(file_info)
         if path:
-            try:
-                # Run adamantium in dry-run mode to preview
-                subprocess.Popen(
-                    ['adamantium', '--dry-run', path],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL
-                )
-            except FileNotFoundError:
-                subprocess.Popen([
-                    'notify-send',
-                    '-i', 'dialog-error',
-                    'Adamantium Error',
-                    'adamantium command not found. Please install adamantium first.'
-                ])
+            command = f'adamantium --dry-run "{path}"'
+            run_in_terminal(command, wait_for_key=True)
