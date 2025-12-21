@@ -403,7 +403,7 @@ See [EXAMPLES.md](EXAMPLES.md) for more practical examples.
 | Tool        | Multimedia | PDFs | Office | Images | Active Development |
 |-------------|------------|------|--------|--------|--------------------|
 | adamantium  | YES        | YES  | YES    | YES    | YES                |
-| mat2        | PARTIAL    | YES  | YES    | YES    | NO (stalled)       |
+| mat2        | PARTIAL    | YES  | YES    | YES    | YES                |
 | ExifTool    | PARTIAL    | YES  | YES    | YES    | YES                |
 | ffmpeg only | YES        | NO   | NO     | NO     | YES                |
 

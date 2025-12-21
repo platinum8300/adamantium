@@ -460,7 +460,7 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 | Herramienta | Multimedia | PDFs | Office | Imagenes | Desarrollo activo |
 |-------------|------------|------|--------|----------|-------------------|
 | adamantium  | SI         | SI   | SI     | SI       | SI                |
-| mat2        | PARCIAL    | SI   | SI     | SI       | NO (estancado)    |
+| mat2        | PARCIAL    | SI   | SI     | SI       | SI                |
 | ExifTool    | PARCIAL    | SI   | SI     | SI       | SI                |
 | ffmpeg solo | SI         | NO   | NO     | NO       | SI                |
 
