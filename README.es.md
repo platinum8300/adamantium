@@ -12,7 +12,7 @@ adamantium es una herramienta de línea de comandos con interfaz TUI (Text User 
 
 [![Licencia: AGPL v3](https://img.shields.io/badge/Licencia-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Plataforma: Linux](https://img.shields.io/badge/Plataforma-Linux-blue.svg)](https://www.linux.org/)
-[![Versión: 2.0.1](https://img.shields.io/badge/Versión-2.0.1-green.svg)](https://github.com/platinum8300/adamantium/releases)
+[![Versión: 2.1](https://img.shields.io/badge/Versión-2.1-green.svg)](https://github.com/platinum8300/adamantium/releases)
 
 ---
 
@@ -26,11 +26,20 @@ adamantium es una herramienta de línea de comandos con interfaz TUI (Text User 
   - 📹 **Multimedia**: MP4, MOV, AVI, MKV, MP3, FLAC, WAV, etc.
   - 🖼️ **Imágenes**: JPG, PNG, TIFF, GIF, WebP, etc.
   - 🖼️ **Imágenes IA**: PNG con metadatos de Stable Diffusion, Flux, DALL-E, etc.
+  - 🎨 **Gráficos Vectoriales**: Archivos SVG (v2.1+)
+  - 💻 **Archivos Web**: Hojas de estilo CSS (v2.1+)
   - 📄 **PDFs**: Documentos PDF
   - 📝 **Documentos Office**: DOCX, XLSX, PPTX, ODT, ODS, etc.
 - **Preserva el archivo original**: Siempre mantiene intacto tu archivo original
 - **Detección automática**: Identifica el tipo de archivo y aplica el método óptimo
 - **Contador de metadatos**: Muestra cuántos campos se encontraron y eliminaron
+
+### 🆕 Nuevo en v2.1 (Nuevos Formatos y Análisis)
+
+- **Soporte SVG**: Limpieza de metadatos de archivos de gráficos vectoriales SVG
+- **Soporte CSS**: Eliminación de comentarios de hojas de estilo CSS (info de autor, copyright, versiones)
+- **Modo Solo Visualización**: Ver metadatos sin limpiar (`--show-only`)
+- **Soporte en Archivos**: Los archivos SVG y CSS ahora se procesan dentro de archivos comprimidos
 
 ### 🖥️ Nuevo en v2.0 (Integración y Reportes)
 
@@ -166,6 +175,7 @@ adamantium [opciones] <archivo> [archivo_salida]
 
 - `--verify` - Verificar limpieza con comparación de hash SHA256
 - `--dry-run` - Modo previsualización (sin hacer cambios)
+- `--show-only` - Mostrar metadatos sin limpiar (v2.1+)
 - `--no-duplicate-check` - Omitir detección de duplicados
 - `-h, --help` - Mostrar mensaje de ayuda
 
@@ -195,6 +205,17 @@ adamantium presentacion.pptx
 
 # Limpiar un archivo de audio con verificación
 adamantium cancion.mp3 cancion_sin_metadatos.mp3 --verify
+
+# Limpiar un archivo SVG (v2.1+)
+adamantium icono.svg
+# Genera: icono_clean.svg
+
+# Limpiar una hoja de estilos CSS (v2.1+)
+adamantium estilos.css
+# Genera: estilos_clean.css
+
+# Ver metadatos sin limpiar (v2.1+)
+adamantium foto.jpg --show-only
 ```
 
 ### Modo Batch (v1.2+)
@@ -308,6 +329,8 @@ adamantium proporciona una interfaz visual clara y atractiva con **emojis modern
 | Video (MP4, MKV, AVI, etc.)  | ffmpeg + ExifTool   | Limpieza del contenedor y metadatos embedded   |
 | Audio (MP3, FLAC, WAV, etc.) | ffmpeg + ExifTool   | Eliminación de ID3 tags y metadatos del stream |
 | Imágenes (JPG, PNG, etc.)    | ExifTool            | Eliminación de EXIF, IPTC, XMP                 |
+| Gráficos Vectoriales SVG     | Perl (XML)          | Eliminación de metadata, RDF y comentarios XML |
+| Hojas de Estilo CSS          | Perl                | Eliminación de comentarios (autor, copyright)  |
 | PDFs                         | ExifTool            | Eliminación de metadata, autor, creador, etc.  |
 | Documentos Office            | ExifTool            | Eliminación de propiedades del documento       |
 
@@ -525,6 +548,13 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 - [x] Corrección de extensión Nautilus para abrir terminal con TUI
 - [x] Soporte para 9 emuladores de terminal
 
+### v2.1 (Nuevos Formatos y Análisis) ✅ COMPLETADO
+
+- [x] Soporte para archivos SVG (limpieza de metadatos de gráficos vectoriales)
+- [x] Soporte para archivos CSS (eliminación de comentarios)
+- [x] Opción `--show-only` para mostrar metadatos sin limpiar
+- [x] Soporte en archivos comprimidos para SVG y CSS
+
 ### v3.0 (Avanzado y Profesional)
 
 - [ ] Recodificación opcional para multimedia (con control de calidad)
@@ -537,6 +567,13 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 ---
 
 ## 📜 Historial de Versiones
+
+### v2.1 (Nuevos Formatos y Análisis) - 2025-12-24
+
+- **Soporte SVG**: Limpieza completa de metadatos de archivos de gráficos vectoriales SVG
+- **Soporte CSS**: Eliminación de comentarios de hojas de estilo CSS (info de autor, copyright, versiones)
+- **Modo Solo Visualización**: Nueva opción `--show-only` para mostrar metadatos sin limpiar
+- **Mejora de Archivos**: Los archivos SVG y CSS ahora se procesan dentro de archivos comprimidos
 
 ### v2.0.1 (Corrección de Bug) - 2025-12-20
 

@@ -10,7 +10,7 @@
 # ═══════════════════════════════════════════════════════════════
 # Deep metadata cleaning | The tool that excited Edward Snowden
 # Full Mode: ExifTool + ffmpeg
-# Version: 2.0
+# Version: 2.1
 # ═══════════════════════════════════════════════════════════════
 
 set -euo pipefail
@@ -50,6 +50,8 @@ readonly COMPUTER_ICON="💻"
 readonly CALENDAR_ICON="📅"
 readonly TOOL_ICON="🔧"
 readonly ARCHIVE_ICON="📦"
+readonly CODE_ICON="💻"
+readonly SVG_ICON="🎨"
 
 # Variables globales
 TEMP_DIR=""
@@ -81,6 +83,9 @@ ARCHIVE_PREVIEW=false
 # Variables para v1.5 features
 NOTIFY_MODE=false          # --notify flag for file manager integration
 OUTPUT_SUFFIX="_clean"     # Default suffix (can be overridden by config)
+
+# Variables para v2.1 features
+SHOW_ONLY=false            # --show-only flag to display metadata without cleaning
 
 # Versiones mínimas requeridas (se actualizan automáticamente desde upstream)
 REQUIRED_EXIFTOOL_VERSION="13.39"
@@ -232,6 +237,14 @@ declare -A MSG_ES=(
     [ARCHIVE_RECOMPRESS_ERROR]="Error al recomprimir archivo"
     [ARCHIVE_PASSWORD_PROTECTED]="Protegido con contraseña"
     [INTERACTIVE_ARCHIVE]="Limpiar archivo comprimido"
+    [SVG_FILE]="archivo SVG"
+    [CSS_FILE]="archivo CSS"
+    [SHOW_ONLY_MODE]="MODO SOLO VISUALIZACIÓN"
+    [SHOW_ONLY_NOTICE]="Mostrando metadatos sin realizar limpieza"
+    [CSS_COMMENTS_FOUND]="Comentarios CSS encontrados"
+    [CSS_COMMENTS_REMOVED]="Todos los comentarios eliminados"
+    [CSS_NO_COMMENTS]="No se encontraron comentarios CSS"
+    [CLEANING_CSS]="Limpiando comentarios CSS"
 )
 
 # Mensajes en inglés (idioma por defecto)
@@ -353,6 +366,14 @@ declare -A MSG_EN=(
     [ARCHIVE_RECOMPRESS_ERROR]="Error recompressing archive"
     [ARCHIVE_PASSWORD_PROTECTED]="Password protected"
     [INTERACTIVE_ARCHIVE]="Clean compressed archive"
+    [SVG_FILE]="SVG file"
+    [CSS_FILE]="CSS file"
+    [SHOW_ONLY_MODE]="SHOW-ONLY MODE"
+    [SHOW_ONLY_NOTICE]="Displaying metadata without cleaning"
+    [CSS_COMMENTS_FOUND]="CSS comments found"
+    [CSS_COMMENTS_REMOVED]="All comments removed"
+    [CSS_NO_COMMENTS]="No CSS comments found"
+    [CLEANING_CSS]="Cleaning CSS comments"
 )
 
 # Función para obtener mensaje traducido
@@ -747,10 +768,20 @@ detect_file_type() {
             IS_MULTIMEDIA=true
             type_icon="$VIDEO_ICON"
             ;;
+        image/svg+xml)
+            FILE_TYPE="$(msg SVG_FILE)"
+            IS_MULTIMEDIA=false
+            type_icon="$SVG_ICON"
+            ;;
         image/*)
             FILE_TYPE="$(msg IMAGE)"
             IS_MULTIMEDIA=false
             type_icon="$IMAGE_ICON"
+            ;;
+        text/css)
+            FILE_TYPE="$(msg CSS_FILE)"
+            IS_MULTIMEDIA=false
+            type_icon="$CODE_ICON"
             ;;
         application/pdf)
             FILE_TYPE="$(msg PDF)"
@@ -787,7 +818,7 @@ detect_file_type() {
             fi
             ;;
         *)
-            # Fallback: detectar por extensión para archivos comprimidos
+            # Fallback: detectar por extensión
             local ext="${filename##*.}"
             ext=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
             case "$ext" in
@@ -796,6 +827,16 @@ detect_file_type() {
                     IS_MULTIMEDIA=false
                     ARCHIVE_MODE=true
                     type_icon="$ARCHIVE_ICON"
+                    ;;
+                svg)
+                    FILE_TYPE="$(msg SVG_FILE)"
+                    IS_MULTIMEDIA=false
+                    type_icon="$SVG_ICON"
+                    ;;
+                css)
+                    FILE_TYPE="$(msg CSS_FILE)"
+                    IS_MULTIMEDIA=false
+                    type_icon="$CODE_ICON"
                     ;;
                 *)
                     FILE_TYPE="$(msg UNKNOWN)"
@@ -809,6 +850,10 @@ detect_file_type() {
     echo -e "  ${type_icon} $(msg TYPE_DETECTED): ${YELLOW}${FILE_TYPE}${NC} ${GRAY}(${mimetype})${NC}"
     if [ "$ARCHIVE_MODE" = true ]; then
         echo -e "  ${TOOL_ICON} $(msg PROCESSING): ${CYAN}Archive Handler${NC}"
+    elif [ "$FILE_TYPE" = "$(msg CSS_FILE)" ]; then
+        echo -e "  ${TOOL_ICON} $(msg PROCESSING): ${CYAN}Perl (comment removal)${NC}"
+    elif [ "$FILE_TYPE" = "$(msg SVG_FILE)" ]; then
+        echo -e "  ${TOOL_ICON} $(msg PROCESSING): ${CYAN}Perl (XML cleaning)${NC}"
     else
         echo -e "  ${TOOL_ICON} $(msg PROCESSING): ${CYAN}$([ "$IS_MULTIMEDIA" = true ] && msg EXIFTOOL_FFMPEG || msg EXIFTOOL_ONLY)${NC}"
     fi
@@ -961,6 +1006,111 @@ verify_hashes() {
 # FUNCIONES DE LIMPIEZA
 # ═══════════════════════════════════════════════════════════════
 
+# ───────────────────────────────────────────────────────────────
+# SVG: Clean SVG metadata (ExifTool can't write SVG files)
+# ───────────────────────────────────────────────────────────────
+
+clean_svg() {
+    local input="$1"
+    local output="$2"
+
+    echo -e "${ARROW} $(msg CLEANING_WITH_EXIFTOOL) ${CYAN}Perl (XML)${NC}..."
+
+    # SVG cleaning: remove metadata element, XML comments, and RDF data
+    perl -0777 -pe '
+        # Remove <metadata>...</metadata> block
+        s|<metadata[^>]*>.*?</metadata>||gsi;
+        # Remove XML comments <!-- ... -->
+        s|<!--.*?-->||gs;
+        # Remove rdf:RDF blocks that might be outside metadata
+        s|<rdf:RDF[^>]*>.*?</rdf:RDF>||gsi;
+    ' "$input" > "$output" &
+    spinner $! "$(msg REMOVING_METADATA_EXIFTOOL)"
+
+    echo -e "${GREEN}${CHECK}${NC} $(msg METADATA_REMOVED)"
+
+    return 0
+}
+
+# ───────────────────────────────────────────────────────────────
+# CSS: Show and clean CSS comments (metadata equivalent)
+# ───────────────────────────────────────────────────────────────
+
+show_css_metadata() {
+    local file="$1"
+    local title="$2"
+    local color="$3"
+
+    echo ""
+    echo -e "${color}╔═══════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${color}║${NC} ${BOLD}${SEARCH_ICON} ${title}${NC}"
+    echo -e "${color}╚═══════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+
+    # Extraer comentarios CSS /* ... */
+    local comments
+    comments=$(perl -0777 -ne 'print "$1\n" while m{(/\*.*?\*/)}gs' "$file" 2>/dev/null)
+
+    if [ -z "$comments" ]; then
+        echo -e "${GREEN}  ${CHECK} $(msg CSS_NO_COMMENTS)${NC}"
+        return
+    fi
+
+    local comment_count
+    comment_count=$(echo "$comments" | grep -c '/\*') || comment_count=0
+
+    echo -e "${BOLD}  $(msg CSS_COMMENTS_FOUND): ${WHITE}${comment_count}${NC}"
+    echo ""
+
+    # Mostrar hasta 10 comentarios (truncados si son largos)
+    local shown=0
+    while IFS= read -r comment; do
+        [[ -z "$comment" ]] && continue
+        ((shown++)) || true
+        [[ $shown -gt 10 ]] && break
+
+        # Truncar comentarios largos
+        if [[ ${#comment} -gt 80 ]]; then
+            comment="${comment:0:77}..."
+        fi
+
+        # Colorear según contenido sensible
+        if echo "$comment" | grep -qiE "(author|copyright|version|created|license|company|email)"; then
+            echo -e "  ${RED}●${NC} ${RED}${comment}${NC}"
+        else
+            echo -e "  ${YELLOW}●${NC} ${GRAY}${comment}${NC}"
+        fi
+    done <<< "$comments" || true
+
+    if [ $comment_count -gt 10 ]; then
+        echo -e "  ${GRAY}... and $((comment_count - 10)) more comments${NC}"
+    fi
+
+    echo ""
+}
+
+clean_css() {
+    local input="$1"
+    local output="$2"
+
+    echo -e "${ARROW} $(msg CLEANING_CSS) ${CYAN}Perl${NC}..."
+
+    # Eliminar todos los comentarios CSS /* ... */ preservando el resto
+    perl -0777 -pe 's|/\*.*?\*/||gs' "$input" > "$output" &
+    spinner $! "$(msg CLEANING_CSS)"
+
+    # Verificar resultado
+    local remaining=$(perl -0777 -ne 'print "$1\n" while m{(/\*.*?\*/)}gs' "$output" 2>/dev/null | wc -l)
+
+    if [ "$remaining" -eq 0 ]; then
+        echo -e "${GREEN}${CHECK}${NC} $(msg CSS_COMMENTS_REMOVED)"
+    fi
+
+    return 0
+}
+
+# ───────────────────────────────────────────────────────────────
+
 clean_with_exiftool() {
     local input="$1"
     local output="$2"
@@ -1011,6 +1161,12 @@ perform_cleaning() {
         clean_with_exiftool "$temp_ffmpeg" "$output"
 
         rm -f "$temp_ffmpeg"
+    elif [ "$FILE_TYPE" = "$(msg CSS_FILE)" ]; then
+        # Para CSS: eliminar comentarios con perl
+        clean_css "$input" "$output"
+    elif [ "$FILE_TYPE" = "$(msg SVG_FILE)" ]; then
+        # Para SVG: usar perl XML cleaning (ExifTool no puede escribir SVG)
+        clean_svg "$input" "$output"
     else
         # Para otros archivos: solo exiftool
         clean_with_exiftool "$input" "$output"
@@ -1146,6 +1302,10 @@ main() {
                 NOTIFY_MODE=true
                 shift
                 ;;
+            --show-only)
+                SHOW_ONLY=true
+                shift
+                ;;
             -h|--help)
                 print_header
                 echo -e "${BOLD}$(msg USAGE)${NC}"
@@ -1155,6 +1315,7 @@ main() {
                 echo -e "${BOLD}$(msg OPTIONS)${NC}"
                 echo -e "  ${CYAN}--verify${NC}              $(msg HASH_VERIFICATION | tr '[:upper:]' '[:lower:]')"
                 echo -e "  ${CYAN}--dry-run${NC}             $(msg DRY_RUN_NOTICE | tr '[:upper:]' '[:lower:]')"
+                echo -e "  ${CYAN}--show-only${NC}           Display metadata without cleaning"
                 echo -e "  ${CYAN}--no-duplicate-check${NC}  Skip duplicate detection"
                 echo -e "  ${CYAN}--interactive, -i${NC}     Launch interactive TUI mode"
                 echo -e "  ${CYAN}--archive-password${NC}    Password for encrypted archives"
@@ -1401,8 +1562,8 @@ main() {
         exit $?
     fi
 
-    # Detección de duplicados
-    if [ "$CHECK_DUPLICATES" = true ]; then
+    # Detección de duplicados (no aplica para CSS)
+    if [ "$CHECK_DUPLICATES" = true ] && [ "$FILE_TYPE" != "$(msg CSS_FILE)" ]; then
         if detect_duplicate "$ORIGINAL_FILE"; then
             echo ""
             echo -e "${YELLOW}${WARN} ${BOLD}$(msg DUPLICATE_WARNING)${NC}"
@@ -1411,8 +1572,30 @@ main() {
         fi
     fi
 
+    # Modo SHOW-ONLY: solo mostrar metadatos sin limpiar
+    if [ "$SHOW_ONLY" = true ]; then
+        echo ""
+        echo -e "${CYAN}${INFO} ${BOLD}$(msg SHOW_ONLY_MODE)${NC}"
+        echo -e "${GRAY}$(msg SHOW_ONLY_NOTICE)${NC}"
+        echo ""
+
+        # Mostrar metadatos según tipo de archivo
+        if [ "$FILE_TYPE" = "$(msg CSS_FILE)" ]; then
+            show_css_metadata "$ORIGINAL_FILE" "$(msg METADATA_BEFORE)" "$CYAN"
+        else
+            show_metadata "$ORIGINAL_FILE" "$(msg METADATA_BEFORE)" "$CYAN"
+        fi
+
+        echo ""
+        exit 0
+    fi
+
     # Mostrar metadatos ANTES
-    show_metadata "$ORIGINAL_FILE" "$(msg METADATA_BEFORE)" "$RED"
+    if [ "$FILE_TYPE" = "$(msg CSS_FILE)" ]; then
+        show_css_metadata "$ORIGINAL_FILE" "$(msg METADATA_BEFORE)" "$RED"
+    else
+        show_metadata "$ORIGINAL_FILE" "$(msg METADATA_BEFORE)" "$RED"
+    fi
 
     # En modo DRY-RUN, solo mostrar qué se haría
     if [ "$DRY_RUN" = true ]; then
@@ -1430,7 +1613,11 @@ main() {
     perform_cleaning "$ORIGINAL_FILE" "$OUTPUT_FILE"
 
     # Mostrar metadatos DESPUÉS
-    show_metadata "$OUTPUT_FILE" "$(msg METADATA_AFTER)" "$GREEN"
+    if [ "$FILE_TYPE" = "$(msg CSS_FILE)" ]; then
+        show_css_metadata "$OUTPUT_FILE" "$(msg METADATA_AFTER)" "$GREEN"
+    else
+        show_metadata "$OUTPUT_FILE" "$(msg METADATA_AFTER)" "$GREEN"
+    fi
 
     # Verificación de hash (si está habilitado)
     if [ "$VERIFY_HASH" = true ]; then

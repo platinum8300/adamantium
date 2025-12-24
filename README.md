@@ -12,7 +12,7 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Platform: Linux](https://img.shields.io/badge/Platform-Linux-blue.svg)](https://www.linux.org/)
-[![Version: 2.0.1](https://img.shields.io/badge/Version-2.0.1-green.svg)](https://github.com/platinum8300/adamantium/releases)
+[![Version: 2.1](https://img.shields.io/badge/Version-2.1-green.svg)](https://github.com/platinum8300/adamantium/releases)
 
 ---
 
@@ -28,12 +28,21 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
   - 📹 **Multimedia**: MP4, MOV, AVI, MKV, MP3, FLAC, WAV, etc.
   - 🖼️ **Images**: JPG, PNG, TIFF, GIF, WebP, etc.
   - 🖼️ **AI Images**: PNG with Stable Diffusion, Flux, DALL-E metadata, etc.
+  - 🎨 **Vector Graphics**: SVG files (v2.1+)
+  - 💻 **Web Files**: CSS stylesheets (v2.1+)
   - 📄 **PDFs**: PDF documents
   - 📝 **Office Documents**: DOCX, XLSX, PPTX, ODT, ODS, etc.
   - 📦 **Compressed Archives**: ZIP, TAR, 7Z, RAR (v1.4+)
 - **Preserves Original File**: Always keeps your original file intact
 - **Automatic Detection**: Identifies file type and applies optimal method
 - **Metadata Counter**: Shows how many fields were found and removed
+
+### 🆕 New in v2.1 (New Formats and Analysis)
+
+- **SVG Support**: Clean metadata from SVG vector graphics files
+- **CSS Support**: Remove comments from CSS stylesheets (author info, copyright, versions)
+- **Show-Only Mode**: View metadata without cleaning (`--show-only`)
+- **Archive Support**: SVG and CSS files are now processed inside compressed archives
 
 ### 🖥️ New in v2.0 (Integration and Reporting)
 
@@ -170,6 +179,7 @@ adamantium [options] <file> [output_file]
 **Options:**
 - `--verify` - Verify cleaning with SHA256 hash comparison
 - `--dry-run` - Preview mode (no changes made)
+- `--show-only` - Display metadata without cleaning (v2.1+)
 - `--no-duplicate-check` - Skip duplicate detection
 - `-h, --help` - Show help message
 
@@ -199,6 +209,17 @@ adamantium presentation.pptx
 
 # Clean an audio file with verification
 adamantium song.mp3 song_no_metadata.mp3 --verify
+
+# Clean an SVG file (v2.1+)
+adamantium icon.svg
+# Generates: icon_clean.svg
+
+# Clean a CSS stylesheet (v2.1+)
+adamantium styles.css
+# Generates: styles_clean.css
+
+# View metadata without cleaning (v2.1+)
+adamantium photo.jpg --show-only
 ```
 
 ### Batch Mode (v1.2+)
@@ -347,6 +368,8 @@ adamantium provides a clear and attractive visual interface with **modern emojis
 | Video (MP4, MKV, AVI, etc.)  | ffmpeg + ExifTool | Container and embedded metadata cleaning      |
 | Audio (MP3, FLAC, WAV, etc.) | ffmpeg + ExifTool | ID3 tags and stream metadata removal          |
 | Images (JPG, PNG, etc.)      | ExifTool          | EXIF, IPTC, XMP removal                       |
+| SVG Vector Graphics          | Perl (XML)        | Metadata, RDF, and XML comments removal       |
+| CSS Stylesheets              | Perl              | Comment removal (author, copyright, etc.)     |
 | PDFs                         | ExifTool          | Metadata, author, creator removal, etc.       |
 | Office Documents             | ExifTool          | Document properties removal                   |
 
@@ -468,6 +491,13 @@ See [EXAMPLES.md](EXAMPLES.md) for more practical examples.
 - [x] Fix Nautilus extension to open terminal for TUI display
 - [x] Support for 9 terminal emulators
 
+### v2.1 (New Formats and Analysis) ✅ COMPLETED
+
+- [x] SVG file support (vector graphics metadata cleaning)
+- [x] CSS file support (comment removal)
+- [x] `--show-only` option to display metadata without cleaning
+- [x] Archive support for SVG and CSS files
+
 ### v3.0 (Advanced and Professional)
 
 - [ ] Optional re-encoding for multimedia (with quality control)
@@ -493,6 +523,13 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
 ---
 
 ## 📜 Version History
+
+### v2.1 (New Formats and Analysis) - 2025-12-24
+
+- **SVG Support**: Full metadata cleaning for SVG vector graphics files
+- **CSS Support**: Comment removal from CSS stylesheets (author info, copyright, versions)
+- **Show-Only Mode**: New `--show-only` option to display metadata without cleaning
+- **Archive Enhancement**: SVG and CSS files now processed inside compressed archives
 
 ### v2.0.1 (Bug Fix) - 2025-12-20
 

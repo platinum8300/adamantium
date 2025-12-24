@@ -4,6 +4,82 @@ All notable changes to adamantium will be documented in this file.
 
 ---
 
+## [2.1] - 2025-12-24
+
+### 🎉 NEW FEATURES - New Formats and Analysis
+
+adamantium v2.1 adds support for SVG and CSS files, introduces a show-only mode for metadata inspection, and extends archive support to include these new formats.
+
+### ✨ New Features
+
+- **SVG Support** - Vector graphics metadata cleaning
+  - Perl-based XML cleaning (ExifTool cannot write SVG files)
+  - Removes `<metadata>` blocks, RDF data, and XML comments
+  - Automatic detection by MIME type (`image/svg+xml`) and extension
+  - Example: `adamantium logo.svg` → `logo_clean.svg`
+
+- **CSS Support** - Stylesheet comment removal
+  - Removes all CSS comments (`/* ... */`) which often contain author info
+  - Detects copyright, version, author mentions in comments
+  - Color-coded display: sensitive info in red, regular comments in yellow
+  - Uses Perl for efficient multi-line comment removal
+  - Example: `adamantium styles.css` → `styles_clean.css`
+
+- **Show-Only Mode** - Metadata inspection without cleaning
+  - New `--show-only` option to display metadata without making changes
+  - Useful for auditing files before deciding to clean
+  - Works with all supported file types including CSS
+  - Example: `adamantium photo.jpg --show-only`
+
+- **Archive Enhancement** - SVG and CSS in compressed files
+  - SVG and CSS files are now processed inside ZIP, TAR, 7Z, RAR archives
+  - CSS comments removed with Perl inside archives
+  - Updated `archive_handler.sh` to support new formats
+
+### 🏗️ Architecture
+
+- **New functions in main script**
+  - `show_css_metadata()` - Display CSS comments with color coding
+  - `clean_css()` - Remove CSS comments using Perl
+  - New icons: `CODE_ICON`, `SVG_ICON`
+
+- **Updated `lib/archive_handler.sh`**
+  - `archive_is_cleanable_file()` - Added SVG and CSS extensions
+  - `archive_count_cleanable_files()` - Added SVG and CSS counting
+  - `archive_clean_contents()` - CSS-specific cleaning with Perl
+
+### 🔧 New Options
+
+- `--show-only` - Display metadata without cleaning
+
+### 🌐 i18n Updates
+
+- New messages in Spanish and English:
+  - `SVG_FILE`, `CSS_FILE`
+  - `SHOW_ONLY_MODE`, `SHOW_ONLY_NOTICE`
+  - `CSS_COMMENTS_FOUND`, `CSS_COMMENTS_REMOVED`, `CSS_NO_COMMENTS`
+  - `CLEANING_CSS`
+
+### 📊 Statistics
+
+- **Version**: 2.1
+- **New Functions**: 3 (show_css_metadata, clean_css, show-only logic)
+- **New Formats**: 2 (SVG, CSS)
+- **Updated Files**: adamantium, archive_handler.sh, README.md, README.es.md
+
+---
+
+## [2.0.1] - 2025-12-20
+
+### 🐛 Bug Fixes
+
+- **Nautilus Extension Fix** - Terminal window now opens correctly
+  - Both menu options (Clean Metadata, Preview Metadata) now properly launch terminal
+  - Added support for 9 terminal emulators: kitty, ghostty, gnome-terminal, konsole, alacritty, xfce4-terminal, tilix, terminator, xterm
+  - Automatic detection of installed terminal emulator
+
+---
+
 ## [2.0] - 2025-12-19
 
 ### 🎉 NEW FEATURES - Integration and Reporting

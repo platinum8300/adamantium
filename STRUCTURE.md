@@ -295,6 +295,8 @@ adamantium
 |-----------------|---------------------------------------|-------------------|
 | Video/Audio     | 1. ffmpeg → 2. exiftool               | Ambas             |
 | Imagen          | exiftool únicamente                   | Solo exiftool     |
+| SVG (v2.1)      | perl XML cleaning                     | Solo perl         |
+| CSS (v2.1)      | perl (eliminar comentarios)           | Solo perl         |
 | PDF             | exiftool únicamente                   | Solo exiftool     |
 | Office          | exiftool únicamente                   | Solo exiftool     |
 | Archivos (v1.4) | 1. Extraer → 2. Limpiar → 3. Comprimir| 7z/tar + exiftool |
@@ -481,6 +483,13 @@ CLEAN="${MAGENTA}◆${NC}"    # Proceso de limpieza
 - [x] Tests automatizados
 - [x] Módulos: report_generator, integration/
 
+### v2.1 ✅ COMPLETADO
+- [x] Soporte para archivos SVG (gráficos vectoriales)
+- [x] Soporte para archivos CSS (eliminación de comentarios)
+- [x] Opción `--show-only` para mostrar metadatos sin limpiar
+- [x] Funciones: show_css_metadata, clean_css
+- [x] Soporte en archivos comprimidos para SVG y CSS
+
 ### v3.0 (Futuro)
 - [ ] GUI opcional (GTK4/Qt6)
 - [ ] Recodificación opcional para multimedia
@@ -494,8 +503,8 @@ CLEAN="${MAGENTA}◆${NC}"    # Proceso de limpieza
 
 **adamantium** - Herramienta de limpieza profunda de metadatos
 
-Versión: 2.0
-Fecha: 2025-12-19
+Versión: 2.1
+Fecha: 2025-12-24
 
 Herramientas utilizadas:
 - ExifTool por Phil Harvey

@@ -128,10 +128,13 @@ adamantium cancion.mp3
 ## 🔍 ¿Qué tipos de archivo soporta?
 
 ✅ **Imágenes**: JPG, PNG, TIFF, GIF, WebP
+✅ **Gráficos Vectoriales**: SVG (v2.1+)
 ✅ **Videos**: MP4, MKV, AVI, MOV, WebM, FLV
 ✅ **Audio**: MP3, FLAC, WAV, OGG, M4A, AAC
 ✅ **PDFs**: Cualquier documento PDF
 ✅ **Office**: DOCX, XLSX, PPTX, ODT, ODS, ODP
+✅ **Web**: CSS hojas de estilo (v2.1+)
+✅ **Archivos**: ZIP, TAR, 7Z, RAR (v1.4+)
 
 ---
 
@@ -221,6 +224,15 @@ adamantium archivo.pdf --verify
 
 # Modo previsualización (v1.1+)
 adamantium archivo.pdf --dry-run
+
+# Solo ver metadatos sin limpiar (v2.1+)
+adamantium foto.jpg --show-only
+
+# Limpiar archivo SVG (v2.1+)
+adamantium icono.svg
+
+# Limpiar hoja de estilos CSS (v2.1+)
+adamantium estilos.css
 
 # Modo batch con selección interactiva (v1.2+)
 adamantium --batch --confirm --pattern '*.pdf' ~/Documentos
@@ -337,6 +349,6 @@ Ahora que tienes adamantium instalado:
 
 ---
 
-**Versión**: 1.3.1
-**Fecha**: 2025-12-15
+**Versión**: 2.1
+**Fecha**: 2025-12-24
 **Repositorio**: https://github.com/platinum8300/adamantium

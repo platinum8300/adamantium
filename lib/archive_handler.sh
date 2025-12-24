@@ -2,7 +2,7 @@
 
 # ═══════════════════════════════════════════════════════════════
 # archive_handler.sh - Compressed Archive Processing for adamantium
-# Part of adamantium v1.4
+# Part of adamantium v2.1
 # ═══════════════════════════════════════════════════════════════
 #
 # This module provides complete handling of compressed archives:
@@ -270,7 +270,7 @@ archive_count_cleanable_files() {
         ext=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
 
         case "$ext" in
-            jpg|jpeg|png|gif|tiff|tif|webp|bmp|heic|heif)
+            jpg|jpeg|png|gif|tiff|tif|webp|bmp|heic|heif|svg)
                 ((count++))
                 ;;
             mp4|mkv|avi|mov|webm|flv|wmv|m4v)
@@ -280,6 +280,9 @@ archive_count_cleanable_files() {
                 ((count++))
                 ;;
             pdf|docx|xlsx|pptx|odt|ods|odp|doc|xls|ppt)
+                ((count++))
+                ;;
+            css)
                 ((count++))
                 ;;
             zip|7z|rar|tar|tgz|tbz|tbz2|txz)
@@ -362,6 +365,10 @@ archive_is_cleanable_file() {
         jpg|jpeg|png|gif|tiff|tif|webp|bmp|heic|heif)
             return 0
             ;;
+        # SVG (v2.1)
+        svg)
+            return 0
+            ;;
         # Video
         mp4|mkv|avi|mov|webm|flv|wmv|m4v)
             return 0
@@ -372,6 +379,10 @@ archive_is_cleanable_file() {
             ;;
         # Documentos
         pdf|docx|xlsx|pptx|odt|ods|odp|doc|xls|ppt)
+            return 0
+            ;;
+        # CSS (v2.1)
+        css)
             return 0
             ;;
         *)
@@ -458,8 +469,37 @@ archive_clean_contents() {
                 echo -e "  ${CYAN}●${NC} [DRY-RUN] ${GRAY}${relative_path}${NC}"
                 (( ++ARCHIVE_FILES_CLEANED ))
             else
-                # Limpiar directamente con exiftool (más rápido que llamar a adamantium completo)
-                if exiftool -all= -overwrite_original -q "$file" 2>/dev/null; then
+                local file_ext="${file##*.}"
+                file_ext=$(echo "$file_ext" | tr '[:upper:]' '[:lower:]')
+
+                local clean_success=false
+
+                # CSS: limpiar comentarios con perl (v2.1)
+                if [ "$file_ext" = "css" ]; then
+                    local temp_css="${file}.tmp"
+                    if perl -0777 -pe 's|/\*.*?\*/||gs' "$file" > "$temp_css" 2>/dev/null; then
+                        mv "$temp_css" "$file"
+                        clean_success=true
+                    else
+                        rm -f "$temp_css"
+                    fi
+                # SVG: limpiar con perl XML (ExifTool no puede escribir SVG) (v2.1)
+                elif [ "$file_ext" = "svg" ]; then
+                    local temp_svg="${file}.tmp"
+                    if perl -0777 -pe 's|<metadata[^>]*>.*?</metadata>||gsi; s|<!--.*?-->||gs; s|<rdf:RDF[^>]*>.*?</rdf:RDF>||gsi;' "$file" > "$temp_svg" 2>/dev/null; then
+                        mv "$temp_svg" "$file"
+                        clean_success=true
+                    else
+                        rm -f "$temp_svg"
+                    fi
+                else
+                    # Limpiar directamente con exiftool (más rápido que llamar a adamantium completo)
+                    if exiftool -all= -overwrite_original -q "$file" 2>/dev/null; then
+                        clean_success=true
+                    fi
+                fi
+
+                if [ "$clean_success" = true ]; then
                     (( ++ARCHIVE_FILES_CLEANED ))
                     echo -e "  ${GREEN}${CHECK}${NC} ${GRAY}${relative_path}${NC}"
                 else
