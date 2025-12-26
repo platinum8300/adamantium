@@ -233,6 +233,16 @@ adamantium styles.css
 
 # View metadata without cleaning (v2.1+)
 adamantium photo.jpg --show-only
+
+# Clean an EPUB ebook (v2.2+)
+adamantium book.epub
+# Generates: book_clean.epub
+
+# Clean EPUB with custom output name
+adamantium novel.epub novel_anonymous.epub
+
+# Clean EPUB with verification
+adamantium textbook.epub --verify
 ```
 
 ### Batch Mode (v1.2+)
@@ -376,15 +386,17 @@ adamantium provides a clear and attractive visual interface with **modern emojis
 
 ### Cleaning Methods
 
-| File Type                    | Tools Used        | Description                                   |
-|------------------------------|-------------------|-----------------------------------------------|
-| Video (MP4, MKV, AVI, etc.)  | ffmpeg + ExifTool | Container and embedded metadata cleaning      |
-| Audio (MP3, FLAC, WAV, etc.) | ffmpeg + ExifTool | ID3 tags and stream metadata removal          |
-| Images (JPG, PNG, etc.)      | ExifTool          | EXIF, IPTC, XMP removal                       |
-| SVG Vector Graphics          | Perl (XML)        | Metadata, RDF, and XML comments removal       |
-| CSS Stylesheets              | Perl              | Comment removal (author, copyright, etc.)     |
-| PDFs                         | ExifTool          | Metadata, author, creator removal, etc.       |
-| Office Documents             | ExifTool          | Document properties removal                   |
+| File Type                    | Tools Used              | Description                                   |
+|------------------------------|-------------------------|-----------------------------------------------|
+| Video (MP4, MKV, AVI, etc.)  | ffmpeg + ExifTool       | Container and embedded metadata cleaning      |
+| Audio (MP3, FLAC, WAV, etc.) | ffmpeg + ExifTool       | ID3 tags and stream metadata removal          |
+| Images (JPG, PNG, etc.)      | ExifTool                | EXIF, IPTC, XMP removal                       |
+| SVG Vector Graphics          | Perl (XML)              | Metadata, RDF, and XML comments removal       |
+| CSS Stylesheets              | Perl                    | Comment removal (author, copyright, etc.)     |
+| EPUB Ebooks                  | Perl + ExifTool + zip   | Dublin Core metadata, internal images cleaned |
+| PDFs                         | ExifTool                | Metadata, author, creator removal, etc.       |
+| Office Documents             | ExifTool                | Document properties removal                   |
+| Compressed Archives          | 7z/tar + ExifTool       | Extract, clean contents, recompress           |
 
 ---
 
@@ -436,12 +448,12 @@ See [EXAMPLES.md](EXAMPLES.md) for more practical examples.
 
 ## 📊 Comparison with Other Tools
 
-| Tool        | Multimedia | PDFs | Office | Images | Active Development |
-|-------------|------------|------|--------|--------|--------------------|
-| adamantium  | YES        | YES  | YES    | YES    | YES                |
-| mat2        | PARTIAL    | YES  | YES    | YES    | YES                |
-| ExifTool    | PARTIAL    | YES  | YES    | YES    | YES                |
-| ffmpeg only | YES        | NO   | NO     | NO     | YES                |
+| Tool        | Multimedia | PDFs | Office | Images | SVG | CSS | EPUB | Archives | Active Development |
+|-------------|------------|------|--------|--------|-----|-----|------|----------|--------------------|
+| adamantium  | YES        | YES  | YES    | YES    | YES | YES | YES  | YES      | YES                |
+| mat2        | PARTIAL    | YES  | YES    | YES    | NO  | NO  | NO   | YES      | YES                |
+| ExifTool    | PARTIAL    | YES  | YES    | YES    | NO  | NO  | NO   | NO       | YES                |
+| ffmpeg only | YES        | NO   | NO     | NO     | NO  | NO  | NO   | NO       | YES                |
 
 ---
 
@@ -511,6 +523,20 @@ See [EXAMPLES.md](EXAMPLES.md) for more practical examples.
 - [x] `--show-only` option to display metadata without cleaning
 - [x] Archive support for SVG and CSS files
 
+### v2.2 (EPUB Support and Archive Policies) ✅ COMPLETED
+
+- [x] EPUB ebook support (Dublin Core metadata cleaning)
+- [x] Preserve book title and language in EPUBs
+- [x] Clean internal images EXIF data in EPUBs
+- [x] `--unknown-policy` option for unknown files in archives
+- [x] Policy values: skip (default), warn, fail, include
+
+### v2.3 (Torrent Support and Lightweight Mode) - Planned
+
+- [ ] Torrent file support (.torrent metadata cleaning)
+- [ ] Lightweight mode (`--lightweight`) for minimal output
+- [ ] Performance optimizations
+
 ### v3.0 (Advanced and Professional)
 
 - [ ] Optional re-encoding for multimedia (with quality control)
@@ -536,6 +562,14 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
 ---
 
 ## 📜 Version History
+
+### v2.2 (EPUB Support and Archive Policies) - 2025-12-26
+
+- **EPUB Support**: Full metadata cleaning for EPUB ebook files
+- **Dublin Core Cleaning**: Removes author, publisher, rights, identifiers, dates
+- **Title Preservation**: Preserves book title (`dc:title`) and language (`dc:language`)
+- **Internal Images**: Cleans EXIF metadata from embedded images (covers, illustrations)
+- **Unknown Policy**: New `--unknown-policy` option for archives (skip/warn/fail/include)
 
 ### v2.1 (New Formats and Analysis) - 2025-12-24
 

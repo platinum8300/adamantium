@@ -229,6 +229,16 @@ adamantium estilos.css
 
 # Ver metadatos sin limpiar (v2.1+)
 adamantium foto.jpg --show-only
+
+# Limpiar un libro EPUB (v2.2+)
+adamantium libro.epub
+# Genera: libro_clean.epub
+
+# Limpiar EPUB con nombre personalizado
+adamantium novela.epub novela_anonima.epub
+
+# Limpiar EPUB con verificación
+adamantium manual.epub --verify
 ```
 
 ### Modo Batch (v1.2+)
@@ -337,15 +347,17 @@ adamantium proporciona una interfaz visual clara y atractiva con **emojis modern
 
 ### Métodos de limpieza
 
-| Tipo de archivo              | Herramientas usadas | Descripción                                    |
-|------------------------------|---------------------|------------------------------------------------|
-| Video (MP4, MKV, AVI, etc.)  | ffmpeg + ExifTool   | Limpieza del contenedor y metadatos embedded   |
-| Audio (MP3, FLAC, WAV, etc.) | ffmpeg + ExifTool   | Eliminación de ID3 tags y metadatos del stream |
-| Imágenes (JPG, PNG, etc.)    | ExifTool            | Eliminación de EXIF, IPTC, XMP                 |
-| Gráficos Vectoriales SVG     | Perl (XML)          | Eliminación de metadata, RDF y comentarios XML |
-| Hojas de Estilo CSS          | Perl                | Eliminación de comentarios (autor, copyright)  |
-| PDFs                         | ExifTool            | Eliminación de metadata, autor, creador, etc.  |
-| Documentos Office            | ExifTool            | Eliminación de propiedades del documento       |
+| Tipo de archivo              | Herramientas usadas     | Descripción                                       |
+|------------------------------|-------------------------|---------------------------------------------------|
+| Video (MP4, MKV, AVI, etc.)  | ffmpeg + ExifTool       | Limpieza del contenedor y metadatos embedded      |
+| Audio (MP3, FLAC, WAV, etc.) | ffmpeg + ExifTool       | Eliminación de ID3 tags y metadatos del stream    |
+| Imágenes (JPG, PNG, etc.)    | ExifTool                | Eliminación de EXIF, IPTC, XMP                    |
+| Gráficos Vectoriales SVG     | Perl (XML)              | Eliminación de metadata, RDF y comentarios XML    |
+| Hojas de Estilo CSS          | Perl                    | Eliminación de comentarios (autor, copyright)     |
+| Libros EPUB                  | Perl + ExifTool + zip   | Metadatos Dublin Core, imágenes internas limpiadas|
+| PDFs                         | ExifTool                | Eliminación de metadata, autor, creador, etc.     |
+| Documentos Office            | ExifTool                | Eliminación de propiedades del documento          |
+| Archivos Comprimidos         | 7z/tar + ExifTool       | Extraer, limpiar contenidos, recomprimir          |
 
 ---
 
@@ -493,12 +505,12 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 
 ## 📊 Comparación con otras herramientas
 
-| Herramienta | Multimedia | PDFs | Office | Imagenes | Desarrollo activo |
-|-------------|------------|------|--------|----------|-------------------|
-| adamantium  | SI         | SI   | SI     | SI       | SI                |
-| mat2        | PARCIAL    | SI   | SI     | SI       | SI                |
-| ExifTool    | PARCIAL    | SI   | SI     | SI       | SI                |
-| ffmpeg solo | SI         | NO   | NO     | NO       | SI                |
+| Herramienta | Multimedia | PDFs | Office | Imágenes | SVG | CSS | EPUB | Archivos | Desarrollo activo |
+|-------------|------------|------|--------|----------|-----|-----|------|----------|-------------------|
+| adamantium  | SI         | SI   | SI     | SI       | SI  | SI  | SI   | SI       | SI                |
+| mat2        | PARCIAL    | SI   | SI     | SI       | NO  | NO  | NO   | SI       | SI                |
+| ExifTool    | PARCIAL    | SI   | SI     | SI       | NO  | NO  | NO   | NO       | SI                |
+| ffmpeg solo | SI         | NO   | NO     | NO       | NO  | NO  | NO   | NO       | SI                |
 
 ---
 
@@ -568,6 +580,20 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 - [x] Opción `--show-only` para mostrar metadatos sin limpiar
 - [x] Soporte en archivos comprimidos para SVG y CSS
 
+### v2.2 (Soporte EPUB y Políticas de Archivos) ✅ COMPLETADO
+
+- [x] Soporte para libros EPUB (limpieza de metadatos Dublin Core)
+- [x] Preservación del título y el idioma del libro en EPUBs
+- [x] Limpieza de datos EXIF de imágenes internas en EPUBs
+- [x] Opción `--unknown-policy` para archivos desconocidos en comprimidos
+- [x] Valores de política: skip (por defecto), warn, fail, include
+
+### v2.3 (Soporte Torrent y Modo Ligero) - Planificado
+
+- [ ] Soporte para archivos Torrent (limpieza de metadatos .torrent)
+- [ ] Modo ligero (`--lightweight`) para salida mínima
+- [ ] Optimizaciones de rendimiento
+
 ### v3.0 (Avanzado y Profesional)
 
 - [ ] Recodificación opcional para multimedia (con control de calidad)
@@ -580,6 +606,14 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 ---
 
 ## 📜 Historial de Versiones
+
+### v2.2 (Soporte EPUB y Políticas de Archivos) - 2025-12-26
+
+- **Soporte EPUB**: Limpieza completa de metadatos de archivos de libros electrónicos EPUB
+- **Limpieza Dublin Core**: Elimina autor, editorial, derechos, identificadores, fechas
+- **Preservación de Título**: Preserva el título del libro (`dc:title`) e idioma (`dc:language`)
+- **Imágenes Internas**: Limpia metadatos EXIF de imágenes embebidas (portadas, ilustraciones)
+- **Política de Desconocidos**: Nueva opción `--unknown-policy` para archivos (skip/warn/fail/include)
 
 ### v2.1 (Nuevos Formatos y Análisis) - 2025-12-24
 
