@@ -25,7 +25,8 @@ adamantium/
 │   ├── config_loader.sh        # Carga de configuración ~/.adamantiumrc (v1.5)
 │   ├── logger.sh               # Sistema de logging detallado (v1.5)
 │   ├── notifier.sh             # Notificaciones de escritorio (v1.5)
-│   └── report_generator.sh     # Generación de reportes JSON/CSV (v2.0)
+│   ├── report_generator.sh     # Generación de reportes JSON/CSV (v2.0)
+│   └── epub_handler.sh         # Procesamiento de EPUB (v2.2)
 ├── integration/                # Integración con gestores de archivos (v2.0)
 │   ├── install-integration.sh  # Instalador de integración
 │   ├── nautilus/               # Extensión para GNOME Files
@@ -299,6 +300,7 @@ adamantium
 | CSS (v2.1)      | perl (eliminar comentarios)           | Solo perl         |
 | PDF             | exiftool únicamente                   | Solo exiftool     |
 | Office          | exiftool únicamente                   | Solo exiftool     |
+| EPUB (v2.2)     | 1. Extraer → 2. Perl XML → 3. ExifTool imgs → 4. Recomprimir | perl + exiftool + zip |
 | Archivos (v1.4) | 1. Extraer → 2. Limpiar → 3. Comprimir| 7z/tar + exiftool |
 
 ---
@@ -490,6 +492,14 @@ CLEAN="${MAGENTA}◆${NC}"    # Proceso de limpieza
 - [x] Funciones: show_css_metadata, clean_css
 - [x] Soporte en archivos comprimidos para SVG y CSS
 
+### v2.2 ✅ COMPLETADO
+- [x] Soporte para archivos EPUB (libros electrónicos)
+- [x] Limpieza de metadatos Dublin Core (preservando título)
+- [x] Limpieza de imágenes internas con ExifTool
+- [x] Opción `--unknown-policy` para archivos desconocidos en comprimidos
+- [x] Valores: skip (default), warn, fail, include
+- [x] Módulo: epub_handler
+
 ### v3.0 (Futuro)
 - [ ] GUI opcional (GTK4/Qt6)
 - [ ] Recodificación opcional para multimedia
@@ -503,8 +513,8 @@ CLEAN="${MAGENTA}◆${NC}"    # Proceso de limpieza
 
 **adamantium** - Herramienta de limpieza profunda de metadatos
 
-Versión: 2.1
-Fecha: 2025-12-24
+Versión: 2.2
+Fecha: 2025-12-26
 
 Herramientas utilizadas:
 - ExifTool por Phil Harvey
@@ -526,4 +536,4 @@ Para bugs, sugerencias o contribuciones:
 
 ---
 
-**Última actualización**: 2025-12-18
+**Última actualización**: 2025-12-26

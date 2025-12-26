@@ -10,7 +10,7 @@
 # ═══════════════════════════════════════════════════════════════
 # Deep metadata cleaning | The tool that excited Edward Snowden
 # Full Mode: ExifTool + ffmpeg
-# Version: 2.1
+# Version: 2.2
 # ═══════════════════════════════════════════════════════════════
 
 set -euo pipefail
@@ -86,6 +86,10 @@ OUTPUT_SUFFIX="_clean"     # Default suffix (can be overridden by config)
 
 # Variables para v2.1 features
 SHOW_ONLY=false            # --show-only flag to display metadata without cleaning
+
+# Variables para v2.2 features
+EPUB_MODE=false            # Flag for EPUB processing
+ARCHIVE_UNKNOWN_POLICY="skip"  # Policy for unknown files in archives: skip, warn, fail, include
 
 # Versiones mínimas requeridas (se actualizan automáticamente desde upstream)
 REQUIRED_EXIFTOOL_VERSION="13.39"
@@ -245,6 +249,29 @@ declare -A MSG_ES=(
     [CSS_COMMENTS_REMOVED]="Todos los comentarios eliminados"
     [CSS_NO_COMMENTS]="No se encontraron comentarios CSS"
     [CLEANING_CSS]="Limpiando comentarios CSS"
+    [EPUB_FILE]="archivo EPUB"
+    [EPUB_DETECTED]="Ebook EPUB detectado"
+    [EPUB_EXTRACTING]="Extrayendo EPUB"
+    [EPUB_EXTRACTED]="EPUB extraído correctamente"
+    [EPUB_CLEANING_OPF]="Limpiando metadatos OPF"
+    [EPUB_OPF_CLEANED]="Metadatos OPF limpiados"
+    [EPUB_CLEANING_NCX]="Limpiando metadatos NCX"
+    [EPUB_NCX_CLEANED]="Metadatos NCX limpiados"
+    [EPUB_CLEANING_IMAGES]="Limpiando imágenes internas"
+    [EPUB_IMAGES_CLEANED]="Imágenes internas limpiadas"
+    [EPUB_RECOMPRESSING]="Recomprimiendo EPUB"
+    [EPUB_RECOMPRESSED]="EPUB recomprimido correctamente"
+    [EPUB_CLEAN_SUCCESS]="EPUB limpiado exitosamente"
+    [EPUB_EXTRACT_ERROR]="Error al extraer EPUB"
+    [EPUB_RECOMPRESS_ERROR]="Error al recomprimir EPUB"
+    [EPUB_INVALID]="Estructura de archivo EPUB inválida"
+    [EPUB_NO_OPF]="No se encontró archivo OPF"
+    [EPUB_OPF_FILE]="Archivo OPF"
+    [EPUB_INTERNAL_IMAGES]="Imágenes internas"
+    [UNKNOWN_POLICY_SKIP]="Omitiendo archivo de tipo desconocido"
+    [UNKNOWN_POLICY_WARN]="Advertencia: Tipo de archivo desconocido"
+    [UNKNOWN_POLICY_FAIL]="Error: Tipo de archivo desconocido, abortando"
+    [UNKNOWN_POLICY_INCLUDE]="Incluyendo archivo desconocido sin limpiar"
 )
 
 # Mensajes en inglés (idioma por defecto)
@@ -374,6 +401,29 @@ declare -A MSG_EN=(
     [CSS_COMMENTS_REMOVED]="All comments removed"
     [CSS_NO_COMMENTS]="No CSS comments found"
     [CLEANING_CSS]="Cleaning CSS comments"
+    [EPUB_FILE]="EPUB file"
+    [EPUB_DETECTED]="EPUB ebook detected"
+    [EPUB_EXTRACTING]="Extracting EPUB"
+    [EPUB_EXTRACTED]="EPUB extracted successfully"
+    [EPUB_CLEANING_OPF]="Cleaning OPF metadata"
+    [EPUB_OPF_CLEANED]="OPF metadata cleaned"
+    [EPUB_CLEANING_NCX]="Cleaning NCX metadata"
+    [EPUB_NCX_CLEANED]="NCX metadata cleaned"
+    [EPUB_CLEANING_IMAGES]="Cleaning internal images"
+    [EPUB_IMAGES_CLEANED]="Internal images cleaned"
+    [EPUB_RECOMPRESSING]="Recompressing EPUB"
+    [EPUB_RECOMPRESSED]="EPUB recompressed successfully"
+    [EPUB_CLEAN_SUCCESS]="EPUB cleaned successfully"
+    [EPUB_EXTRACT_ERROR]="Error extracting EPUB"
+    [EPUB_RECOMPRESS_ERROR]="Error recompressing EPUB"
+    [EPUB_INVALID]="Invalid EPUB file structure"
+    [EPUB_NO_OPF]="OPF file not found"
+    [EPUB_OPF_FILE]="OPF file"
+    [EPUB_INTERNAL_IMAGES]="Internal images"
+    [UNKNOWN_POLICY_SKIP]="Skipping unknown file type"
+    [UNKNOWN_POLICY_WARN]="Warning: Unknown file type"
+    [UNKNOWN_POLICY_FAIL]="Error: Unknown file type, aborting"
+    [UNKNOWN_POLICY_INCLUDE]="Including unknown file without cleaning"
 )
 
 # Función para obtener mensaje traducido
@@ -798,6 +848,12 @@ detect_file_type() {
             IS_MULTIMEDIA=false
             type_icon="$OFFICE_ICON"
             ;;
+        application/epub+zip)
+            FILE_TYPE="$(msg EPUB_FILE)"
+            IS_MULTIMEDIA=false
+            EPUB_MODE=true
+            type_icon="📚"
+            ;;
         application/zip|application/x-7z-compressed|application/x-rar*|application/vnd.rar)
             FILE_TYPE="archive"
             IS_MULTIMEDIA=false
@@ -822,6 +878,12 @@ detect_file_type() {
             local ext="${filename##*.}"
             ext=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
             case "$ext" in
+                epub)
+                    FILE_TYPE="$(msg EPUB_FILE)"
+                    IS_MULTIMEDIA=false
+                    EPUB_MODE=true
+                    type_icon="📚"
+                    ;;
                 zip|7z|rar|tar|tgz|tbz|tbz2|txz)
                     FILE_TYPE="archive"
                     IS_MULTIMEDIA=false
@@ -848,7 +910,9 @@ detect_file_type() {
     esac
 
     echo -e "  ${type_icon} $(msg TYPE_DETECTED): ${YELLOW}${FILE_TYPE}${NC} ${GRAY}(${mimetype})${NC}"
-    if [ "$ARCHIVE_MODE" = true ]; then
+    if [ "$EPUB_MODE" = true ]; then
+        echo -e "  ${TOOL_ICON} $(msg PROCESSING): ${CYAN}EPUB Handler${NC}"
+    elif [ "$ARCHIVE_MODE" = true ]; then
         echo -e "  ${TOOL_ICON} $(msg PROCESSING): ${CYAN}Archive Handler${NC}"
     elif [ "$FILE_TYPE" = "$(msg CSS_FILE)" ]; then
         echo -e "  ${TOOL_ICON} $(msg PROCESSING): ${CYAN}Perl (comment removal)${NC}"
@@ -1306,6 +1370,32 @@ main() {
                 SHOW_ONLY=true
                 shift
                 ;;
+            --unknown-policy=*)
+                ARCHIVE_UNKNOWN_POLICY="${1#*=}"
+                # Validar valor
+                case "$ARCHIVE_UNKNOWN_POLICY" in
+                    skip|warn|fail|include) ;;
+                    *)
+                        echo -e "${RED}${CROSS} Invalid --unknown-policy value: $ARCHIVE_UNKNOWN_POLICY${NC}" >&2
+                        echo -e "Valid values: skip, warn, fail, include"
+                        exit 1
+                        ;;
+                esac
+                shift
+                ;;
+            --unknown-policy)
+                ARCHIVE_UNKNOWN_POLICY="$2"
+                # Validar valor
+                case "$ARCHIVE_UNKNOWN_POLICY" in
+                    skip|warn|fail|include) ;;
+                    *)
+                        echo -e "${RED}${CROSS} Invalid --unknown-policy value: $ARCHIVE_UNKNOWN_POLICY${NC}" >&2
+                        echo -e "Valid values: skip, warn, fail, include"
+                        exit 1
+                        ;;
+                esac
+                shift 2
+                ;;
             -h|--help)
                 print_header
                 echo -e "${BOLD}$(msg USAGE)${NC}"
@@ -1320,6 +1410,8 @@ main() {
                 echo -e "  ${CYAN}--interactive, -i${NC}     Launch interactive TUI mode"
                 echo -e "  ${CYAN}--archive-password${NC}    Password for encrypted archives"
                 echo -e "  ${CYAN}--archive-preview${NC}     Preview archive contents without processing"
+                echo -e "  ${CYAN}--unknown-policy${NC}      Policy for unknown files in archives:"
+                echo -e "                          skip (default), warn, fail, include"
                 echo -e "  ${CYAN}--notify${NC}              Send desktop notification on completion"
                 echo -e "  ${CYAN}-h, --help${NC}            Show this help"
                 echo ""
@@ -1354,6 +1446,11 @@ main() {
                 echo -e "  $0 photos.zip"
                 echo -e "  $0 documents.7z --archive-preview"
                 echo -e "  $0 secret.rar --archive-password 'mypass'"
+                echo -e "  $0 data.zip --unknown-policy=warn"
+                echo ""
+                echo -e "  ${GRAY}# EPUB ebook mode (v2.2)${NC}"
+                echo -e "  $0 book.epub"
+                echo -e "  $0 novel.epub --show-only"
                 echo ""
                 exit 0
                 ;;
@@ -1523,6 +1620,80 @@ main() {
 
     detect_file_type "$ORIGINAL_FILE"
 
+    # Dispatch a EPUB mode si se detectó un EPUB
+    if [ "$EPUB_MODE" = true ]; then
+        local script_dir="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+        local lib_dir="${script_dir}/lib"
+
+        if [ ! -f "${lib_dir}/epub_handler.sh" ]; then
+            echo -e "${RED}${CROSS} Error: EPUB handler not found in ${lib_dir}${NC}" >&2
+            exit 1
+        fi
+
+        # Exportar variables necesarias para EPUB mode
+        export RED GREEN YELLOW BLUE MAGENTA CYAN WHITE GRAY BOLD NC
+        export CHECK CROSS ARROW BULLET WARN INFO CLEAN SHIELD FILE_ICON SIZE_ICON
+        export SPARKLES SEARCH_ICON TOOL_ICON
+        export LANG_CODE DRY_RUN VERIFY_HASH SHOW_ONLY
+
+        # Exportar función msg
+        export -f msg
+
+        # Cargar EPUB handler
+        source "${lib_dir}/epub_handler.sh"
+
+        # Modo SHOW-ONLY para EPUB
+        if [ "$SHOW_ONLY" = true ]; then
+            echo ""
+            echo -e "${CYAN}${INFO} ${BOLD}$(msg SHOW_ONLY_MODE)${NC}"
+            echo -e "${GRAY}$(msg SHOW_ONLY_NOTICE)${NC}"
+            epub_show_metadata "$ORIGINAL_FILE" "$(msg METADATA_BEFORE)" "$CYAN"
+            exit 0
+        fi
+
+        # Modo DRY-RUN para EPUB
+        if [ "$DRY_RUN" = true ]; then
+            echo ""
+            epub_show_metadata "$ORIGINAL_FILE" "$(msg METADATA_BEFORE)" "$RED"
+            echo ""
+            echo -e "${CYAN}${INFO} $(msg WOULD_CREATE) ${GREEN}${OUTPUT_FILE}${NC}"
+            echo -e "${GRAY}$(msg DRY_RUN_NOTICE)${NC}"
+            exit 0
+        fi
+
+        # Mostrar metadatos antes
+        epub_show_metadata "$ORIGINAL_FILE" "$(msg METADATA_BEFORE)" "$RED"
+
+        # Procesar EPUB
+        epub_main "$ORIGINAL_FILE" "$OUTPUT_FILE"
+        local epub_result=$?
+
+        if [ $epub_result -eq 0 ]; then
+            # Mostrar metadatos después
+            epub_show_metadata "$OUTPUT_FILE" "$(msg METADATA_AFTER)" "$GREEN"
+
+            # Verificación de hash
+            if [ "$VERIFY_HASH" = true ]; then
+                verify_hashes "$ORIGINAL_FILE" "$OUTPUT_FILE"
+            fi
+
+            # Resumen final
+            print_separator
+            echo -e "${BOLD}${GREEN}${SPARKLES} $(msg PROCESS_COMPLETED)${NC}"
+            print_separator
+            echo ""
+            echo -e "  ${FILE_ICON} $(msg ORIGINAL_FILE) ${GRAY}${ORIGINAL_FILE}${NC}"
+            echo -e "  ${SPARKLES} $(msg CLEAN_FILE)   ${GREEN}${OUTPUT_FILE}${NC}"
+            echo ""
+            show_file_info "$OUTPUT_FILE"
+            echo ""
+            echo -e "${CYAN}${INFO} $(msg ORIGINAL_PRESERVED)${NC}"
+            echo ""
+        fi
+
+        exit $epub_result
+    fi
+
     # Dispatch a archive mode si se detectó un archivo comprimido
     if [ "$ARCHIVE_MODE" = true ]; then
         # Usar readlink -f para obtener path absoluto sin depender del directorio actual
@@ -1541,7 +1712,7 @@ main() {
         export LOCATION_ICON CAMERA_ICON COMPUTER_ICON CALENDAR_ICON TOOL_ICON
         export ARCHIVE_ICON
         export LANG_CODE DRY_RUN VERIFY_HASH
-        export ARCHIVE_PASSWORD ARCHIVE_PREVIEW
+        export ARCHIVE_PASSWORD ARCHIVE_PREVIEW ARCHIVE_UNKNOWN_POLICY
 
         # Exportar función msg
         export -f msg

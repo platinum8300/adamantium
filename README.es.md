@@ -12,7 +12,7 @@ adamantium es una herramienta de línea de comandos con interfaz TUI (Text User 
 
 [![Licencia: AGPL v3](https://img.shields.io/badge/Licencia-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Plataforma: Linux](https://img.shields.io/badge/Plataforma-Linux-blue.svg)](https://www.linux.org/)
-[![Versión: 2.1](https://img.shields.io/badge/Versión-2.1-green.svg)](https://github.com/platinum8300/adamantium/releases)
+[![Versión: 2.2](https://img.shields.io/badge/Versión-2.2-green.svg)](https://github.com/platinum8300/adamantium/releases)
 
 ---
 
@@ -28,13 +28,26 @@ adamantium es una herramienta de línea de comandos con interfaz TUI (Text User 
   - 🖼️ **Imágenes IA**: PNG con metadatos de Stable Diffusion, Flux, DALL-E, etc.
   - 🎨 **Gráficos Vectoriales**: Archivos SVG (v2.1+)
   - 💻 **Archivos Web**: Hojas de estilo CSS (v2.1+)
+  - 📚 **Libros EPUB**: Autor, editorial, ISBN, fechas (v2.2+)
   - 📄 **PDFs**: Documentos PDF
   - 📝 **Documentos Office**: DOCX, XLSX, PPTX, ODT, ODS, etc.
 - **Preserva el archivo original**: Siempre mantiene intacto tu archivo original
 - **Detección automática**: Identifica el tipo de archivo y aplica el método óptimo
 - **Contador de metadatos**: Muestra cuántos campos se encontraron y eliminaron
 
-### 🆕 Nuevo en v2.1 (Nuevos Formatos y Análisis)
+### 🆕 Nuevo en v2.2 (Soporte EPUB y Políticas de Archivos)
+
+- **Soporte para Libros EPUB**: Limpia metadatos de archivos EPUB (autor, editorial, ISBN, fechas)
+  - Preserva el título y el idioma del libro
+  - Limpia los datos EXIF de las imágenes internas
+  - Recompresión correcta del EPUB (mimetype primero)
+- **Política de Archivos Desconocidos**: Controla el comportamiento para archivos desconocidos en archivos comprimidos
+  - `--unknown-policy=skip` (por defecto): Omite silenciosamente archivos desconocidos
+  - `--unknown-policy=warn`: Muestra advertencia y continúa
+  - `--unknown-policy=fail`: Aborta si encuentra archivos desconocidos
+  - `--unknown-policy=include`: Incluye sin limpiar
+
+### 🎨 Funciones v2.1 (Nuevos Formatos y Análisis)
 
 - **Soporte SVG**: Limpieza de metadatos de archivos de gráficos vectoriales SVG
 - **Soporte CSS**: Eliminación de comentarios de hojas de estilo CSS (info de autor, copyright, versiones)

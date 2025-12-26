@@ -4,6 +4,77 @@ All notable changes to adamantium will be documented in this file.
 
 ---
 
+## [2.2] - 2025-12-26
+
+### 🎉 NEW FEATURES - EPUB Support and Archive Policies
+
+adamantium v2.2 adds support for EPUB ebook files and introduces a new policy system for handling unknown file types in archives.
+
+### ✨ New Features
+
+- **EPUB Ebook Support** - Complete EPUB metadata cleaning
+  - Cleans metadata from EPUB files (Dublin Core): author, publisher, ISBN, dates, contributor
+  - Preserves book title (`dc:title`) and language (`dc:language`)
+  - Cleans EXIF metadata from internal images (cover, illustrations)
+  - Proper EPUB recompression (mimetype first, uncompressed)
+  - Cleans toc.ncx docAuthor if present
+  - New module: `lib/epub_handler.sh`
+  - Automatic detection by MIME type (`application/epub+zip`) and extension
+  - Example: `adamantium book.epub` → `book_clean.epub`
+
+- **Unknown File Policy** - Control behavior for unsupported files in archives
+  - New `--unknown-policy` option to control behavior when unknown files are found
+  - `skip` (default): Silently skip unknown files (original behavior)
+  - `warn`: Show warning and continue processing
+  - `fail`: Abort processing if unknown files found
+  - `include`: Include unknown files without cleaning
+  - Example: `adamantium archive.zip --unknown-policy=warn`
+
+### 🏗️ Architecture
+
+- **New module: `lib/epub_handler.sh`**
+  - `epub_is_valid()` - Validate EPUB structure
+  - `epub_detect_opf_path()` - Find content.opf via container.xml
+  - `epub_show_metadata()` - Display EPUB metadata with color coding
+  - `epub_clean_opf()` - Clean content.opf preserving title/language
+  - `epub_clean_ncx()` - Clean toc.ncx docAuthor
+  - `epub_clean_internal_images()` - Clean EXIF from internal images
+  - `epub_recompress()` - Proper EPUB recompression
+  - `epub_clean()` - Main cleaning function
+  - `epub_main()` - Entry point
+
+- **Updated `lib/archive_handler.sh`**
+  - New `archive_handle_unknown()` function for policy handling
+  - `ARCHIVE_UNKNOWN_POLICY` variable
+
+- **Updated main script**
+  - `EPUB_MODE` variable
+  - EPUB detection in `detect_file_type()`
+  - EPUB dispatch in `main()`
+
+### 🔧 New Options
+
+- `--unknown-policy=VALUE` - Set policy for unknown files in archives
+  - Values: `skip`, `warn`, `fail`, `include`
+
+### 🌐 i18n Updates
+
+- New messages in Spanish and English:
+  - `EPUB_FILE`, `EPUB_DETECTED`, `EPUB_EXTRACTING`, `EPUB_EXTRACTED`
+  - `EPUB_CLEANING_OPF`, `EPUB_OPF_CLEANED`, `EPUB_CLEANING_NCX`, `EPUB_NCX_CLEANED`
+  - `EPUB_CLEANING_IMAGES`, `EPUB_IMAGES_CLEANED`
+  - `EPUB_RECOMPRESSING`, `EPUB_RECOMPRESSED`, `EPUB_CLEAN_SUCCESS`
+  - `EPUB_EXTRACT_ERROR`, `EPUB_RECOMPRESS_ERROR`, `EPUB_INVALID`, `EPUB_NO_OPF`
+  - `EPUB_OPF_FILE`, `EPUB_INTERNAL_IMAGES`
+  - `UNKNOWN_POLICY_SKIP`, `UNKNOWN_POLICY_WARN`, `UNKNOWN_POLICY_FAIL`, `UNKNOWN_POLICY_INCLUDE`
+
+### 🧪 Tests
+
+- New tests for EPUB handler (module exists, syntax, functions, detection)
+- New tests for unknown policy (function exists, parsing)
+
+---
+
 ## [2.1] - 2025-12-24
 
 ### 🎉 NEW FEATURES - New Formats and Analysis

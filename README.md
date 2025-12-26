@@ -12,7 +12,7 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Platform: Linux](https://img.shields.io/badge/Platform-Linux-blue.svg)](https://www.linux.org/)
-[![Version: 2.1](https://img.shields.io/badge/Version-2.1-green.svg)](https://github.com/platinum8300/adamantium/releases)
+[![Version: 2.2](https://img.shields.io/badge/Version-2.2-green.svg)](https://github.com/platinum8300/adamantium/releases)
 
 ---
 
@@ -30,6 +30,7 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
   - 🖼️ **AI Images**: PNG with Stable Diffusion, Flux, DALL-E metadata, etc.
   - 🎨 **Vector Graphics**: SVG files (v2.1+)
   - 💻 **Web Files**: CSS stylesheets (v2.1+)
+  - 📚 **EPUB Ebooks**: Author, publisher, ISBN, dates (v2.2+)
   - 📄 **PDFs**: PDF documents
   - 📝 **Office Documents**: DOCX, XLSX, PPTX, ODT, ODS, etc.
   - 📦 **Compressed Archives**: ZIP, TAR, 7Z, RAR (v1.4+)
@@ -37,7 +38,19 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
 - **Automatic Detection**: Identifies file type and applies optimal method
 - **Metadata Counter**: Shows how many fields were found and removed
 
-### 🆕 New in v2.1 (New Formats and Analysis)
+### 🆕 New in v2.2 (EPUB Support and Archive Policies)
+
+- **EPUB Ebook Support**: Clean metadata from EPUB files (author, publisher, ISBN, dates)
+  - Preserves book title and language
+  - Cleans internal images EXIF data
+  - Proper EPUB recompression (mimetype first)
+- **Unknown File Policy**: Control behavior for unknown files in archives
+  - `--unknown-policy=skip` (default): Silently skip unknown files
+  - `--unknown-policy=warn`: Show warning and continue
+  - `--unknown-policy=fail`: Abort if unknown files found
+  - `--unknown-policy=include`: Include without cleaning
+
+### 🎨 v2.1 Features (New Formats and Analysis)
 
 - **SVG Support**: Clean metadata from SVG vector graphics files
 - **CSS Support**: Remove comments from CSS stylesheets (author info, copyright, versions)

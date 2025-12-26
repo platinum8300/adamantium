@@ -31,6 +31,10 @@ ARCHIVE_VERIFY=false
 ARCHIVE_RECURSIVE=true
 ADAMANTIUM_BIN=""
 
+# Policy for unknown files (v2.2)
+# Values: skip (default), warn, fail, include
+ARCHIVE_UNKNOWN_POLICY="${ARCHIVE_UNKNOWN_POLICY:-skip}"
+
 # Estadísticas
 ARCHIVE_FILES_CLEANED=0
 ARCHIVE_FILES_SKIPPED=0
@@ -413,6 +417,38 @@ archive_is_nested_archive() {
     esac
 }
 
+# ═══════════════════════════════════════════════════════════════
+# UNKNOWN FILE POLICY (v2.2)
+# ═══════════════════════════════════════════════════════════════
+
+archive_handle_unknown() {
+    local file="$1"
+    local relative_path="$2"
+
+    case "$ARCHIVE_UNKNOWN_POLICY" in
+        skip)
+            # Silent skip (original behavior)
+            return 0
+            ;;
+        warn)
+            echo -e "  ${YELLOW}${WARN}${NC} $(msg UNKNOWN_POLICY_WARN): ${GRAY}${relative_path}${NC}"
+            return 0
+            ;;
+        fail)
+            echo -e "  ${RED}${CROSS}${NC} $(msg UNKNOWN_POLICY_FAIL): ${relative_path}"
+            return 1
+            ;;
+        include)
+            echo -e "  ${GRAY}●${NC} $(msg UNKNOWN_POLICY_INCLUDE): ${GRAY}${relative_path}${NC}"
+            return 0
+            ;;
+        *)
+            # Default to skip
+            return 0
+            ;;
+    esac
+}
+
 archive_clean_contents() {
     local extract_dir="$1"
     local depth="${2:-0}"
@@ -508,6 +544,11 @@ archive_clean_contents() {
                 fi
             fi
         else
+            # Handle unknown file type according to policy (v2.2)
+            if ! archive_handle_unknown "$file" "$relative_path"; then
+                # Policy is 'fail', abort processing
+                return 1
+            fi
             (( ++ARCHIVE_FILES_SKIPPED ))
         fi
     done < <(find "$extract_dir" -type f -print0 2>/dev/null)

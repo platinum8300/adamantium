@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ═══════════════════════════════════════════════════════════════
-# test_v15_v20_features.sh - Tests for v1.5 and v2.0 features
+# test_v15_v20_features.sh - Tests for v1.5, v2.0 and v2.2 features
 # Part of adamantium test suite
 # ═══════════════════════════════════════════════════════════════
 #
@@ -11,6 +11,8 @@
 # - Notification system (v1.5)
 # - Report generation (v2.0)
 # - File manager integration files (v2.0)
+# - EPUB handler (v2.2)
+# - --unknown-policy for archives (v2.2)
 #
 # Usage:
 #   ./tests/test_v15_v20_features.sh
@@ -233,7 +235,9 @@ test_main_script_syntax() {
 
 test_main_script_version() {
     grep -q "Version: 1.5" "${PROJECT_DIR}/adamantium" || \
-    grep -q "Version: 2.0" "${PROJECT_DIR}/adamantium"
+    grep -q "Version: 2.0" "${PROJECT_DIR}/adamantium" || \
+    grep -q "Version: 2.1" "${PROJECT_DIR}/adamantium" || \
+    grep -q "Version: 2.2" "${PROJECT_DIR}/adamantium"
 }
 
 test_main_script_notify_option() {
@@ -310,6 +314,21 @@ main() {
     run_test "Loads v1.5 modules" test_main_script_loads_modules
     echo ""
 
+    # EPUB Handler Tests (v2.2)
+    echo -e "${YELLOW}EPUB Handler (v2.2):${NC}"
+    run_test "Module exists" test_epub_module_exists
+    run_test "Valid syntax" test_epub_module_syntax
+    run_test "Core functions exist" test_epub_functions
+    run_test "EPUB detection in main script" test_epub_detection
+    echo ""
+
+    # Unknown Policy Tests (v2.2)
+    echo -e "${YELLOW}Unknown Policy (v2.2):${NC}"
+    run_test "Policy function in archive handler" test_unknown_policy_function
+    run_test "Policy parsing in main script" test_unknown_policy_parsing
+    run_test "EPUB i18n messages" test_epub_i18n
+    echo ""
+
     # Summary
     echo -e "${CYAN}═══════════════════════════════════════════════════════════════${NC}"
     echo -e "  Tests: ${TESTS_RUN} | Passed: ${GREEN}${TESTS_PASSED}${NC} | Failed: ${RED}${TESTS_FAILED}${NC}"
@@ -323,6 +342,48 @@ main() {
         echo -e "${GREEN}All tests passed!${NC}"
         exit 0
     fi
+}
+
+# ─────────────────────────────────────────────────────────────
+# EPUB HANDLER TESTS (v2.2)
+# ─────────────────────────────────────────────────────────────
+
+test_epub_module_exists() {
+    assert_file_exists "${LIB_DIR}/epub_handler.sh"
+}
+
+test_epub_module_syntax() {
+    bash -n "${LIB_DIR}/epub_handler.sh" 2>/dev/null
+}
+
+test_epub_functions() {
+    source "${LIB_DIR}/epub_handler.sh"
+    declare -f epub_clean &>/dev/null && \
+    declare -f epub_show_metadata &>/dev/null && \
+    declare -f epub_is_valid &>/dev/null
+}
+
+test_epub_detection() {
+    grep -q "EPUB_MODE" "${PROJECT_DIR}/adamantium" && \
+    grep -q "application/epub+zip" "${PROJECT_DIR}/adamantium"
+}
+
+# ─────────────────────────────────────────────────────────────
+# UNKNOWN POLICY TESTS (v2.2)
+# ─────────────────────────────────────────────────────────────
+
+test_unknown_policy_function() {
+    grep -q "archive_handle_unknown" "${LIB_DIR}/archive_handler.sh" && \
+    grep -q "ARCHIVE_UNKNOWN_POLICY" "${LIB_DIR}/archive_handler.sh"
+}
+
+test_unknown_policy_parsing() {
+    grep -q "\-\-unknown-policy" "${PROJECT_DIR}/adamantium"
+}
+
+test_epub_i18n() {
+    grep -q "EPUB_FILE" "${PROJECT_DIR}/adamantium" && \
+    grep -q "EPUB_CLEAN_SUCCESS" "${PROJECT_DIR}/adamantium"
 }
 
 main "$@"
