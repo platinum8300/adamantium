@@ -505,12 +505,16 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 
 ## 📊 Comparación con otras herramientas
 
-| Herramienta | Multimedia | PDFs | Office | Imágenes | SVG | CSS | EPUB | Archivos | Desarrollo activo |
-|-------------|------------|------|--------|----------|-----|-----|------|----------|-------------------|
-| adamantium  | SI         | SI   | SI     | SI       | SI  | SI  | SI   | SI       | SI                |
-| mat2        | PARCIAL    | SI   | SI     | SI       | NO  | NO  | NO   | SI       | SI                |
-| ExifTool    | PARCIAL    | SI   | SI     | SI       | NO  | NO  | NO   | NO       | SI                |
-| ffmpeg solo | SI         | NO   | NO     | NO       | NO  | NO  | NO   | NO       | SI                |
+| Herramienta | Multimedia | PDFs | Office | Imágenes | SVG | CSS | EPUB | Archivos | Torrent | Desarrollo activo |
+|-------------|------------|------|--------|----------|-----|-----|------|----------|---------|-------------------|
+| adamantium  | SI         | SI   | SI     | SI       | SI  | SI  | SI   | SI       | PLANIF. | SI                |
+| mat2        | PARCIAL    | SI   | SI     | SI       | SI  | SI  | SI   | SI       | SI      | SI                |
+| ExifTool    | PARCIAL    | SI   | SI     | SI       | NO  | NO  | NO   | NO       | NO      | SI                |
+| ffmpeg solo | SI         | NO   | NO     | NO       | NO  | NO  | NO   | NO       | NO      | SI                |
+
+**Nota**: mat2 y adamantium tienen cobertura de formatos similar. Diferencias clave:
+- **adamantium**: Limpieza profunda multimedia (ffmpeg + ExifTool), TUI interactiva, integración con gestores de archivos, visualización detallada antes/después
+- **mat2**: Soporte Torrent, librería Python ligera, extensión Nautilus incluida
 
 ---
 

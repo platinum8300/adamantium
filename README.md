@@ -448,12 +448,16 @@ See [EXAMPLES.md](EXAMPLES.md) for more practical examples.
 
 ## 📊 Comparison with Other Tools
 
-| Tool        | Multimedia | PDFs | Office | Images | SVG | CSS | EPUB | Archives | Active Development |
-|-------------|------------|------|--------|--------|-----|-----|------|----------|--------------------|
-| adamantium  | YES        | YES  | YES    | YES    | YES | YES | YES  | YES      | YES                |
-| mat2        | PARTIAL    | YES  | YES    | YES    | NO  | NO  | NO   | YES      | YES                |
-| ExifTool    | PARTIAL    | YES  | YES    | YES    | NO  | NO  | NO   | NO       | YES                |
-| ffmpeg only | YES        | NO   | NO     | NO     | NO  | NO  | NO   | NO       | YES                |
+| Tool        | Multimedia | PDFs | Office | Images | SVG | CSS | EPUB | Archives | Torrent | Active Development |
+|-------------|------------|------|--------|--------|-----|-----|------|----------|---------|-------------------|
+| adamantium  | YES        | YES  | YES    | YES    | YES | YES | YES  | YES      | PLANNED | YES               |
+| mat2        | PARTIAL    | YES  | YES    | YES    | YES | YES | YES  | YES      | YES     | YES               |
+| ExifTool    | PARTIAL    | YES  | YES    | YES    | NO  | NO  | NO   | NO       | NO      | YES               |
+| ffmpeg only | YES        | NO   | NO     | NO     | NO  | NO  | NO   | NO       | NO      | YES               |
+
+**Note**: mat2 and adamantium have similar format coverage. Key differences:
+- **adamantium**: Deep multimedia cleaning (ffmpeg + ExifTool), interactive TUI, file manager integration, detailed before/after visualization
+- **mat2**: Torrent support, lightweight Python library, Nautilus extension included
 
 ---
 
