@@ -248,9 +248,8 @@ test_torrent_mode_option() {
 }
 
 test_version_number() {
-    # Verificar que la versión es 2.3
-    grep -q 'ADAMANTIUM_VERSION="2.3"' "$ADAMANTIUM_BIN" || \
-    grep -q 'ADAMANTIUM_VERSION="2.2"' "$ADAMANTIUM_BIN"  # Still valid during development
+    # Verificar que la versión es 2.3.x
+    grep -qE 'ADAMANTIUM_VERSION="2\.3(\.[0-9]+)?"' "$ADAMANTIUM_BIN"
 }
 
 test_i18n_torrent_messages_es() {

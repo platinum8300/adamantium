@@ -4,6 +4,28 @@ All notable changes to adamantium will be documented in this file.
 
 ---
 
+## [2.3.1] - 2025-12-28
+
+### Bug Fixes - Torrent Handler
+
+Critical fixes for the torrent handler introduced in v2.3:
+
+- **Fixed torrent cleaning crash** - Removed module-level EXIT trap that caused
+  premature script termination when using process substitution
+- **Fixed metadata display** - Corrected arithmetic expression that caused
+  script exit with `set -e` when starting metadata count
+- **Fixed corrupt output** - Fixed bencode parser dictionary key handling
+  that was storing Perl hash references instead of actual string values
+- **Fixed missing mode variable** - Added proper TORRENT_CLEAN_MODE
+  initialization in torrent_main()
+
+The torrent cleaning now works correctly:
+- Properly removes: `created by`, `creation date`, `comment`
+- Preserves: `announce`, `announce-list`, `info`, `url-list`
+- Output file is valid BitTorrent format
+
+---
+
 ## [2.3] - 2025-12-28
 
 ### NEW FEATURES - Torrent Support, Lightweight Mode, and Performance
