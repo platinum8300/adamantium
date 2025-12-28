@@ -4,6 +4,16 @@ All notable changes to adamantium will be documented in this file.
 
 ---
 
+## [2.3.2] - 2025-12-28
+
+### Bug Fixes - Interactive Mode
+
+- **Fixed version display** - Interactive mode now shows current version
+  instead of hardcoded v2.1
+- **Added author attribution** - About dialog now shows "Created by: platinum8300"
+
+---
+
 ## [2.3.1] - 2025-12-28
 
 ### Bug Fixes - Torrent Handler

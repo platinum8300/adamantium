@@ -37,7 +37,7 @@ interactive_show_menu() {
         "🚪 $(msg INTERACTIVE_EXIT)"
     )
 
-    gum_choose "🛡️  ADAMANTIUM v2.1 - $(msg INTERACTIVE_MENU_TITLE)" "${options[@]}"
+    gum_choose "🛡️  ADAMANTIUM v${ADAMANTIUM_VERSION} - $(msg INTERACTIVE_MENU_TITLE)" "${options[@]}"
 }
 
 # ─────────────────────────────────────────────────────────────
@@ -489,7 +489,8 @@ EOF
     echo ""
     echo -e "  ${CYAN}───────────────────────────────────────────────────────────${NC}"
     echo ""
-    echo -e "    ${BOLD}Version:${NC}     ${ADAMANTIUM_VERSION:-2.2}"
+    echo -e "    ${BOLD}Version:${NC}     ${ADAMANTIUM_VERSION}"
+    echo -e "    ${BOLD}Created by:${NC}  platinum8300"
     echo -e "    ${BOLD}License:${NC}     AGPL-3.0"
     echo -e "    ${BOLD}Repository:${NC}  github.com/platinum8300/adamantium"
     echo -e "    ${BOLD}TUI Backend:${NC} ${TUI_BACKEND}"

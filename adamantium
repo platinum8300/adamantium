@@ -10,13 +10,13 @@
 # ═══════════════════════════════════════════════════════════════
 # Deep metadata cleaning | The tool that excited Edward Snowden
 # Full Mode: ExifTool + ffmpeg
-# Version: 2.3.1
+# Version: 2.3.2
 # ═══════════════════════════════════════════════════════════════
 
 set -euo pipefail
 
 # Version (single source of truth - update here only)
-export ADAMANTIUM_VERSION="2.3.1"
+export ADAMANTIUM_VERSION="2.3.2"
 
 # Colores
 readonly RED='\033[0;31m'
