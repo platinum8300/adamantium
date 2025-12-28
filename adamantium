@@ -10,13 +10,13 @@
 # ═══════════════════════════════════════════════════════════════
 # Deep metadata cleaning | The tool that excited Edward Snowden
 # Full Mode: ExifTool + ffmpeg
-# Version: 2.2
+# Version: 2.3
 # ═══════════════════════════════════════════════════════════════
 
 set -euo pipefail
 
 # Version (single source of truth - update here only)
-export ADAMANTIUM_VERSION="2.2"
+export ADAMANTIUM_VERSION="2.3"
 
 # Colores
 readonly RED='\033[0;31m'
@@ -93,6 +93,14 @@ SHOW_ONLY=false            # --show-only flag to display metadata without cleani
 # Variables para v2.2 features
 EPUB_MODE=false            # Flag for EPUB processing
 ARCHIVE_UNKNOWN_POLICY="skip"  # Policy for unknown files in archives: skip, warn, fail, include
+
+# Variables para v2.3 features
+TORRENT_MODE=false         # Flag for torrent processing
+TORRENT_CLEAN_MODE="safe"  # Torrent cleaning mode: safe or aggressive
+LIGHTWEIGHT_MODE=false     # Lightweight output mode
+
+# Performance optimizations (v2.3)
+declare -A MIME_CACHE=()   # Cache for MIME type detection
 
 # Versiones mínimas requeridas (se actualizan automáticamente desde upstream)
 REQUIRED_EXIFTOOL_VERSION="13.39"
@@ -275,6 +283,17 @@ declare -A MSG_ES=(
     [UNKNOWN_POLICY_WARN]="Advertencia: Tipo de archivo desconocido"
     [UNKNOWN_POLICY_FAIL]="Error: Tipo de archivo desconocido, abortando"
     [UNKNOWN_POLICY_INCLUDE]="Incluyendo archivo desconocido sin limpiar"
+    [TORRENT_FILE]="archivo torrent"
+    [TORRENT_DETECTED]="Archivo BitTorrent detectado"
+    [TORRENT_CLEANING]="Limpiando metadatos del torrent"
+    [TORRENT_CLEANED]="Metadatos del torrent limpiados"
+    [TORRENT_CLEAN_SUCCESS]="Torrent limpiado exitosamente"
+    [TORRENT_CLEAN_ERROR]="Error al limpiar el torrent"
+    [TORRENT_INVALID]="Archivo torrent invalido o corrupto"
+    [TORRENT_REMOVED]="Eliminados"
+    [TORRENT_PRESERVED]="Preservados"
+    [TORRENT_MODE_SAFE]="Modo seguro: preserva funcionalidad del torrent"
+    [TORRENT_MODE_AGGRESSIVE]="Modo agresivo: maxima privacidad"
 )
 
 # Mensajes en inglés (idioma por defecto)
@@ -427,6 +446,17 @@ declare -A MSG_EN=(
     [UNKNOWN_POLICY_WARN]="Warning: Unknown file type"
     [UNKNOWN_POLICY_FAIL]="Error: Unknown file type, aborting"
     [UNKNOWN_POLICY_INCLUDE]="Including unknown file without cleaning"
+    [TORRENT_FILE]="torrent file"
+    [TORRENT_DETECTED]="BitTorrent file detected"
+    [TORRENT_CLEANING]="Cleaning torrent metadata"
+    [TORRENT_CLEANED]="Torrent metadata cleaned"
+    [TORRENT_CLEAN_SUCCESS]="Torrent cleaned successfully"
+    [TORRENT_CLEAN_ERROR]="Error cleaning torrent"
+    [TORRENT_INVALID]="Invalid or corrupt torrent file"
+    [TORRENT_REMOVED]="Removed"
+    [TORRENT_PRESERVED]="Preserved"
+    [TORRENT_MODE_SAFE]="Safe mode: preserves torrent functionality"
+    [TORRENT_MODE_AGGRESSIVE]="Aggressive mode: maximum privacy"
 )
 
 # Función para obtener mensaje traducido
@@ -812,7 +842,8 @@ detect_file_type() {
     local mimetype
     local filename=$(basename "$file")
 
-    mimetype=$(file -b --mime-type "$file")
+    # Usar cache de MIME types para mejor rendimiento (v2.3)
+    mimetype=$(cached_mime_type "$file")
 
     local type_icon=""
     case "$mimetype" in
@@ -856,6 +887,12 @@ detect_file_type() {
             IS_MULTIMEDIA=false
             EPUB_MODE=true
             type_icon="📚"
+            ;;
+        application/x-bittorrent)
+            FILE_TYPE="$(msg TORRENT_FILE)"
+            IS_MULTIMEDIA=false
+            TORRENT_MODE=true
+            type_icon="🧲"
             ;;
         application/zip|application/x-7z-compressed|application/x-rar*|application/vnd.rar)
             FILE_TYPE="archive"
@@ -903,6 +940,12 @@ detect_file_type() {
                     IS_MULTIMEDIA=false
                     type_icon="$CODE_ICON"
                     ;;
+                torrent)
+                    FILE_TYPE="$(msg TORRENT_FILE)"
+                    IS_MULTIMEDIA=false
+                    TORRENT_MODE=true
+                    type_icon="🧲"
+                    ;;
                 *)
                     FILE_TYPE="$(msg UNKNOWN)"
                     IS_MULTIMEDIA=false
@@ -912,9 +955,16 @@ detect_file_type() {
             ;;
     esac
 
+    # Skip output in lightweight mode
+    if [ "$LIGHTWEIGHT_MODE" = true ]; then
+        return 0
+    fi
+
     echo -e "  ${type_icon} $(msg TYPE_DETECTED): ${YELLOW}${FILE_TYPE}${NC} ${GRAY}(${mimetype})${NC}"
     if [ "$EPUB_MODE" = true ]; then
         echo -e "  ${TOOL_ICON} $(msg PROCESSING): ${CYAN}EPUB Handler${NC}"
+    elif [ "$TORRENT_MODE" = true ]; then
+        echo -e "  ${TOOL_ICON} $(msg PROCESSING): ${CYAN}Torrent Handler (${TORRENT_CLEAN_MODE})${NC}"
     elif [ "$ARCHIVE_MODE" = true ]; then
         echo -e "  ${TOOL_ICON} $(msg PROCESSING): ${CYAN}Archive Handler${NC}"
     elif [ "$FILE_TYPE" = "$(msg CSS_FILE)" ]; then
@@ -1007,6 +1057,77 @@ show_metadata() {
     fi
 
     echo ""
+}
+
+# ═══════════════════════════════════════════════════════════════
+# PERFORMANCE OPTIMIZATIONS (v2.3)
+# ═══════════════════════════════════════════════════════════════
+
+cached_mime_type() {
+    local file="$1"
+    local abs_path
+
+    # Obtener ruta absoluta para usar como clave
+    abs_path=$(readlink -f "$file" 2>/dev/null || echo "$file")
+
+    # Verificar si está en cache
+    if [[ -n "${MIME_CACHE[$abs_path]:-}" ]]; then
+        echo "${MIME_CACHE[$abs_path]}"
+        return 0
+    fi
+
+    # Obtener MIME type y cachear
+    local mime
+    mime=$(file -b --mime-type "$file" 2>/dev/null)
+    MIME_CACHE[$abs_path]="$mime"
+
+    echo "$mime"
+}
+
+clear_mime_cache() {
+    MIME_CACHE=()
+}
+
+# ═══════════════════════════════════════════════════════════════
+# FUNCIONES DE LIGHTWEIGHT MODE (v2.3)
+# ═══════════════════════════════════════════════════════════════
+
+count_metadata_fields() {
+    local file="$1"
+    local count=0
+
+    # Contar campos de metadatos excluyendo los del sistema
+    count=$(exiftool "$file" 2>/dev/null | \
+        grep -vE "ExifTool|File Name|Directory|File Size|File Permissions|File Inode|File Access Date|File Modification" | \
+        grep -c ":" 2>/dev/null || echo "0")
+
+    echo "$count"
+}
+
+lightweight_output() {
+    local input="$1"
+    local output="$2"
+    local fields_before="$3"
+    local fields_after="$4"
+    local status="${5:-success}"
+
+    local removed=$((fields_before - fields_after))
+    local input_basename=$(basename "$input")
+    local output_basename=$(basename "$output")
+
+    if [ "$status" = "success" ]; then
+        if [ "$LANG_CODE" = "es" ]; then
+            echo "${input_basename} -> ${output_basename} (${removed} campos eliminados)"
+        else
+            echo "${input_basename} -> ${output_basename} (${removed} fields removed)"
+        fi
+    else
+        if [ "$LANG_CODE" = "es" ]; then
+            echo "${input_basename} -> ERROR: ${output}"
+        else
+            echo "${input_basename} -> ERROR: ${output}"
+        fi
+    fi
 }
 
 # ═══════════════════════════════════════════════════════════════
@@ -1399,6 +1520,36 @@ main() {
                 esac
                 shift 2
                 ;;
+            --torrent-mode=*)
+                TORRENT_CLEAN_MODE="${1#*=}"
+                # Validar valor
+                case "$TORRENT_CLEAN_MODE" in
+                    safe|aggressive) ;;
+                    *)
+                        echo -e "${RED}${CROSS} Invalid --torrent-mode value: $TORRENT_CLEAN_MODE${NC}" >&2
+                        echo -e "Valid values: safe, aggressive"
+                        exit 1
+                        ;;
+                esac
+                shift
+                ;;
+            --torrent-mode)
+                TORRENT_CLEAN_MODE="$2"
+                # Validar valor
+                case "$TORRENT_CLEAN_MODE" in
+                    safe|aggressive) ;;
+                    *)
+                        echo -e "${RED}${CROSS} Invalid --torrent-mode value: $TORRENT_CLEAN_MODE${NC}" >&2
+                        echo -e "Valid values: safe, aggressive"
+                        exit 1
+                        ;;
+                esac
+                shift 2
+                ;;
+            --lightweight|-l)
+                LIGHTWEIGHT_MODE=true
+                shift
+                ;;
             -h|--help)
                 print_header
                 echo -e "${BOLD}$(msg USAGE)${NC}"
@@ -1415,6 +1566,10 @@ main() {
                 echo -e "  ${CYAN}--archive-preview${NC}     Preview archive contents without processing"
                 echo -e "  ${CYAN}--unknown-policy${NC}      Policy for unknown files in archives:"
                 echo -e "                          skip (default), warn, fail, include"
+                echo -e "  ${CYAN}--torrent-mode${NC}        Torrent cleaning mode:"
+                echo -e "                          safe (default) - preserves functionality"
+                echo -e "                          aggressive - maximum privacy"
+                echo -e "  ${CYAN}--lightweight, -l${NC}     Minimal output (one line per file)"
                 echo -e "  ${CYAN}--notify${NC}              Send desktop notification on completion"
                 echo -e "  ${CYAN}-h, --help${NC}            Show this help"
                 echo ""
@@ -1454,6 +1609,15 @@ main() {
                 echo -e "  ${GRAY}# EPUB ebook mode (v2.2)${NC}"
                 echo -e "  $0 book.epub"
                 echo -e "  $0 novel.epub --show-only"
+                echo ""
+                echo -e "  ${GRAY}# Torrent mode (v2.3)${NC}"
+                echo -e "  $0 file.torrent"
+                echo -e "  $0 file.torrent --torrent-mode=aggressive"
+                echo -e "  $0 file.torrent --show-only"
+                echo ""
+                echo -e "  ${GRAY}# Lightweight mode (v2.3)${NC}"
+                echo -e "  $0 photo.jpg --lightweight"
+                echo -e "  $0 --batch --pattern '*.jpg' --lightweight ."
                 echo ""
                 exit 0
                 ;;
@@ -1542,8 +1706,11 @@ main() {
             exit 1
         fi
 
+        # Configurar BATCH_LIGHTWEIGHT basado en LIGHTWEIGHT_MODE
+        BATCH_LIGHTWEIGHT="$LIGHTWEIGHT_MODE"
+
         # Exportar variables necesarias para batch
-        export BATCH_MODE BATCH_JOBS BATCH_PATTERNS BATCH_RECURSIVE BATCH_CONFIRM BATCH_VERBOSE BATCH_QUIET
+        export BATCH_MODE BATCH_JOBS BATCH_PATTERNS BATCH_RECURSIVE BATCH_CONFIRM BATCH_VERBOSE BATCH_QUIET BATCH_LIGHTWEIGHT
         export RED GREEN YELLOW BLUE MAGENTA CYAN WHITE GRAY BOLD NC
         export CHECK CROSS ARROW BULLET WARN INFO CLEAN SHIELD FILE_ICON SIZE_ICON
         export VIDEO_ICON IMAGE_ICON PDF_ICON OFFICE_ICON SPARKLES SEARCH_ICON
@@ -1606,20 +1773,22 @@ main() {
     # Verificar y actualizar dependencias automáticamente
     check_and_update_dependencies
 
-    # Mostrar interfaz
-    print_header
+    # Mostrar interfaz (skip en lightweight mode)
+    if [ "$LIGHTWEIGHT_MODE" != true ]; then
+        print_header
 
-    # Modo DRY-RUN
-    if [ "$DRY_RUN" = true ]; then
-        echo -e "${YELLOW}${WARN} ${BOLD}$(msg DRY_RUN_MODE)${NC}"
-        echo -e "${GRAY}$(msg DRY_RUN_NOTICE)${NC}"
+        # Modo DRY-RUN
+        if [ "$DRY_RUN" = true ]; then
+            echo -e "${YELLOW}${WARN} ${BOLD}$(msg DRY_RUN_MODE)${NC}"
+            echo -e "${GRAY}$(msg DRY_RUN_NOTICE)${NC}"
+            echo ""
+        fi
+
+        echo -e "${BOLD}${FILE_ICON} $(msg FILE_TO_PROCESS)${NC}"
+        echo -e "  ${ARROW} ${WHITE}${ORIGINAL_FILE}${NC}"
+        show_file_info "$ORIGINAL_FILE"
         echo ""
     fi
-
-    echo -e "${BOLD}${FILE_ICON} $(msg FILE_TO_PROCESS)${NC}"
-    echo -e "  ${ARROW} ${WHITE}${ORIGINAL_FILE}${NC}"
-    show_file_info "$ORIGINAL_FILE"
-    echo ""
 
     detect_file_type "$ORIGINAL_FILE"
 
@@ -1697,6 +1866,81 @@ main() {
         exit $epub_result
     fi
 
+    # Dispatch a torrent mode si se detectó un archivo torrent
+    if [ "$TORRENT_MODE" = true ]; then
+        local script_dir="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+        local lib_dir="${script_dir}/lib"
+
+        if [ ! -f "${lib_dir}/torrent_handler.sh" ]; then
+            echo -e "${RED}${CROSS} Error: Torrent handler not found in ${lib_dir}${NC}" >&2
+            exit 1
+        fi
+
+        # Exportar variables necesarias para torrent mode
+        export RED GREEN YELLOW BLUE MAGENTA CYAN WHITE GRAY BOLD NC
+        export CHECK CROSS ARROW BULLET WARN INFO CLEAN SHIELD FILE_ICON SIZE_ICON
+        export SPARKLES SEARCH_ICON TOOL_ICON
+        export LANG_CODE DRY_RUN VERIFY_HASH SHOW_ONLY
+        export TORRENT_MODE TORRENT_CLEAN_MODE
+
+        # Exportar función msg
+        export -f msg
+
+        # Cargar torrent handler
+        source "${lib_dir}/torrent_handler.sh"
+
+        # Modo SHOW-ONLY para torrent
+        if [ "$SHOW_ONLY" = true ]; then
+            echo ""
+            echo -e "${CYAN}${INFO} ${BOLD}$(msg SHOW_ONLY_MODE)${NC}"
+            echo -e "${GRAY}$(msg SHOW_ONLY_NOTICE)${NC}"
+            torrent_show_metadata "$ORIGINAL_FILE" "$(msg METADATA_BEFORE)" "$CYAN"
+            exit 0
+        fi
+
+        # Modo DRY-RUN para torrent
+        if [ "$DRY_RUN" = true ]; then
+            echo ""
+            torrent_show_metadata "$ORIGINAL_FILE" "$(msg METADATA_BEFORE)" "$RED"
+            echo ""
+            echo -e "${CYAN}${INFO} $(msg WOULD_CREATE) ${GREEN}${OUTPUT_FILE}${NC}"
+            echo -e "${GRAY}$(msg DRY_RUN_NOTICE)${NC}"
+            exit 0
+        fi
+
+        # Mostrar metadatos antes
+        torrent_show_metadata "$ORIGINAL_FILE" "$(msg METADATA_BEFORE)" "$RED"
+
+        # Procesar torrent
+        torrent_main "$ORIGINAL_FILE" "$OUTPUT_FILE"
+        local torrent_result=$?
+
+        if [ $torrent_result -eq 0 ]; then
+            # Mostrar metadatos después
+            torrent_show_metadata "$OUTPUT_FILE" "$(msg METADATA_AFTER)" "$GREEN"
+
+            # Verificación de hash
+            if [ "$VERIFY_HASH" = true ]; then
+                verify_hashes "$ORIGINAL_FILE" "$OUTPUT_FILE"
+            fi
+
+            # Resumen final
+            print_separator
+            echo -e "${BOLD}${GREEN}${SPARKLES} $(msg PROCESS_COMPLETED)${NC}"
+            print_separator
+            echo ""
+            echo -e "  ${FILE_ICON} $(msg ORIGINAL_FILE) ${GRAY}${ORIGINAL_FILE}${NC}"
+            echo -e "  ${SPARKLES} $(msg CLEAN_FILE)   ${GREEN}${OUTPUT_FILE}${NC}"
+            echo ""
+            show_file_info "$OUTPUT_FILE"
+            echo ""
+            echo -e "${CYAN}${INFO} $(msg ORIGINAL_PRESERVED)${NC}"
+            echo ""
+        fi
+
+        exit $torrent_result
+    fi
+
     # Dispatch a archive mode si se detectó un archivo comprimido
     if [ "$ARCHIVE_MODE" = true ]; then
         # Usar readlink -f para obtener path absoluto sin depender del directorio actual
@@ -1736,14 +1980,57 @@ main() {
         exit $?
     fi
 
-    # Detección de duplicados (no aplica para CSS)
-    if [ "$CHECK_DUPLICATES" = true ] && [ "$FILE_TYPE" != "$(msg CSS_FILE)" ]; then
+    # Detección de duplicados (no aplica para CSS ni lightweight)
+    if [ "$CHECK_DUPLICATES" = true ] && [ "$FILE_TYPE" != "$(msg CSS_FILE)" ] && [ "$LIGHTWEIGHT_MODE" != true ]; then
         if detect_duplicate "$ORIGINAL_FILE"; then
             echo ""
             echo -e "${YELLOW}${WARN} ${BOLD}$(msg DUPLICATE_WARNING)${NC}"
             echo -e "${GRAY}$(msg DUPLICATE_REASON)${NC}"
             echo ""
         fi
+    fi
+
+    # Modo LIGHTWEIGHT: salida mínima (v2.3)
+    if [ "$LIGHTWEIGHT_MODE" = true ]; then
+        # Contar metadatos antes
+        local fields_before=0
+        if [ "$FILE_TYPE" = "$(msg CSS_FILE)" ]; then
+            fields_before=$(perl -0777 -ne 'print scalar(() = m{/\*.*?\*/}gs)' "$ORIGINAL_FILE" 2>/dev/null || echo "0")
+        else
+            fields_before=$(count_metadata_fields "$ORIGINAL_FILE")
+        fi
+
+        # Realizar limpieza silenciosamente
+        if [ "$IS_MULTIMEDIA" = true ]; then
+            local temp_ffmpeg="${TEMP_DIR}/temp_ffmpeg_$(basename "$ORIGINAL_FILE")"
+            ffmpeg -i "$ORIGINAL_FILE" -map_metadata -1 -fflags +bitexact -c copy "$temp_ffmpeg" -y &>/dev/null
+            cp "$temp_ffmpeg" "$OUTPUT_FILE"
+            exiftool -all= -overwrite_original "$OUTPUT_FILE" &>/dev/null
+            rm -f "$temp_ffmpeg"
+        elif [ "$FILE_TYPE" = "$(msg CSS_FILE)" ]; then
+            perl -0777 -pe 's|/\*.*?\*/||gs' "$ORIGINAL_FILE" > "$OUTPUT_FILE" 2>/dev/null
+        elif [ "$FILE_TYPE" = "$(msg SVG_FILE)" ]; then
+            perl -0777 -pe 's|<metadata[^>]*>.*?</metadata>||gsi; s|<!--.*?-->||gs; s|<rdf:RDF[^>]*>.*?</rdf:RDF>||gsi;' "$ORIGINAL_FILE" > "$OUTPUT_FILE" 2>/dev/null
+        else
+            cp "$ORIGINAL_FILE" "$OUTPUT_FILE"
+            exiftool -all= -overwrite_original "$OUTPUT_FILE" &>/dev/null
+        fi
+
+        # Contar metadatos después
+        local fields_after=0
+        if [ -f "$OUTPUT_FILE" ]; then
+            if [ "$FILE_TYPE" = "$(msg CSS_FILE)" ]; then
+                fields_after=$(perl -0777 -ne 'print scalar(() = m{/\*.*?\*/}gs)' "$OUTPUT_FILE" 2>/dev/null || echo "0")
+            else
+                fields_after=$(count_metadata_fields "$OUTPUT_FILE")
+            fi
+            lightweight_output "$ORIGINAL_FILE" "$OUTPUT_FILE" "$fields_before" "$fields_after" "success"
+        else
+            lightweight_output "$ORIGINAL_FILE" "Error creating output file" 0 0 "error"
+            exit 1
+        fi
+
+        exit 0
     fi
 
     # Modo SHOW-ONLY: solo mostrar metadatos sin limpiar

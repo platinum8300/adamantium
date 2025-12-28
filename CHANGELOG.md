@@ -4,6 +4,112 @@ All notable changes to adamantium will be documented in this file.
 
 ---
 
+## [2.3] - 2025-12-28
+
+### NEW FEATURES - Torrent Support, Lightweight Mode, and Performance
+
+adamantium v2.3 adds support for BitTorrent files, a new lightweight output mode for scripting, and significant performance optimizations for batch processing.
+
+### New Features
+
+- **Torrent File Support** - Complete .torrent metadata cleaning
+  - Cleans metadata from BitTorrent files: `created by`, `creation date`, `comment`
+  - Two cleaning modes via `--torrent-mode` option:
+    - `safe` (default): Preserves torrent functionality (announce, info, encoding)
+    - `aggressive`: Maximum privacy (also removes encoding)
+  - Bencode parser implemented in Perl (no external dependencies)
+  - Torrent files supported inside compressed archives
+  - Example: `adamantium file.torrent` -> `file_clean.torrent`
+  - Example: `adamantium file.torrent --torrent-mode=aggressive`
+
+- **Lightweight Mode** - Minimal output for scripting and automation
+  - New `--lightweight` or `-l` option for minimal output
+  - Output format: `filename.jpg -> filename_clean.jpg (47 fields removed)`
+  - Works with single files and batch mode
+  - Ideal for CI/CD pipelines and shell scripts
+  - Example: `adamantium photo.jpg --lightweight`
+  - Example: `adamantium --batch --pattern '*.jpg' --lightweight .`
+
+- **Performance Optimizations** - Faster batch processing
+  - MIME type caching: Avoid repeated `file` command calls
+  - Progress bar buffering: Reduced disk I/O during batch processing
+  - Optimized batch size calculation for parallel execution
+  - Expected improvement: ~45-50% faster for large batches (100+ files)
+
+### Architecture
+
+- **New module: `lib/torrent_handler.sh`** (~250 lines)
+  - `torrent_is_valid()` - Validate torrent file structure
+  - `torrent_extract_metadata()` - Parse bencode and extract metadata
+  - `torrent_show_metadata()` - Display metadata with color coding
+  - `torrent_clean()` - Clean torrent with safe/aggressive mode
+  - `torrent_process()` - Main processing function
+  - `torrent_main()` - Entry point
+
+- **Updated `lib/archive_handler.sh`**
+  - Added torrent support in `archive_is_cleanable_file()`
+  - Inline bencode parser for torrent files inside archives
+
+- **Updated `lib/progress_bar.sh`**
+  - Buffered progress updates (`PROGRESS_BUFFER_THRESHOLD`)
+  - `progress_flush()` function for manual buffer flush
+  - Reduced I/O operations during batch processing
+
+- **Updated `lib/parallel_executor.sh`**
+  - Improved `get_optimal_batch_size()` algorithm
+  - `process_batch_files()` for multi-file batch processing
+
+- **Updated `lib/batch_core.sh`**
+  - `BATCH_LIGHTWEIGHT` variable support
+  - Sequential processing in lightweight mode for ordered output
+
+- **Updated main script**
+  - `TORRENT_MODE`, `TORRENT_CLEAN_MODE`, `LIGHTWEIGHT_MODE` variables
+  - `cached_mime_type()` function with `MIME_CACHE` hash
+  - `count_metadata_fields()` function for lightweight output
+  - `lightweight_output()` function for formatted output
+  - Torrent detection in `detect_file_type()`
+  - Torrent dispatch in `main()`
+
+### New Options
+
+- `--torrent-mode=VALUE` - Set torrent cleaning mode
+  - `safe` (default): Preserves announce, info, encoding
+  - `aggressive`: Maximum privacy, removes encoding too
+
+- `--lightweight` or `-l` - Minimal output mode
+  - Single line output per file
+  - Format: `input -> output (N fields removed)`
+
+### i18n Updates
+
+New messages in Spanish and English:
+- `TORRENT_FILE`, `TORRENT_DETECTED`, `TORRENT_CLEANING`
+- `TORRENT_CLEANED`, `TORRENT_CLEAN_SUCCESS`, `TORRENT_CLEAN_ERROR`
+- `TORRENT_INVALID`, `TORRENT_REMOVED`, `TORRENT_PRESERVED`
+- `TORRENT_MODE_SAFE`, `TORRENT_MODE_AGGRESSIVE`
+
+### Tests
+
+- New test file: `tests/test_v23_features.sh`
+- 18+ new tests for torrent handler, lightweight mode, and optimizations
+
+### Technical Details
+
+**Bencode Format:**
+- `d` = dictionary, `l` = list, `i<num>e` = integer, `<len>:<str>` = string
+- Torrent files are dictionaries with `info` (required), `announce`, and metadata
+
+**Safe Mode Removes:**
+- `created by` (software that created the torrent)
+- `creation date` (Unix timestamp)
+- `comment` (user comment)
+
+**Aggressive Mode Also Removes:**
+- `encoding` (character encoding)
+
+---
+
 ## [2.2] - 2025-12-26
 
 ### 🎉 NEW FEATURES - EPUB Support and Archive Policies

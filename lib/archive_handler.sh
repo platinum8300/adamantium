@@ -389,6 +389,10 @@ archive_is_cleanable_file() {
         css)
             return 0
             ;;
+        # Torrent (v2.3)
+        torrent)
+            return 0
+            ;;
         *)
             return 1
             ;;
@@ -527,6 +531,94 @@ archive_clean_contents() {
                         clean_success=true
                     else
                         rm -f "$temp_svg"
+                    fi
+                # Torrent: limpiar metadatos con perl bencode (v2.3)
+                elif [ "$file_ext" = "torrent" ]; then
+                    local temp_torrent="${file}.tmp"
+                    local torrent_mode="${TORRENT_CLEAN_MODE:-safe}"
+                    # Usar el parser de torrent para limpiar
+                    if perl -e '
+                        use strict;
+                        use warnings;
+                        my $mode = $ARGV[2] || "safe";
+                        local $/;
+                        open(my $fh, "<:raw", $ARGV[0]) or die "Cannot open input: $!";
+                        my $data = <$fh>;
+                        close($fh);
+                        my $pos = 0;
+                        sub decode_bencode {
+                            my $char = substr($data, $pos, 1);
+                            if ($char eq "d") {
+                                $pos++;
+                                my %dict;
+                                while (substr($data, $pos, 1) ne "e") {
+                                    my $key = decode_bencode();
+                                    my $val = decode_bencode();
+                                    $dict{$key} = $val;
+                                }
+                                $pos++;
+                                return { _dict => \%dict };
+                            } elsif ($char eq "l") {
+                                $pos++;
+                                my @list;
+                                while (substr($data, $pos, 1) ne "e") {
+                                    push @list, decode_bencode();
+                                }
+                                $pos++;
+                                return { _list => \@list };
+                            } elsif ($char eq "i") {
+                                $pos++;
+                                my $end = index($data, "e", $pos);
+                                my $num = substr($data, $pos, $end - $pos);
+                                $pos = $end + 1;
+                                return { _int => int($num) };
+                            } elsif ($char =~ /[0-9]/) {
+                                my $colon = index($data, ":", $pos);
+                                my $len = substr($data, $pos, $colon - $pos);
+                                $pos = $colon + 1;
+                                my $str = substr($data, $pos, $len);
+                                $pos += $len;
+                                return { _str => $str };
+                            } else { die "Invalid bencode"; }
+                        }
+                        sub encode_bencode {
+                            my ($obj) = @_;
+                            if (ref($obj) eq "HASH") {
+                                if (exists $obj->{_dict}) {
+                                    my $result = "d";
+                                    foreach my $key (sort keys %{$obj->{_dict}}) {
+                                        $result .= length($key) . ":" . $key;
+                                        $result .= encode_bencode($obj->{_dict}{$key});
+                                    }
+                                    return $result . "e";
+                                } elsif (exists $obj->{_list}) {
+                                    my $result = "l";
+                                    foreach my $item (@{$obj->{_list}}) {
+                                        $result .= encode_bencode($item);
+                                    }
+                                    return $result . "e";
+                                } elsif (exists $obj->{_int}) {
+                                    return "i" . $obj->{_int} . "e";
+                                } elsif (exists $obj->{_str}) {
+                                    return length($obj->{_str}) . ":" . $obj->{_str};
+                                }
+                            }
+                            die "Unknown object type";
+                        }
+                        my %remove = ("created by" => 1, "creation date" => 1, "comment" => 1);
+                        if ($mode eq "aggressive") { $remove{"encoding"} = 1; }
+                        my $torrent = decode_bencode();
+                        foreach my $key (keys %remove) {
+                            delete $torrent->{_dict}{$key} if exists $torrent->{_dict}{$key};
+                        }
+                        open(my $out, ">:raw", $ARGV[1]) or die "Cannot open output: $!";
+                        print $out encode_bencode($torrent);
+                        close($out);
+                    ' "$file" "$temp_torrent" "$torrent_mode" 2>/dev/null; then
+                        mv "$temp_torrent" "$file"
+                        clean_success=true
+                    else
+                        rm -f "$temp_torrent"
                     fi
                 else
                     # Limpiar directamente con exiftool (más rápido que llamar a adamantium completo)

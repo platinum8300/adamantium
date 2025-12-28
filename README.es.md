@@ -12,7 +12,7 @@ adamantium es una herramienta de línea de comandos con interfaz TUI (Text User 
 
 [![Licencia: AGPL v3](https://img.shields.io/badge/Licencia-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Plataforma: Linux](https://img.shields.io/badge/Plataforma-Linux-blue.svg)](https://www.linux.org/)
-[![Versión: 2.2](https://img.shields.io/badge/Versión-2.2-green.svg)](https://github.com/platinum8300/adamantium/releases)
+[![Versión: 2.3](https://img.shields.io/badge/Versión-2.3-green.svg)](https://github.com/platinum8300/adamantium/releases)
 
 ---
 
@@ -29,13 +29,29 @@ adamantium es una herramienta de línea de comandos con interfaz TUI (Text User 
   - 🎨 **Gráficos Vectoriales**: Archivos SVG (v2.1+)
   - 💻 **Archivos Web**: Hojas de estilo CSS (v2.1+)
   - 📚 **Libros EPUB**: Autor, editorial, ISBN, fechas (v2.2+)
+  - 🧲 **Archivos Torrent**: Creador, fecha de creación, comentario (v2.3+)
   - 📄 **PDFs**: Documentos PDF
   - 📝 **Documentos Office**: DOCX, XLSX, PPTX, ODT, ODS, etc.
 - **Preserva el archivo original**: Siempre mantiene intacto tu archivo original
 - **Detección automática**: Identifica el tipo de archivo y aplica el método óptimo
 - **Contador de metadatos**: Muestra cuántos campos se encontraron y eliminaron
 
-### 🆕 Nuevo en v2.2 (Soporte EPUB y Políticas de Archivos)
+### 🆕 Nuevo en v2.3 (Soporte Torrent y Modo Ligero)
+
+- **Soporte para Archivos Torrent**: Limpia metadatos de archivos .torrent
+  - Elimina: `created by`, `creation date`, `comment`
+  - Dos modos: `--torrent-mode=safe` (por defecto) o `aggressive`
+  - El modo seguro preserva la funcionalidad del torrent
+  - Los archivos torrent también se procesan dentro de archivos comprimidos
+- **Modo Ligero**: Salida mínima para scripts (`--lightweight` o `-l`)
+  - Salida: `archivo.jpg -> archivo_clean.jpg (47 campos eliminados)`
+  - Funciona con archivos individuales y modo batch
+- **Optimizaciones de Rendimiento**: Procesamiento batch más rápido
+  - Cache de tipos MIME
+  - Buffering de barra de progreso
+  - ~45-50% más rápido para lotes grandes
+
+### 📚 Funciones v2.2 (Soporte EPUB y Políticas de Archivos)
 
 - **Soporte para Libros EPUB**: Limpia metadatos de archivos EPUB (autor, editorial, ISBN, fechas)
   - Preserva el título y el idioma del libro

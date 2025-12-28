@@ -12,7 +12,7 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Platform: Linux](https://img.shields.io/badge/Platform-Linux-blue.svg)](https://www.linux.org/)
-[![Version: 2.2](https://img.shields.io/badge/Version-2.2-green.svg)](https://github.com/platinum8300/adamantium/releases)
+[![Version: 2.3](https://img.shields.io/badge/Version-2.3-green.svg)](https://github.com/platinum8300/adamantium/releases)
 
 ---
 
@@ -31,6 +31,7 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
   - 🎨 **Vector Graphics**: SVG files (v2.1+)
   - 💻 **Web Files**: CSS stylesheets (v2.1+)
   - 📚 **EPUB Ebooks**: Author, publisher, ISBN, dates (v2.2+)
+  - 🧲 **Torrent Files**: Created by, creation date, comment (v2.3+)
   - 📄 **PDFs**: PDF documents
   - 📝 **Office Documents**: DOCX, XLSX, PPTX, ODT, ODS, etc.
   - 📦 **Compressed Archives**: ZIP, TAR, 7Z, RAR (v1.4+)
@@ -38,7 +39,22 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
 - **Automatic Detection**: Identifies file type and applies optimal method
 - **Metadata Counter**: Shows how many fields were found and removed
 
-### 🆕 New in v2.2 (EPUB Support and Archive Policies)
+### 🆕 New in v2.3 (Torrent Support and Lightweight Mode)
+
+- **Torrent File Support**: Clean metadata from .torrent files
+  - Removes: `created by`, `creation date`, `comment`
+  - Two modes: `--torrent-mode=safe` (default) or `aggressive`
+  - Safe mode preserves torrent functionality
+  - Torrent files also processed inside archives
+- **Lightweight Mode**: Minimal output for scripting (`--lightweight` or `-l`)
+  - Output: `file.jpg -> file_clean.jpg (47 fields removed)`
+  - Works with single files and batch mode
+- **Performance Optimizations**: Faster batch processing
+  - MIME type caching
+  - Progress bar buffering
+  - ~45-50% faster for large batches
+
+### 📚 v2.2 Features (EPUB Support and Archive Policies)
 
 - **EPUB Ebook Support**: Clean metadata from EPUB files (author, publisher, ISBN, dates)
   - Preserves book title and language
@@ -243,6 +259,23 @@ adamantium novel.epub novel_anonymous.epub
 
 # Clean EPUB with verification
 adamantium textbook.epub --verify
+
+# Clean a torrent file (v2.3+)
+adamantium file.torrent
+# Generates: file_clean.torrent
+
+# Clean torrent with aggressive mode (maximum privacy)
+adamantium file.torrent --torrent-mode=aggressive
+
+# View torrent metadata without cleaning
+adamantium file.torrent --show-only
+
+# Lightweight mode for scripting (v2.3+)
+adamantium photo.jpg --lightweight
+# Output: photo.jpg -> photo_clean.jpg (47 fields removed)
+
+# Batch mode with lightweight output
+adamantium --batch --pattern '*.jpg' --lightweight .
 ```
 
 ### Batch Mode (v1.2+)
@@ -394,6 +427,7 @@ adamantium provides a clear and attractive visual interface with **modern emojis
 | SVG Vector Graphics          | Perl (XML)              | Metadata, RDF, and XML comments removal       |
 | CSS Stylesheets              | Perl                    | Comment removal (author, copyright, etc.)     |
 | EPUB Ebooks                  | Perl + ExifTool + zip   | Dublin Core metadata, internal images cleaned |
+| Torrent Files                | Perl (bencode)          | created by, creation date, comment removal    |
 | PDFs                         | ExifTool                | Metadata, author, creator removal, etc.       |
 | Office Documents             | ExifTool                | Document properties removal                   |
 | Compressed Archives          | 7z/tar + ExifTool       | Extract, clean contents, recompress           |
@@ -450,14 +484,14 @@ See [EXAMPLES.md](EXAMPLES.md) for more practical examples.
 
 | Tool        | Multimedia | PDFs | Office | Images | SVG | CSS | EPUB | Archives | Torrent | Active Development |
 |-------------|------------|------|--------|--------|-----|-----|------|----------|---------|-------------------|
-| adamantium  | YES        | YES  | YES    | YES    | YES | YES | YES  | YES      | PLANNED | YES               |
+| adamantium  | YES        | YES  | YES    | YES    | YES | YES | YES  | YES      | YES     | YES               |
 | mat2        | PARTIAL    | YES  | YES    | YES    | YES | YES | YES  | YES      | YES     | YES               |
 | ExifTool    | PARTIAL    | YES  | YES    | YES    | NO  | NO  | NO   | NO       | NO      | YES               |
 | ffmpeg only | YES        | NO   | NO     | NO     | NO  | NO  | NO   | NO       | NO      | YES               |
 
-**Note**: mat2 and adamantium have similar format coverage. Key differences:
-- **adamantium**: Deep multimedia cleaning (ffmpeg + ExifTool), interactive TUI, file manager integration, detailed before/after visualization
-- **mat2**: Torrent support, lightweight Python library, Nautilus extension included
+**Note**: mat2 and adamantium have equivalent format coverage as of v2.3. Key differences:
+- **adamantium**: Deep multimedia cleaning (ffmpeg + ExifTool), interactive TUI, file manager integration, detailed before/after visualization, lightweight mode for scripting
+- **mat2**: Lightweight Python library, can be used as a Python module
 
 ---
 
@@ -535,11 +569,12 @@ See [EXAMPLES.md](EXAMPLES.md) for more practical examples.
 - [x] `--unknown-policy` option for unknown files in archives
 - [x] Policy values: skip (default), warn, fail, include
 
-### v2.3 (Torrent Support and Lightweight Mode) - Planned
+### v2.3 (Torrent Support and Lightweight Mode) - COMPLETED
 
-- [ ] Torrent file support (.torrent metadata cleaning)
-- [ ] Lightweight mode (`--lightweight`) for minimal output
-- [ ] Performance optimizations
+- [x] Torrent file support (.torrent metadata cleaning)
+- [x] Configurable torrent mode (`--torrent-mode=safe|aggressive`)
+- [x] Lightweight mode (`--lightweight`, `-l`) for minimal output
+- [x] Performance optimizations (MIME caching, progress buffering)
 
 ### v3.0 (Advanced and Professional)
 
@@ -566,6 +601,14 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
 ---
 
 ## 📜 Version History
+
+### v2.3 (Torrent Support and Lightweight Mode) - 2025-12-28
+
+- **Torrent Support**: Full metadata cleaning for .torrent files
+- **Torrent Modes**: `--torrent-mode=safe` (default) or `aggressive`
+- **Lightweight Mode**: `--lightweight` or `-l` for minimal scripting output
+- **Performance**: MIME caching, progress buffering, ~45-50% faster batches
+- **New module**: `lib/torrent_handler.sh` with bencode parser
 
 ### v2.2 (EPUB Support and Archive Policies) - 2025-12-26
 

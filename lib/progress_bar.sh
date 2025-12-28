@@ -13,6 +13,12 @@ PROGRESS_STATE_DIR=""
 PROGRESS_RENDERER_PID=""
 PROGRESS_BAR_WIDTH=30
 
+# Buffering optimization (v2.3)
+PROGRESS_BUFFER_SUCCESS=0
+PROGRESS_BUFFER_ERRORS=0
+PROGRESS_BUFFER_THRESHOLD=10  # Flush every N updates
+PROGRESS_LAST_FLUSH=0
+
 # ═══════════════════════════════════════════════════════════════
 # INICIALIZACIÓN
 # ═══════════════════════════════════════════════════════════════
@@ -42,8 +48,46 @@ progress_init() {
 }
 
 # ═══════════════════════════════════════════════════════════════
-# ACTUALIZACIÓN (Thread-Safe)
+# ACTUALIZACIÓN (Thread-Safe con Buffering - v2.3)
 # ═══════════════════════════════════════════════════════════════
+
+progress_flush() {
+    # Forzar escritura del buffer a disco
+    [ -z "$PROGRESS_STATE_DIR" ] && return 1
+
+    (
+        flock -x 200
+
+        if [ $PROGRESS_BUFFER_SUCCESS -gt 0 ] || [ $PROGRESS_BUFFER_ERRORS -gt 0 ]; then
+            # Actualizar contador principal
+            local count=$(cat "${PROGRESS_STATE_DIR}/counter.txt" 2>/dev/null || echo "0")
+            count=$((count + PROGRESS_BUFFER_SUCCESS + PROGRESS_BUFFER_ERRORS))
+            echo "$count" > "${PROGRESS_STATE_DIR}/counter.txt"
+
+            # Actualizar success
+            if [ $PROGRESS_BUFFER_SUCCESS -gt 0 ]; then
+                local success=$(cat "${PROGRESS_STATE_DIR}/success.txt" 2>/dev/null || echo "0")
+                success=$((success + PROGRESS_BUFFER_SUCCESS))
+                echo "$success" > "${PROGRESS_STATE_DIR}/success.txt"
+            fi
+
+            # Actualizar errors
+            if [ $PROGRESS_BUFFER_ERRORS -gt 0 ]; then
+                local errors=$(cat "${PROGRESS_STATE_DIR}/errors.txt" 2>/dev/null || echo "0")
+                errors=$((errors + PROGRESS_BUFFER_ERRORS))
+                echo "$errors" > "${PROGRESS_STATE_DIR}/errors.txt"
+            fi
+        fi
+
+    ) 200>"${PROGRESS_STATE_DIR}/counter.lock"
+
+    # Reset buffers
+    PROGRESS_BUFFER_SUCCESS=0
+    PROGRESS_BUFFER_ERRORS=0
+    PROGRESS_LAST_FLUSH=$(date +%s)
+
+    return 0
+}
 
 progress_update() {
     local status="$1"  # "success" o "error"
@@ -51,28 +95,22 @@ progress_update() {
 
     [ -z "$PROGRESS_STATE_DIR" ] && return 1
 
-    # Actualización atómica con flock
-    (
-        flock -x 200
+    # Acumular en buffer
+    if [ "$status" = "success" ]; then
+        PROGRESS_BUFFER_SUCCESS=$((PROGRESS_BUFFER_SUCCESS + 1))
+    else
+        PROGRESS_BUFFER_ERRORS=$((PROGRESS_BUFFER_ERRORS + 1))
+        # Los errores se escriben inmediatamente para no perder el nombre de archivo
+        echo "$file" >> "${PROGRESS_STATE_DIR}/error_files.txt" 2>/dev/null
+    fi
 
-        # Incrementar contador principal
-        local count=$(cat "${PROGRESS_STATE_DIR}/counter.txt" 2>/dev/null || echo "0")
-        count=$((count + 1))
-        echo "$count" > "${PROGRESS_STATE_DIR}/counter.txt"
+    # Calcular total en buffer
+    local buffer_total=$((PROGRESS_BUFFER_SUCCESS + PROGRESS_BUFFER_ERRORS))
 
-        # Actualizar contador de status
-        if [ "$status" = "success" ]; then
-            local success=$(cat "${PROGRESS_STATE_DIR}/success.txt" 2>/dev/null || echo "0")
-            success=$((success + 1))
-            echo "$success" > "${PROGRESS_STATE_DIR}/success.txt"
-        else
-            local errors=$(cat "${PROGRESS_STATE_DIR}/errors.txt" 2>/dev/null || echo "0")
-            errors=$((errors + 1))
-            echo "$errors" > "${PROGRESS_STATE_DIR}/errors.txt"
-            echo "$file" >> "${PROGRESS_STATE_DIR}/error_files.txt"
-        fi
-
-    ) 200>"${PROGRESS_STATE_DIR}/counter.lock"
+    # Flush si alcanzamos el umbral
+    if [ $buffer_total -ge $PROGRESS_BUFFER_THRESHOLD ]; then
+        progress_flush
+    fi
 
     return 0
 }
@@ -180,6 +218,9 @@ progress_start_renderer() {
 # ═══════════════════════════════════════════════════════════════
 
 progress_cleanup() {
+    # Flush buffer pendiente antes de limpiar (v2.3)
+    progress_flush 2>/dev/null || true
+
     # Matar renderer si aún está corriendo
     if [ -n "$PROGRESS_RENDERER_PID" ]; then
         kill "$PROGRESS_RENDERER_PID" 2>/dev/null || true

@@ -214,7 +214,7 @@ parallel_execute_bash() {
 }
 
 # ═══════════════════════════════════════════════════════════════
-# UTILIDADES
+# UTILIDADES Y OPTIMIZACIONES (v2.3)
 # ═══════════════════════════════════════════════════════════════
 
 get_optimal_batch_size() {
@@ -222,16 +222,36 @@ get_optimal_batch_size() {
     local jobs="$2"
 
     # Calcular tamaño óptimo de batch
-    # Objetivo: mantener todos los workers ocupados
+    # Objetivo: mantener todos los workers ocupados con mínimo overhead
 
     local batch_size=$((total_files / jobs))
 
-    # Mínimo 1, máximo 100
-    [ $batch_size -lt 1 ] && batch_size=1
-    [ $batch_size -gt 100 ] && batch_size=100
+    # Ajuste adaptativo basado en número total de archivos
+    if [ $total_files -lt 20 ]; then
+        # Pocos archivos: batch de 1 para máxima granularidad
+        batch_size=1
+    elif [ $total_files -lt 100 ]; then
+        # Batch mediano: 2-5 archivos por batch
+        batch_size=$((batch_size > 5 ? 5 : (batch_size < 2 ? 2 : batch_size)))
+    else
+        # Batch grande: 5-20 archivos por batch
+        batch_size=$((batch_size > 20 ? 20 : (batch_size < 5 ? 5 : batch_size)))
+    fi
 
     echo "$batch_size"
 }
+
+# Procesar múltiples archivos en un solo subshell (reduce overhead)
+process_batch_files() {
+    local -a files=("$@")
+
+    for file in "${files[@]}"; do
+        process_single_file "$file"
+    done
+}
+
+# Exportar para uso en paralelo
+export -f process_batch_files
 
 validate_job_count() {
     local jobs="$1"

@@ -64,7 +64,11 @@ process_single_file() {
 
     # Llamar adamantium
     local result=0
-    if [ "${BATCH_VERBOSE:-false}" = true ]; then
+    if [ "${BATCH_LIGHTWEIGHT:-false}" = true ]; then
+        # Modo lightweight: adamantium ya imprime la salida
+        "$ADAMANTIUM_BIN" --lightweight "$file" "$output"
+        result=$?
+    elif [ "${BATCH_VERBOSE:-false}" = true ]; then
         "$ADAMANTIUM_BIN" "$file" "$output"
         result=$?
     else
@@ -72,11 +76,13 @@ process_single_file() {
         result=$?
     fi
 
-    # Actualizar progreso
-    if [ $result -eq 0 ]; then
-        progress_update "success" "$file"
-    else
-        progress_update "error" "$file"
+    # Actualizar progreso (skip en lightweight mode)
+    if [ "${BATCH_LIGHTWEIGHT:-false}" != true ]; then
+        if [ $result -eq 0 ]; then
+            progress_update "success" "$file"
+        else
+            progress_update "error" "$file"
+        fi
     fi
 
     return $result
@@ -101,6 +107,35 @@ batch_process_files() {
 
     # Determinar número de jobs
     local jobs=$(determine_job_count "$file_count")
+
+    # En modo lightweight, procesamiento simplificado
+    if [ "${BATCH_LIGHTWEIGHT:-false}" = true ]; then
+        # Crear state dir manualmente para estadísticas
+        BATCH_STATE_DIR=$(mktemp -d)
+        echo "0" > "${BATCH_STATE_DIR}/success.txt"
+        echo "0" > "${BATCH_STATE_DIR}/errors.txt"
+        echo "$(date +%s)" > "${BATCH_STATE_DIR}/start_time.txt"
+        echo "$file_count" > "${BATCH_STATE_DIR}/total.txt"
+        echo "0" > "${BATCH_STATE_DIR}/counter.txt"
+
+        # Procesar secuencialmente (para mantener el output ordenado)
+        for file in "${files[@]}"; do
+            process_single_file "$file"
+            local result=$?
+            local counter=$(cat "${BATCH_STATE_DIR}/counter.txt")
+            echo "$((counter + 1))" > "${BATCH_STATE_DIR}/counter.txt"
+            if [ $result -eq 0 ]; then
+                local success=$(cat "${BATCH_STATE_DIR}/success.txt")
+                echo "$((success + 1))" > "${BATCH_STATE_DIR}/success.txt"
+            else
+                local errors=$(cat "${BATCH_STATE_DIR}/errors.txt")
+                echo "$((errors + 1))" > "${BATCH_STATE_DIR}/errors.txt"
+            fi
+        done
+
+        echo ""
+        return 0
+    fi
 
     # Inicializar progress bar
     progress_init "$file_count"
