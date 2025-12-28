@@ -239,7 +239,7 @@ torrent_show_metadata() {
             continue
         fi
 
-        ((metadata_count++))
+        metadata_count=$((metadata_count + 1))
 
         # Determine color based on field type
         if echo "$key" | grep -qiE "^($sensitive_fields)"; then
@@ -297,7 +297,11 @@ torrent_clean() {
                 my %dict;
                 my @order;  # Preserve key order
                 while (substr($data, $pos, 1) ne "e") {
-                    my $key = decode_bencode();
+                    my $key_obj = decode_bencode();
+                    # Keys are always strings - extract the actual string value
+                    my $key = ref($key_obj) eq "HASH" && exists $key_obj->{_str}
+                              ? $key_obj->{_str}
+                              : $key_obj;
                     my $val = decode_bencode();
                     $dict{$key} = $val;
                     push @order, $key;
@@ -486,7 +490,8 @@ torrent_main() {
         return 1
     fi
 
-    # Process torrent
+    # Process torrent (use TORRENT_CLEAN_MODE from environment, default to safe)
+    local mode="${TORRENT_CLEAN_MODE:-safe}"
     torrent_process "$input_file" "$TORRENT_OUTPUT_FILE" "$mode"
 
     return $?
@@ -502,4 +507,6 @@ torrent_cleanup() {
     fi
 }
 
-trap torrent_cleanup EXIT INT TERM
+# Note: trap is NOT registered at module level to avoid issues with
+# process substitution in torrent_show_metadata. The main script
+# handles cleanup, or torrent_main registers its own trap when needed.
