@@ -6,14 +6,11 @@ adamantium/
 ├── README.md                   # Documentación principal (EN)
 ├── README.es.md                # Documentación principal (ES)
 ├── CHANGELOG.md                # Historial de cambios
-├── EXAMPLES.md                 # Ejemplos de uso
+├── EXAMPLES.md                 # Ejemplos de uso (+50 ejemplos prácticos)
 ├── STRUCTURE.md                # Este archivo
-├── INSTALLATION.md             # Guía de instalación detallada
-├── QUICKSTART.md               # Guía de inicio rápido
 ├── CONTRIBUTING.md             # Guía de contribución
 ├── AI_METADATA_WARNING.md      # Advertencia sobre metadatos IA
 ├── install.sh                  # Instalador automático
-├── batch_clean.sh              # Procesamiento por lotes (legacy)
 ├── lib/                        # Módulos de biblioteca (v1.2+)
 │   ├── batch_core.sh           # Orquestación de batch processing
 │   ├── file_selector.sh        # Selección interactiva de archivos
@@ -26,7 +23,8 @@ adamantium/
 │   ├── logger.sh               # Sistema de logging detallado (v1.5)
 │   ├── notifier.sh             # Notificaciones de escritorio (v1.5)
 │   ├── report_generator.sh     # Generación de reportes JSON/CSV (v2.0)
-│   └── epub_handler.sh         # Procesamiento de EPUB (v2.2)
+│   ├── epub_handler.sh         # Procesamiento de EPUB (v2.2)
+│   └── torrent_handler.sh      # Procesamiento de Torrent (v2.3)
 ├── integration/                # Integración con gestores de archivos (v2.0)
 │   ├── install-integration.sh  # Instalador de integración
 │   ├── nautilus/               # Extensión para GNOME Files
@@ -34,7 +32,8 @@ adamantium/
 │   └── dolphin/                # Service menu para KDE Dolphin
 │       └── adamantium-clean.desktop
 ├── tests/                      # Tests automatizados
-│   └── test_v15_v20_features.sh
+│   ├── test_v15_v20_features.sh
+│   └── test_v23_features.sh
 └── .adamantiumrc.example       # Configuración de ejemplo
 ```
 
@@ -98,51 +97,6 @@ adamantium/
 ```
 
 **Resultado**: `adamantium` disponible globalmente
-
----
-
-#### `batch_clean.sh`
-**Propósito**: Procesamiento por lotes de múltiples archivos
-
-**Características**:
-- Limpieza de todos los archivos con extensión específica
-- Modo recursivo opcional
-- Confirmación antes de proceder
-- Contador de progreso
-- Resumen de operaciones
-
-**Uso**:
-```bash
-./batch_clean.sh <directorio> <extensión>
-./batch_clean.sh <directorio> <extensión> --recursive
-```
-
-**Ejemplos**:
-```bash
-./batch_clean.sh ~/Fotos jpg
-./batch_clean.sh ~/Documentos pdf --recursive
-```
-
----
-
-#### `test_adamantium.sh`
-**Propósito**: Suite de pruebas automatizadas
-
-**Características**:
-- Crea archivos de prueba con metadatos
-- Prueba diferentes tipos de archivos:
-  - Imagen JPEG con GPS y autor
-  - PDF con título y autor
-  - MP3 con tags ID3
-  - MP4 con metadatos de video
-- Ejecuta adamantium en cada archivo
-- Permite verificar resultados
-- Limpieza opcional de archivos de prueba
-
-**Uso**:
-```bash
-./test_adamantium.sh
-```
 
 ---
 
@@ -301,6 +255,7 @@ adamantium
 | PDF             | exiftool únicamente                   | Solo exiftool     |
 | Office          | exiftool únicamente                   | Solo exiftool     |
 | EPUB (v2.2)     | 1. Extraer → 2. Perl XML → 3. ExifTool imgs → 4. Recomprimir | perl + exiftool + zip |
+| Torrent (v2.3)  | perl bencode parsing                  | Solo perl         |
 | Archivos (v1.4) | 1. Extraer → 2. Limpiar → 3. Comprimir| 7z/tar + exiftool |
 
 ---
@@ -500,6 +455,13 @@ CLEAN="${MAGENTA}◆${NC}"    # Proceso de limpieza
 - [x] Valores: skip (default), warn, fail, include
 - [x] Módulo: epub_handler
 
+### v2.3 ✅ COMPLETADO
+- [x] Soporte para archivos Torrent (.torrent)
+- [x] Modo ligero (`--lightweight`) para salida mínima
+- [x] Optimizaciones de rendimiento (cache MIME, buffering)
+- [x] Modos torrent: safe (default), aggressive
+- [x] Módulo: torrent_handler
+
 ### v3.0 (Futuro)
 - [ ] GUI opcional (GTK4/Qt6)
 - [ ] Recodificación opcional para multimedia
@@ -513,8 +475,8 @@ CLEAN="${MAGENTA}◆${NC}"    # Proceso de limpieza
 
 **adamantium** - Herramienta de limpieza profunda de metadatos
 
-Versión: 2.2
-Fecha: 2025-12-26
+Versión: 2.3.3
+Fecha: 2025-12-29
 
 Herramientas utilizadas:
 - ExifTool por Phil Harvey
@@ -536,4 +498,4 @@ Para bugs, sugerencias o contribuciones:
 
 ---
 
-**Última actualización**: 2025-12-26
+**Última actualización**: 2025-12-29

@@ -4,6 +4,52 @@ All notable changes to adamantium will be documented in this file.
 
 ---
 
+## [2.3.3] - 2025-12-29
+
+### Project Cleanup and Documentation Consolidation
+
+This release focuses on cleaning up the project structure and consolidating documentation for better maintainability.
+
+### Documentation Changes
+
+- **Consolidated QUICKSTART.md into README** - Integrated unique content (FAQ, tips) directly into README.md and README.es.md
+- **Consolidated INSTALLATION.md into README** - Integrated installation details, distribution-specific notes, and uninstallation section into README files
+- **Removed redundant files** - Deleted QUICKSTART.md and INSTALLATION.md (content now in main README)
+- **Updated documentation links** - All internal references updated to reflect new structure
+- **Added FAQ section** - Both README files now include a dedicated FAQ section
+
+### Project Structure Changes
+
+- **Removed batch_clean.sh** - Legacy script removed (functionality available via `adamantium --batch`)
+- **Added .gitignore** - New file to prevent accidental commits of:
+  - Python cache (`__pycache__/`, `*.pyc`)
+  - Synology NAS metadata (`.SynologyWorkingDirectory/`)
+  - Editor/IDE files (`.vscode/`, `.idea/`, `*.swp`)
+  - Local configuration (`.adamantiumrc`)
+- **Cleaned up test artifacts** - Removed orphan test image file
+
+### Documentation Updated
+
+- **README.md / README.es.md**:
+  - Added distribution-specific notes (EPEL for RHEL, Packman for openSUSE)
+  - Added uninstallation section
+  - Added FAQ section
+  - Removed references to deleted files
+  - Updated Additional Resources section
+- **STRUCTURE.md**: Updated to reflect new project structure
+- **CHANGELOG.md**: Added this entry
+
+### Files Removed
+
+- `.SynologyWorkingDirectory/` - Synology NAS metadata (not part of project)
+- `integration/nautilus/__pycache__/` - Python cache
+- `batch_clean.sh` - Legacy script (use `adamantium --batch` instead)
+- `QUICKSTART.md` - Content consolidated into README
+- `INSTALLATION.md` - Content consolidated into README
+- `test_image_clean_clean.jpg` - Orphan test file
+
+---
+
 ## [2.3.2] - 2025-12-28
 
 ### Bug Fixes - Interactive Mode

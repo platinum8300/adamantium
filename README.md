@@ -143,9 +143,13 @@ sudo apt-get install libimage-exiftool-perl ffmpeg
 
 # Fedora / RHEL / CentOS / Rocky Linux
 sudo dnf install perl-Image-ExifTool ffmpeg
+# Note for RHEL/CentOS: You may need EPEL and RPM Fusion:
+# sudo dnf install epel-release
+# sudo dnf install --nogpgcheck https://download1.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm
 
 # openSUSE Leap / Tumbleweed
 sudo zypper install exiftool ffmpeg
+# Note: For ffmpeg, you may need the Packman repository
 
 # Alpine Linux
 sudo apk add exiftool ffmpeg
@@ -193,7 +197,15 @@ cd adamantium
 ./adamantium <file>
 ```
 
-For detailed installation instructions, see [INSTALLATION.md](INSTALLATION.md).
+### Uninstallation
+
+```bash
+# Remove symbolic link
+sudo rm /usr/local/bin/adamantium
+
+# Remove repository (optional)
+rm -rf adamantium
+```
 
 ---
 
@@ -311,10 +323,6 @@ adamantium --batch --no-confirm --pattern '*.pdf' ~/Documents
 
 # Interactive selection with fzf (if installed)
 adamantium --batch --confirm --pattern '*.jpg' .
-
-# Legacy batch_clean.sh (still supported)
-./batch_clean.sh ~/Photos jpg
-./batch_clean.sh ~/Documents pdf --recursive
 ```
 
 ### Archive Mode (v1.4+)
@@ -457,23 +465,21 @@ Some metadata may be integrated in the data stream. For extreme cases:
 - **Multimedia**: Consider re-encoding the file (involves quality loss)
 - **Documents**: Use specialized tools like Dangerzone for complete conversion
 
-For more help, see [INSTALLATION.md](INSTALLATION.md) troubleshooting section.
-
 ---
 
 ## ⚙️ Batch Processing
 
-To clean multiple files, you can use the included script:
+To clean multiple files, use the integrated batch mode:
 
 ```bash
 # Clean all JPG in a directory
-./batch_clean.sh ./photos jpg
+adamantium --batch --pattern '*.jpg' ./photos
 
 # Clean all PDFs recursively
-./batch_clean.sh ~/Documents pdf --recursive
+adamantium --batch -r --pattern '*.pdf' ~/Documents
 
-# Clean all MP4 in a directory
-./batch_clean.sh /media/videos mp4
+# Clean all MP4 with parallel processing
+adamantium --batch -j 8 --pattern '*.mp4' /media/videos
 ```
 
 See [EXAMPLES.md](EXAMPLES.md) for more practical examples.
@@ -728,12 +734,11 @@ This project is licensed under the GNU Affero General Public License v3.0 (AGPL-
 
 ### Documentation
 
-- [QUICKSTART.md](QUICKSTART.md) - Quick start guide
-- [INSTALLATION.md](INSTALLATION.md) - Detailed installation
-- [EXAMPLES.md](EXAMPLES.md) - Practical examples
+- [EXAMPLES.md](EXAMPLES.md) - 50+ practical examples
 - [STRUCTURE.md](STRUCTURE.md) - Code architecture
 - [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guide
-- [CHANGELOG.md](CHANGELOG.md) - Version history
+- [CHANGELOG.md](CHANGELOG.md) - Complete version history
+- [AI_METADATA_WARNING.md](AI_METADATA_WARNING.md) - AI-generated images metadata guide
 
 ### Tool Documentation
 
@@ -744,6 +749,25 @@ This project is licensed under the GNU Affero General Public License v3.0 (AGPL-
 
 - [Metadata Anonymization Toolkit (MAT2)](https://0xacab.org/jvoisin/mat2)
 - [Dangerzone - Safe document conversion](https://github.com/freedomofpress/dangerzone)
+
+---
+
+## ❓ FAQ
+
+**Q: Is adamantium 100% secure?**
+A: For standard cleaning, yes. For extreme cases (whistleblowing, etc.), combine it with Dangerzone.
+
+**Q: Does the file lose quality?**
+A: NO. adamantium only removes metadata, it doesn't re-encode the file.
+
+**Q: Can I use it on sensitive files?**
+A: Yes, that's exactly what it's for. But always verify the result.
+
+**Q: Does it work with DRM files?**
+A: NO. Don't touch DRM-protected files.
+
+**Q: Is it legal?**
+A: Yes, it's completely legal to remove metadata from YOUR files.
 
 ---
 

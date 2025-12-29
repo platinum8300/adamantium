@@ -1,0 +1,31 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Synology NAS metadata
+.SynologyWorkingDirectory/
+
+# Editor/IDE
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Test artifacts
+*.test.tmp
+test_output/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Local configuration (keep .adamantiumrc.example)
+.adamantiumrc

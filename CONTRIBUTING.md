@@ -76,7 +76,7 @@ sudo zypper install exiftool ffmpeg
 ```bash
 git clone https://github.com/yourusername/adamantium.git
 cd adamantium
-chmod +x adamantium install.sh batch_clean.sh test_adamantium.sh
+chmod +x adamantium install.sh
 ```
 
 ### Running Tests
@@ -267,11 +267,11 @@ exiftool test_clean.jpg
 
 ### Documentation Files
 
-- `README.md`: Main documentation
-- `QUICKSTART.md`: Quick start guide
-- `EXAMPLES.md`: Practical examples
+- `README.md`: Main documentation (includes quick start and installation)
+- `EXAMPLES.md`: Practical examples (+50 use cases)
 - `STRUCTURE.md`: Technical architecture
 - `CHANGELOG.md`: Version history
+- `CONTRIBUTING.md`: This contribution guide
 
 ### Updating Documentation
 
@@ -279,9 +279,8 @@ When adding features:
 
 1. Update `README.md` with new capability
 2. Add examples to `EXAMPLES.md`
-3. Update `QUICKSTART.md` if it affects basic usage
-4. Add entry to `CHANGELOG.md`
-5. Update `STRUCTURE.md` if architecture changes
+3. Add entry to `CHANGELOG.md`
+4. Update `STRUCTURE.md` if architecture changes
 
 ## Distribution-Specific Testing
 

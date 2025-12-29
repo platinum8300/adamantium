@@ -199,7 +199,7 @@ adamantium artwork.png artwork_share.png
 
 **Después:**
 ```bash
-batch_clean.sh ~/Portfolio png
+adamantium --batch --pattern '*.png' ~/Portfolio
 # ✅ Portfolio limpio, sin revelar herramientas
 ```
 
@@ -294,7 +294,7 @@ adamantium imagen.png
 ### Para artistas digitales:
 
 1. ✅ **SIEMPRE** limpia metadatos antes de compartir
-2. ✅ Usa `batch_clean.sh` para procesar carpetas completas
+2. ✅ Usa `adamantium --batch` para procesar carpetas completas
 3. ✅ Verifica con adamantium que todo se eliminó
 4. ⚠️ Considera que el **estilo visual** también puede identificarte
 

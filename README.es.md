@@ -120,11 +120,15 @@ sudo pacman -S perl-image-exiftool ffmpeg
 sudo apt-get update
 sudo apt-get install libimage-exiftool-perl ffmpeg
 
-# Fedora
+# Fedora / RHEL / CentOS / Rocky Linux
 sudo dnf install perl-Image-ExifTool ffmpeg
+# Nota para RHEL/CentOS: Puede necesitar EPEL y RPM Fusion:
+# sudo dnf install epel-release
+# sudo dnf install --nogpgcheck https://download1.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm
 
-# openSUSE
+# openSUSE Leap / Tumbleweed
 sudo zypper install exiftool ffmpeg
+# Nota: Para ffmpeg, puede necesitar el repositorio Packman
 
 # Alpine Linux
 sudo apk add exiftool ffmpeg
@@ -188,6 +192,16 @@ sudo ln -s "$(pwd)/adamantium" /usr/local/bin/adamantium
 ```bash
 cd adamantium
 ./adamantium <archivo>
+```
+
+### Desinstalación
+
+```bash
+# Eliminar enlace simbólico
+sudo rm /usr/local/bin/adamantium
+
+# Eliminar repositorio (opcional)
+rm -rf adamantium
 ```
 
 ---
@@ -415,10 +429,6 @@ adamantium --batch --pattern '*.jpg' ~/Fotos
 
 # Múltiples patrones con recursividad
 adamantium --batch -r --pattern '*.jpg' --pattern '*.png' .
-
-# Script legacy (aún soportado)
-./batch_clean.sh ~/Fotos jpg
-./batch_clean.sh ~/Documentos pdf --recursive
 ```
 
 ### Modo Archivo (v1.4+)
@@ -608,11 +618,11 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 - [x] Opción `--unknown-policy` para archivos desconocidos en comprimidos
 - [x] Valores de política: skip (por defecto), warn, fail, include
 
-### v2.3 (Soporte Torrent y Modo Ligero) - Planificado
+### v2.3 (Soporte Torrent y Modo Ligero) ✅ COMPLETADO
 
-- [ ] Soporte para archivos Torrent (limpieza de metadatos .torrent)
-- [ ] Modo ligero (`--lightweight`) para salida mínima
-- [ ] Optimizaciones de rendimiento
+- [x] Soporte para archivos Torrent (limpieza de metadatos .torrent)
+- [x] Modo ligero (`--lightweight`) para salida mínima
+- [x] Optimizaciones de rendimiento (cache MIME, buffering de progreso)
 
 ### v3.0 (Avanzado y Profesional)
 
@@ -626,6 +636,14 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 ---
 
 ## 📜 Historial de Versiones
+
+### v2.3 (Soporte Torrent y Modo Ligero) - 2025-12-28
+
+- **Soporte Torrent**: Limpieza completa de metadatos de archivos .torrent
+- **Modos Torrent**: `--torrent-mode=safe` (por defecto) o `aggressive`
+- **Modo Ligero**: `--lightweight` o `-l` para salida mínima en scripts
+- **Rendimiento**: Cache MIME, buffering de progreso, ~45-50% más rápido en lotes
+- **Nuevo módulo**: `lib/torrent_handler.sh` con parser bencode
 
 ### v2.2 (Soporte EPUB y Políticas de Archivos) - 2025-12-26
 
@@ -771,6 +789,25 @@ Para **máxima seguridad**:
 
 - [Metadata Anonymization Toolkit (MAT2)](https://0xacab.org/jvoisin/mat2)
 - [Dangerzone - Safe document conversion](https://github.com/freedomofpress/dangerzone)
+
+---
+
+## ❓ Preguntas Frecuentes
+
+**P: ¿adamantium es 100% seguro?**
+R: Para limpieza estándar, sí. Para casos extremos (whistleblowing, etc.), combínalo con Dangerzone.
+
+**P: ¿El archivo pierde calidad?**
+R: NO. adamantium solo elimina metadatos, no recodifica el archivo.
+
+**P: ¿Puedo usarlo en archivos sensibles?**
+R: Sí, es justamente para eso. Pero verifica siempre el resultado.
+
+**P: ¿Funciona con archivos DRM?**
+R: NO. No toques archivos protegidos por DRM.
+
+**P: ¿Es legal?**
+R: Sí, es completamente legal eliminar metadatos de TUS archivos.
 
 ---
 

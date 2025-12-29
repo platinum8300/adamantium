@@ -431,8 +431,8 @@ for foto in DSC*.jpg; do
     adamantium "$foto"
 done
 
-# Opción 2: Con batch_clean.sh
-batch_clean.sh ~/Fotos/2025/Viaje jpg
+# Opción 2: Con modo batch
+adamantium --batch --pattern '*.jpg' ~/Fotos/2025/Viaje
 ```
 
 ### Limpiar imágenes PNG con transparencia
@@ -590,13 +590,13 @@ adamantium presentacion.odp
 ### Limpiar todas las fotos de un directorio
 
 ```bash
-batch_clean.sh ~/Fotos/Evento jpg
+adamantium --batch --pattern '*.jpg' ~/Fotos/Evento
 ```
 
 ### Limpiar recursivamente (subdirectorios incluidos)
 
 ```bash
-batch_clean.sh ~/Documentos/Proyectos pdf --recursive
+adamantium --batch -r --pattern '*.pdf' ~/Documentos/Proyectos
 ```
 
 ### Script personalizado para múltiples extensiones
@@ -608,16 +608,13 @@ batch_clean.sh ~/Documentos/Proyectos pdf --recursive
 DIR="$1"
 
 echo "Limpiando imágenes..."
-batch_clean.sh "$DIR" jpg
-batch_clean.sh "$DIR" png
+adamantium --batch --pattern '*.jpg' --pattern '*.png' "$DIR"
 
 echo "Limpiando videos..."
-batch_clean.sh "$DIR" mp4
-batch_clean.sh "$DIR" mov
+adamantium --batch --pattern '*.mp4' --pattern '*.mov' "$DIR"
 
 echo "Limpiando documentos..."
-batch_clean.sh "$DIR" pdf
-batch_clean.sh "$DIR" docx
+adamantium --batch --pattern '*.pdf' --pattern '*.docx' "$DIR"
 
 echo "✓ Limpieza completa"
 ```
@@ -719,7 +716,7 @@ end
 
 # Limpiar todo el directorio actual
 function clean-here
-    batch_clean.sh . $argv[1]
+    adamantium --batch --pattern "*.$argv[1]" .
 end
 
 # Limpiar y mostrar comparación
