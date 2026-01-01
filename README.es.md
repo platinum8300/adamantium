@@ -36,7 +36,23 @@ adamantium es una herramienta de línea de comandos con interfaz TUI (Text User 
 - **Detección automática**: Identifica el tipo de archivo y aplica el método óptimo
 - **Contador de metadatos**: Muestra cuántos campos se encontraron y eliminaron
 
-### 🆕 Nuevo en v2.3 (Soporte Torrent y Modo Ligero)
+### 🆕 Nuevo en v2.4 (Re-encoding para Multimedia)
+
+- **Re-encoding Opcional**: Transcodificación completa para eliminación total de metadatos
+  - Garantiza 100% de eliminación de metadatos (algunos codecs pueden retener metadatos con `-c copy`)
+  - Presets de calidad: `--reencode=high`, `--reencode=medium`, `--reencode=low`
+  - CRF personalizado: `--reencode-crf=22`
+- **Aceleración por Hardware**: Detección automática de GPU
+  - NVIDIA NVENC, AMD VAAPI, Intel QSV
+  - Auto-detectar o forzar: `--hw-accel=nvidia|amd|intel|cpu`
+- **Conversión de Codec**: Cambiar codecs de video/audio
+  - Video: `--video-codec=h264|h265|av1`
+  - Audio: `--audio-codec=aac|opus|flac`
+  - Contenedor: `--container=mp4|mkv|webm`
+- **Estimación Inteligente**: Vista previa de tiempo y tamaño antes de procesar
+- **Confirmación**: Verificación de seguridad antes de re-encoding (omitir con `--reencode-no-confirm`)
+
+### 🧲 Funciones v2.3 (Soporte Torrent y Modo Ligero)
 
 - **Soporte para Archivos Torrent**: Limpia metadatos de archivos .torrent
   - Elimina: `created by`, `creation date`, `comment`
@@ -269,6 +285,28 @@ adamantium novela.epub novela_anonima.epub
 
 # Limpiar EPUB con verificación
 adamantium manual.epub --verify
+
+# Modo Re-encoding (v2.4+) - Eliminación completa de metadatos via transcodificación
+adamantium video.mp4 --reencode
+# Genera: video_clean.mp4 (recodificado con calidad media)
+
+# Re-encoding de alta calidad
+adamantium video.mp4 --reencode=high
+
+# Convertir a H.265 con audio Opus
+adamantium video.mp4 --reencode --video-codec=h265 --audio-codec=opus
+
+# Convertir MKV a contenedor MP4
+adamantium video.mkv --reencode --container=mp4
+
+# CRF personalizado para expertos
+adamantium video.mp4 --reencode --reencode-crf=20
+
+# Forzar codificación por CPU (desactivar GPU)
+adamantium video.mp4 --reencode --hw-accel=cpu
+
+# Omitir confirmación (para automatización)
+adamantium video.mp4 --reencode --reencode-no-confirm
 ```
 
 ### Modo Batch (v1.2+)
@@ -624,9 +662,17 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 - [x] Modo ligero (`--lightweight`) para salida mínima
 - [x] Optimizaciones de rendimiento (cache MIME, buffering de progreso)
 
-### v3.0 (Avanzado y Profesional)
+### v2.4 (Re-encoding para Multimedia) ✅ COMPLETADO
 
-- [ ] Recodificación opcional para multimedia (con control de calidad)
+- [x] Re-encoding opcional para multimedia (con control de calidad)
+- [x] Detección de aceleración hardware (NVIDIA NVENC, AMD VAAPI, Intel QSV)
+- [x] Presets de calidad (high/medium/low) y CRF personalizado
+- [x] Conversión de codec (H.264, H.265, AV1 / AAC, Opus, FLAC)
+- [x] Conversión de contenedor (MP4, MKV, WebM)
+- [x] Estimación de tiempo y tamaño antes de procesar
+- [x] Confirmación con opción `--reencode-no-confirm`
+
+### v3.0 (Avanzado y Profesional)
 - [ ] Detección de metadatos peligrosos con alertas y niveles de riesgo
 - [ ] Integración con herramientas forenses (compatibilidad con informes)
 - [ ] API REST para uso remoto
@@ -636,6 +682,16 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 ---
 
 ## 📜 Historial de Versiones
+
+### v2.4 (Re-encoding para Multimedia) - 2025-12-30
+
+- **Re-encoding Opcional**: Transcodificación completa para 100% de eliminación de metadatos
+- **Aceleración Hardware**: Detección automática de GPU (NVIDIA NVENC, AMD VAAPI, Intel QSV)
+- **Presets de Calidad**: `--reencode=high|medium|low` con valores CRF optimizados
+- **Conversión de Codec**: H.264, H.265, AV1 video; AAC, Opus, FLAC audio
+- **Conversión de Contenedor**: MP4, MKV, WebM con validación de compatibilidad de codecs
+- **Estimación Inteligente**: Vista previa de tiempo estimado y tamaño de salida
+- **Nuevo módulo**: `lib/reencode_handler.sh` (~400 líneas)
 
 ### v2.3 (Soporte Torrent y Modo Ligero) - 2025-12-28
 

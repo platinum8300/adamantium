@@ -4,6 +4,172 @@ All notable changes to adamantium will be documented in this file.
 
 ---
 
+## [2.4.0] - 2025-12-30
+
+### NEW FEATURES - Optional Re-encoding for Multimedia
+
+adamantium v2.4 introduces optional full re-encoding for multimedia files, guaranteeing 100% metadata removal through transcoding with quality control and hardware acceleration support.
+
+### New Features
+
+- **Optional Re-encoding Mode** - Complete transcoding for guaranteed metadata removal
+  - Standard cleaning (`-c copy`) may leave some codec-embedded metadata
+  - Re-encoding guarantees 100% metadata removal at the cost of quality loss
+  - Enable with `--reencode` option (uses medium quality preset)
+  - Quality presets: `--reencode=high`, `--reencode=medium`, `--reencode=low`
+  - Custom CRF: `--reencode-crf=22` (lower = better quality, 0-63 range)
+  - Example: `adamantium video.mp4 --reencode=high`
+
+- **Hardware Acceleration** - Automatic GPU detection and utilization
+  - Automatically detects NVIDIA, AMD, or Intel GPUs
+  - NVIDIA: NVENC encoder (h264_nvenc, hevc_nvenc, av1_nvenc)
+  - AMD: VAAPI encoder (h264_vaapi, hevc_vaapi, av1_vaapi)
+  - Intel: Quick Sync Video (h264_qsv, hevc_qsv, av1_qsv)
+  - Override detection: `--hw-accel=nvidia|amd|intel|cpu`
+  - CPU fallback when no GPU available
+  - Example: `adamantium video.mp4 --reencode --hw-accel=cpu`
+
+- **Codec Conversion** - Change video and audio codecs
+  - Video codecs: H.264 (libx264), H.265 (libx265), AV1 (libsvtav1)
+  - Audio codecs: AAC, Opus (libopus), FLAC (lossless)
+  - Option: `--video-codec=h264|h265|av1`
+  - Option: `--audio-codec=aac|opus|flac`
+  - Example: `adamantium video.mp4 --reencode --video-codec=h265 --audio-codec=opus`
+
+- **Container Conversion** - Convert between container formats
+  - Supported: MP4, MKV, WebM
+  - Automatic codec/container compatibility validation
+  - Option: `--container=mp4|mkv|webm`
+  - MKV supports all codecs (recommended for compatibility)
+  - Example: `adamantium video.mkv --reencode --container=mp4`
+
+- **Smart Estimation** - Preview before processing
+  - Shows current and target codecs, resolution, duration
+  - Estimates encoding time based on codec and hardware
+  - Estimates output file size based on CRF
+  - Allows informed decision before committing
+
+- **Confirmation Prompt** - Safety check before re-encoding
+  - Warning about quality loss and irreversible operation
+  - Skip with `--reencode-no-confirm` for automation
+  - Uses gum if available, falls back to bash read
+
+### Architecture
+
+- **New module: `lib/reencode_handler.sh`** (~450 lines)
+  - `reencode_detect_gpu()` - Hardware acceleration detection
+  - `reencode_get_hw_encoder()` - Map codec to hardware encoder
+  - `reencode_normalize_codec()` - Normalize codec names
+  - `reencode_get_crf()` - Get CRF for encoder and preset
+  - `reencode_get_media_info()` - Extract media information via ffprobe
+  - `reencode_estimate_time()` - Estimate encoding time
+  - `reencode_estimate_size()` - Estimate output file size
+  - `reencode_show_estimation()` - Display estimation UI
+  - `reencode_confirm()` - User confirmation dialog
+  - `reencode_validate_combination()` - Validate codec/container compatibility
+  - `reencode_build_ffmpeg_cmd()` - Build ffmpeg command
+  - `reencode_process()` - Execute re-encoding with progress
+  - `reencode_main()` - Entry point
+
+- **Updated main script (`adamantium`)**
+  - New variables: `REENCODE_MODE`, `REENCODE_PRESET`, `REENCODE_CRF`
+  - New variables: `REENCODE_VIDEO_CODEC`, `REENCODE_AUDIO_CODEC`
+  - New variables: `REENCODE_CONTAINER`, `REENCODE_HW_ACCEL`, `REENCODE_NO_CONFIRM`
+  - New CLI arguments for all re-encoding options
+  - Updated `perform_cleaning()` to dispatch to re-encode handler
+  - Updated help text with re-encoding examples
+
+- **Updated configuration (`lib/config_loader.sh`, `.adamantiumrc.example`)**
+  - `REENCODE_ON_PARANOID` - Enable re-encoding for paranoid clean level
+  - `REENCODE_DEFAULT_PRESET` - Default quality preset
+  - `REENCODE_DEFAULT_VIDEO_CODEC` - Default video codec
+  - `REENCODE_DEFAULT_AUDIO_CODEC` - Default audio codec
+  - `REENCODE_HW_ACCEL` - Hardware acceleration preference
+  - `REENCODE_CONFIRM` - Require confirmation by default
+  - `REENCODE_DEFAULT_CONTAINER` - Default output container
+
+### New Options
+
+- `--reencode` - Enable re-encoding (uses medium preset)
+- `--reencode=PRESET` - Re-encode with quality preset (high/medium/low)
+- `--reencode-crf=N` - Custom CRF value (0-63, lower=better)
+- `--video-codec=CODEC` - Video codec (h264, h265, av1)
+- `--audio-codec=CODEC` - Audio codec (aac, opus, flac)
+- `--container=FORMAT` - Output container (mp4, mkv, webm)
+- `--hw-accel=TYPE` - Hardware acceleration (auto, nvidia, amd, intel, cpu)
+- `--reencode-no-confirm` - Skip confirmation prompt
+
+### Quality Presets (CRF Values)
+
+| Preset | H.264 | H.265 | AV1  | Description |
+|--------|-------|-------|------|-------------|
+| high   | 18    | 22    | 25   | Near-lossless quality, larger files |
+| medium | 23    | 28    | 35   | Good balance of quality and size |
+| low    | 28    | 32    | 45   | Smaller files, visible quality loss |
+
+### i18n Updates
+
+New messages in Spanish and English:
+- `REENCODE_ESTIMATION_TITLE`, `REENCODE_CURRENT_CODEC`, `REENCODE_RESOLUTION`
+- `REENCODE_DURATION`, `REENCODE_TARGET_CODEC`, `REENCODE_PRESET`
+- `REENCODE_HW_ACCEL`, `REENCODE_EST_TIME`, `REENCODE_EST_SIZE`
+- `REENCODE_WARNING`, `REENCODE_WARNING_DETAIL`, `REENCODE_CONFIRM_PROMPT`
+- `REENCODE_STARTING`, `REENCODE_COMPLETED`, `REENCODE_FAILED`
+- `REENCODE_CANCELLED`, `REENCODE_INVALID_COMBINATION`, `REENCODE_SUGGEST_MKV`
+
+### Use Cases
+
+**When to use re-encoding:**
+- Maximum privacy: Some codecs may retain metadata even with `-c copy`
+- Codec conversion: Convert old codecs (e.g., MPEG-2) to modern ones (H.265, AV1)
+- Container conversion: Change from MKV to MP4 for better compatibility
+- File size reduction: Re-encode with higher CRF for smaller files
+
+**When NOT to use re-encoding:**
+- Quality is paramount: Re-encoding always involves some quality loss
+- Time is limited: Re-encoding is significantly slower than stream copy
+- Original codec is fine: Standard cleaning is usually sufficient
+
+### Examples
+
+```bash
+# Basic re-encoding (medium quality)
+adamantium video.mp4 --reencode
+
+# High quality re-encoding
+adamantium video.mp4 --reencode=high
+
+# Convert to H.265 for better compression
+adamantium video.mp4 --reencode --video-codec=h265
+
+# Convert MKV to MP4 with re-encoding
+adamantium video.mkv --reencode --container=mp4
+
+# Force CPU encoding (disable GPU)
+adamantium video.mp4 --reencode --hw-accel=cpu
+
+# Expert: Custom CRF for precise quality control
+adamantium video.mp4 --reencode --reencode-crf=20
+
+# Automation: Skip confirmation
+adamantium video.mp4 --reencode --reencode-no-confirm
+```
+
+### Technical Notes
+
+**Hardware Acceleration Detection:**
+1. Check for NVIDIA GPU via `nvidia-smi`
+2. Check for AMD GPU via `/dev/dri/renderD128` + `lspci`
+3. Check for Intel GPU via `/dev/dri/renderD128` + `lspci`
+4. Verify ffmpeg encoder support before enabling
+
+**Container/Codec Compatibility:**
+- MP4: H.264, H.265, AV1 + AAC only
+- MKV: All codecs supported (universal container)
+- WebM: AV1, VP8, VP9 + Opus, Vorbis only
+
+---
+
 ## [2.3.3] - 2025-12-29
 
 ### Project Cleanup and Documentation Consolidation

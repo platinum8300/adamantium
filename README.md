@@ -39,7 +39,23 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
 - **Automatic Detection**: Identifies file type and applies optimal method
 - **Metadata Counter**: Shows how many fields were found and removed
 
-### 🆕 New in v2.3 (Torrent Support and Lightweight Mode)
+### 🆕 New in v2.4 (Re-encoding for Multimedia)
+
+- **Optional Re-encoding**: Full transcoding for complete metadata removal
+  - Guarantees 100% metadata removal (some codecs may retain metadata with `-c copy`)
+  - Quality presets: `--reencode=high`, `--reencode=medium`, `--reencode=low`
+  - Custom CRF: `--reencode-crf=22`
+- **Hardware Acceleration**: Automatic GPU detection
+  - NVIDIA NVENC, AMD VAAPI, Intel QSV
+  - Auto-detect or force: `--hw-accel=nvidia|amd|intel|cpu`
+- **Codec Conversion**: Change video/audio codecs
+  - Video: `--video-codec=h264|h265|av1`
+  - Audio: `--audio-codec=aac|opus|flac`
+  - Container: `--container=mp4|mkv|webm`
+- **Smart Estimation**: Time and size preview before processing
+- **Confirmation Prompt**: Safety check before re-encoding (skip with `--reencode-no-confirm`)
+
+### 🧲 v2.3 Features (Torrent Support and Lightweight Mode)
 
 - **Torrent File Support**: Clean metadata from .torrent files
   - Removes: `created by`, `creation date`, `comment`
@@ -288,6 +304,28 @@ adamantium photo.jpg --lightweight
 
 # Batch mode with lightweight output
 adamantium --batch --pattern '*.jpg' --lightweight .
+
+# Re-encoding mode (v2.4+) - Complete metadata removal via transcoding
+adamantium video.mp4 --reencode
+# Generates: video_clean.mp4 (re-encoded with medium quality)
+
+# High quality re-encoding
+adamantium video.mp4 --reencode=high
+
+# Convert to H.265 with Opus audio
+adamantium video.mp4 --reencode --video-codec=h265 --audio-codec=opus
+
+# Convert MKV to MP4 container
+adamantium video.mkv --reencode --container=mp4
+
+# Custom CRF for experts
+adamantium video.mp4 --reencode --reencode-crf=20
+
+# Force CPU encoding (disable GPU)
+adamantium video.mp4 --reencode --hw-accel=cpu
+
+# Skip confirmation (for automation)
+adamantium video.mp4 --reencode --reencode-no-confirm
 ```
 
 ### Batch Mode (v1.2+)
@@ -582,9 +620,18 @@ See [EXAMPLES.md](EXAMPLES.md) for more practical examples.
 - [x] Lightweight mode (`--lightweight`, `-l`) for minimal output
 - [x] Performance optimizations (MIME caching, progress buffering)
 
+### v2.4 (Re-encoding for Multimedia) - COMPLETED
+
+- [x] Optional re-encoding for multimedia (with quality control)
+- [x] Hardware acceleration detection (NVIDIA NVENC, AMD VAAPI, Intel QSV)
+- [x] Quality presets (high/medium/low) and custom CRF
+- [x] Codec conversion (H.264, H.265, AV1 / AAC, Opus, FLAC)
+- [x] Container conversion (MP4, MKV, WebM)
+- [x] Time and size estimation before processing
+- [x] Confirmation prompt with `--reencode-no-confirm` option
+
 ### v3.0 (Advanced and Professional)
 
-- [ ] Optional re-encoding for multimedia (with quality control)
 - [ ] Dangerous metadata detection with alerts and risk levels
 - [ ] Forensic tools integration (report compatibility)
 - [ ] REST API for remote use
@@ -607,6 +654,16 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
 ---
 
 ## 📜 Version History
+
+### v2.4 (Re-encoding for Multimedia) - 2025-12-30
+
+- **Optional Re-encoding**: Full transcoding for guaranteed 100% metadata removal
+- **Hardware Acceleration**: Automatic GPU detection (NVIDIA NVENC, AMD VAAPI, Intel QSV)
+- **Quality Presets**: `--reencode=high|medium|low` with optimized CRF values
+- **Codec Conversion**: H.264, H.265, AV1 video; AAC, Opus, FLAC audio
+- **Container Conversion**: MP4, MKV, WebM with codec compatibility validation
+- **Smart Estimation**: Preview estimated time and output size before processing
+- **New module**: `lib/reencode_handler.sh` (~400 lines)
 
 ### v2.3 (Torrent Support and Lightweight Mode) - 2025-12-28
 

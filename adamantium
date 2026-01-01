@@ -16,7 +16,7 @@
 set -euo pipefail
 
 # Version (single source of truth - update here only)
-export ADAMANTIUM_VERSION="2.3.2"
+export ADAMANTIUM_VERSION="2.4.0"
 
 # Colores
 readonly RED='\033[0;31m'
@@ -98,6 +98,16 @@ ARCHIVE_UNKNOWN_POLICY="skip"  # Policy for unknown files in archives: skip, war
 TORRENT_MODE=false         # Flag for torrent processing
 TORRENT_CLEAN_MODE="safe"  # Torrent cleaning mode: safe or aggressive
 LIGHTWEIGHT_MODE=false     # Lightweight output mode
+
+# Variables para v2.4 features (re-encoding)
+REENCODE_MODE=false            # Flag for re-encoding
+REENCODE_PRESET="medium"       # Quality preset: high, medium, low
+REENCODE_CRF=""                # Custom CRF value (overrides preset)
+REENCODE_VIDEO_CODEC="libx264" # Video codec: libx264, libx265, libsvtav1
+REENCODE_AUDIO_CODEC="aac"     # Audio codec: aac, libopus, flac
+REENCODE_CONTAINER=""          # Output container: mp4, mkv, webm (empty = keep original)
+REENCODE_HW_ACCEL="auto"       # Hardware acceleration: auto, nvidia, amd, intel, cpu
+REENCODE_NO_CONFIRM=false      # Skip re-encoding confirmation
 
 # Performance optimizations (v2.3)
 declare -A MIME_CACHE=()   # Cache for MIME type detection
@@ -294,6 +304,25 @@ declare -A MSG_ES=(
     [TORRENT_PRESERVED]="Preservados"
     [TORRENT_MODE_SAFE]="Modo seguro: preserva funcionalidad del torrent"
     [TORRENT_MODE_AGGRESSIVE]="Modo agresivo: maxima privacidad"
+    # Re-encoding messages (v2.4)
+    [REENCODE_ESTIMATION_TITLE]="ESTIMACION DE RE-ENCODING"
+    [REENCODE_CURRENT_CODEC]="Codec actual"
+    [REENCODE_RESOLUTION]="Resolucion"
+    [REENCODE_DURATION]="Duracion"
+    [REENCODE_TARGET_CODEC]="Codec destino"
+    [REENCODE_PRESET]="Preset de calidad"
+    [REENCODE_HW_ACCEL]="Aceleracion hardware"
+    [REENCODE_EST_TIME]="Tiempo estimado"
+    [REENCODE_EST_SIZE]="Tamano estimado"
+    [REENCODE_WARNING]="ADVERTENCIA: El re-encoding implica perdida de calidad"
+    [REENCODE_WARNING_DETAIL]="El archivo sera completamente recodificado. Esta accion no se puede deshacer."
+    [REENCODE_CONFIRM_PROMPT]="Continuar con el re-encoding?"
+    [REENCODE_STARTING]="Iniciando re-encoding"
+    [REENCODE_COMPLETED]="Re-encoding completado en"
+    [REENCODE_FAILED]="Error durante el re-encoding"
+    [REENCODE_CANCELLED]="Re-encoding cancelado por el usuario"
+    [REENCODE_INVALID_COMBINATION]="Combinacion codec/contenedor invalida"
+    [REENCODE_SUGGEST_MKV]="Sugerencia: usa MKV como contenedor (soporta todos los codecs)"
 )
 
 # Mensajes en inglés (idioma por defecto)
@@ -457,6 +486,25 @@ declare -A MSG_EN=(
     [TORRENT_PRESERVED]="Preserved"
     [TORRENT_MODE_SAFE]="Safe mode: preserves torrent functionality"
     [TORRENT_MODE_AGGRESSIVE]="Aggressive mode: maximum privacy"
+    # Re-encoding messages (v2.4)
+    [REENCODE_ESTIMATION_TITLE]="RE-ENCODING ESTIMATION"
+    [REENCODE_CURRENT_CODEC]="Current codec"
+    [REENCODE_RESOLUTION]="Resolution"
+    [REENCODE_DURATION]="Duration"
+    [REENCODE_TARGET_CODEC]="Target codec"
+    [REENCODE_PRESET]="Quality preset"
+    [REENCODE_HW_ACCEL]="Hardware acceleration"
+    [REENCODE_EST_TIME]="Estimated time"
+    [REENCODE_EST_SIZE]="Estimated size"
+    [REENCODE_WARNING]="WARNING: Re-encoding implies quality loss"
+    [REENCODE_WARNING_DETAIL]="The file will be completely re-encoded. This action cannot be undone."
+    [REENCODE_CONFIRM_PROMPT]="Continue with re-encoding?"
+    [REENCODE_STARTING]="Starting re-encoding"
+    [REENCODE_COMPLETED]="Re-encoding completed in"
+    [REENCODE_FAILED]="Re-encoding failed"
+    [REENCODE_CANCELLED]="Re-encoding cancelled by user"
+    [REENCODE_INVALID_COMBINATION]="Invalid codec/container combination"
+    [REENCODE_SUGGEST_MKV]="Suggestion: use MKV as container (supports all codecs)"
 )
 
 # Función para obtener mensaje traducido
@@ -1342,13 +1390,48 @@ perform_cleaning() {
     echo ""
 
     if [ "$IS_MULTIMEDIA" = true ]; then
-        # Para multimedia: ffmpeg primero, luego exiftool
-        local temp_ffmpeg="${TEMP_DIR}/temp_ffmpeg_$(basename "$input")"
+        # Check if re-encoding mode is enabled
+        if [ "$REENCODE_MODE" = true ]; then
+            # Re-encoding mode: full transcoding with metadata removal
+            local script_dir="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+            local lib_dir="${script_dir}/lib"
 
-        clean_with_ffmpeg "$input" "$temp_ffmpeg"
-        clean_with_exiftool "$temp_ffmpeg" "$output"
+            if [ ! -f "${lib_dir}/reencode_handler.sh" ]; then
+                echo -e "${RED}${CROSS} Error: Re-encode handler not found in ${lib_dir}${NC}" >&2
+                return 1
+            fi
 
-        rm -f "$temp_ffmpeg"
+            # Export necessary variables
+            export RED GREEN YELLOW BLUE MAGENTA CYAN WHITE GRAY BOLD NC
+            export CHECK CROSS ARROW BULLET WARN INFO CLEAN SHIELD FILE_ICON SIZE_ICON
+            export SPARKLES SEARCH_ICON TOOL_ICON
+            export LANG_CODE
+            export REENCODE_PRESET REENCODE_CRF REENCODE_VIDEO_CODEC REENCODE_AUDIO_CODEC
+            export REENCODE_CONTAINER REENCODE_HW_ACCEL
+
+            # Export msg function
+            export -f msg
+
+            # Load re-encode handler
+            source "${lib_dir}/reencode_handler.sh"
+
+            # Set confirmation based on CLI flag
+            if [ "$REENCODE_NO_CONFIRM" = true ]; then
+                REENCODE_CONFIRM=false
+            fi
+
+            # Execute re-encoding
+            reencode_main "$input" "$output"
+            return $?
+        else
+            # Standard mode: stream copy (no re-encoding)
+            local temp_ffmpeg="${TEMP_DIR}/temp_ffmpeg_$(basename "$input")"
+
+            clean_with_ffmpeg "$input" "$temp_ffmpeg"
+            clean_with_exiftool "$temp_ffmpeg" "$output"
+
+            rm -f "$temp_ffmpeg"
+        fi
     elif [ "$FILE_TYPE" = "$(msg CSS_FILE)" ]; then
         # Para CSS: eliminar comentarios con perl
         clean_css "$input" "$output"
@@ -1550,6 +1633,91 @@ main() {
                 LIGHTWEIGHT_MODE=true
                 shift
                 ;;
+            # Re-encoding options (v2.4)
+            --reencode)
+                REENCODE_MODE=true
+                shift
+                ;;
+            --reencode=*)
+                REENCODE_MODE=true
+                REENCODE_PRESET="${1#*=}"
+                # Validate preset
+                case "$REENCODE_PRESET" in
+                    high|medium|low) ;;
+                    *)
+                        echo -e "${RED}${CROSS} Invalid --reencode preset: $REENCODE_PRESET${NC}" >&2
+                        echo -e "Valid values: high, medium, low"
+                        exit 1
+                        ;;
+                esac
+                shift
+                ;;
+            --reencode-crf=*)
+                REENCODE_CRF="${1#*=}"
+                # Validate CRF (0-63)
+                if ! [[ "$REENCODE_CRF" =~ ^[0-9]+$ ]] || [ "$REENCODE_CRF" -gt 63 ]; then
+                    echo -e "${RED}${CROSS} Invalid --reencode-crf value: $REENCODE_CRF${NC}" >&2
+                    echo -e "Valid values: 0-63"
+                    exit 1
+                fi
+                shift
+                ;;
+            --video-codec=*)
+                REENCODE_VIDEO_CODEC="${1#*=}"
+                # Validate codec
+                case "$REENCODE_VIDEO_CODEC" in
+                    h264|x264|libx264|h265|x265|libx265|hevc|av1|libsvtav1|svtav1) ;;
+                    *)
+                        echo -e "${RED}${CROSS} Invalid --video-codec value: $REENCODE_VIDEO_CODEC${NC}" >&2
+                        echo -e "Valid values: h264, h265, av1"
+                        exit 1
+                        ;;
+                esac
+                shift
+                ;;
+            --audio-codec=*)
+                REENCODE_AUDIO_CODEC="${1#*=}"
+                # Validate codec
+                case "$REENCODE_AUDIO_CODEC" in
+                    aac|opus|libopus|flac) ;;
+                    *)
+                        echo -e "${RED}${CROSS} Invalid --audio-codec value: $REENCODE_AUDIO_CODEC${NC}" >&2
+                        echo -e "Valid values: aac, opus, flac"
+                        exit 1
+                        ;;
+                esac
+                shift
+                ;;
+            --container=*)
+                REENCODE_CONTAINER="${1#*=}"
+                # Validate container
+                case "$REENCODE_CONTAINER" in
+                    mp4|mkv|webm) ;;
+                    *)
+                        echo -e "${RED}${CROSS} Invalid --container value: $REENCODE_CONTAINER${NC}" >&2
+                        echo -e "Valid values: mp4, mkv, webm"
+                        exit 1
+                        ;;
+                esac
+                shift
+                ;;
+            --hw-accel=*)
+                REENCODE_HW_ACCEL="${1#*=}"
+                # Validate hw accel
+                case "$REENCODE_HW_ACCEL" in
+                    auto|nvidia|amd|intel|cpu) ;;
+                    *)
+                        echo -e "${RED}${CROSS} Invalid --hw-accel value: $REENCODE_HW_ACCEL${NC}" >&2
+                        echo -e "Valid values: auto, nvidia, amd, intel, cpu"
+                        exit 1
+                        ;;
+                esac
+                shift
+                ;;
+            --reencode-no-confirm)
+                REENCODE_NO_CONFIRM=true
+                shift
+                ;;
             -h|--help)
                 print_header
                 echo -e "${BOLD}$(msg USAGE)${NC}"
@@ -1572,6 +1740,17 @@ main() {
                 echo -e "  ${CYAN}--lightweight, -l${NC}     Minimal output (one line per file)"
                 echo -e "  ${CYAN}--notify${NC}              Send desktop notification on completion"
                 echo -e "  ${CYAN}-h, --help${NC}            Show this help"
+                echo ""
+                echo -e "${BOLD}Re-encoding Mode (v2.4):${NC}"
+                echo -e "  ${CYAN}--reencode${NC}            Re-encode multimedia (uses medium preset)"
+                echo -e "  ${CYAN}--reencode=PRESET${NC}     Re-encode with quality preset (high/medium/low)"
+                echo -e "  ${CYAN}--reencode-crf=N${NC}      Custom CRF value (0-63, lower=better)"
+                echo -e "  ${CYAN}--video-codec=CODEC${NC}   Video codec: h264, h265, av1"
+                echo -e "  ${CYAN}--audio-codec=CODEC${NC}   Audio codec: aac, opus, flac"
+                echo -e "  ${CYAN}--container=FORMAT${NC}    Output format: mp4, mkv, webm"
+                echo -e "  ${CYAN}--hw-accel=TYPE${NC}       Hardware acceleration:"
+                echo -e "                          auto (default), nvidia, amd, intel, cpu"
+                echo -e "  ${CYAN}--reencode-no-confirm${NC} Skip confirmation prompt"
                 echo ""
                 echo -e "${BOLD}$(msg BATCH_MODE):${NC}"
                 echo -e "  ${CYAN}--batch${NC}               Enable batch processing"
@@ -1618,6 +1797,14 @@ main() {
                 echo -e "  ${GRAY}# Lightweight mode (v2.3)${NC}"
                 echo -e "  $0 photo.jpg --lightweight"
                 echo -e "  $0 --batch --pattern '*.jpg' --lightweight ."
+                echo ""
+                echo -e "  ${GRAY}# Re-encoding mode (v2.4)${NC}"
+                echo -e "  $0 video.mp4 --reencode"
+                echo -e "  $0 video.mp4 --reencode=high"
+                echo -e "  $0 video.mp4 --reencode --video-codec=h265 --audio-codec=opus"
+                echo -e "  $0 video.mkv --reencode --container=mp4"
+                echo -e "  $0 video.mp4 --reencode --reencode-crf=20"
+                echo -e "  $0 video.mp4 --reencode --hw-accel=cpu"
                 echo ""
                 exit 0
                 ;;

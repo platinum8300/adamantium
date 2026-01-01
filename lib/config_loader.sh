@@ -64,6 +64,15 @@ declare -A CONFIG=(
     # Filters
     [PRESERVE_TAGS]=""
     [SENSITIVE_TAGS]="GPS,GPSLatitude,GPSLongitude,GPSAltitude,Author,Creator,Artist,Company,LastModifiedBy,OwnerName,SerialNumber,DeviceSerialNumber,InternalSerialNumber,LensSerialNumber"
+
+    # Re-encoding (v2.4)
+    [REENCODE_ON_PARANOID]="true"
+    [REENCODE_DEFAULT_PRESET]="medium"
+    [REENCODE_DEFAULT_VIDEO_CODEC]="libx264"
+    [REENCODE_DEFAULT_AUDIO_CODEC]="aac"
+    [REENCODE_HW_ACCEL]="auto"
+    [REENCODE_CONFIRM]="true"
+    [REENCODE_DEFAULT_CONTAINER]=""
 )
 
 # Estado de la configuración

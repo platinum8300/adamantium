@@ -162,6 +162,33 @@ BATCH_JOBS_DEFAULT=0
 # Show confirmation prompt in batch mode by default
 BATCH_CONFIRM_DEFAULT=true
 
+# ───────────────────────────────────────────────────────────────
+# RE-ENCODING OPTIONS (v2.4+)
+# ───────────────────────────────────────────────────────────────
+
+# Enable re-encoding by default when MULTIMEDIA_CLEAN_LEVEL=paranoid
+REENCODE_ON_PARANOID=true
+
+# Default quality preset: high, medium, low
+REENCODE_DEFAULT_PRESET="medium"
+
+# Default video codec: libx264, libx265, libsvtav1
+REENCODE_DEFAULT_VIDEO_CODEC="libx264"
+
+# Default audio codec: aac, libopus, flac
+REENCODE_DEFAULT_AUDIO_CODEC="aac"
+
+# Hardware acceleration: auto, nvidia, amd, intel, cpu
+# auto = automatically detect available GPU
+REENCODE_HW_ACCEL="auto"
+
+# Always ask for confirmation before re-encoding (true/false)
+REENCODE_CONFIRM=true
+
+# Default container for re-encoded files (empty = keep original)
+# Options: mp4, mkv, webm
+REENCODE_DEFAULT_CONTAINER=""
+
 # ═══════════════════════════════════════════════════════════════
 # USAGE
 # ═══════════════════════════════════════════════════════════════
