@@ -4,6 +4,37 @@ All notable changes to adamantium will be documented in this file.
 
 ---
 
+## [2.4.1] - 2026-01-02
+
+### Bug Fixes
+
+- **Fixed interactive mode with gum** - Resolved conflict between exported `BOLD` variable and gum's `--bold` flag
+  - gum expects `BOLD` to be a boolean (`true/false`), but adamantium exported it as ANSI code `\033[1m`
+  - Renamed internal variable `BOLD` → `STYLE_BOLD` to avoid collision
+  - Interactive mode (`adamantium -i`) now works correctly with gum installed
+
+### Improvements
+
+- **Integrated gum in installer** - Added gum as optional dependency in `install.sh`
+  - Installer now detects if gum is installed
+  - Offers to install gum automatically (Fedora, Arch, etc.)
+  - Shows manual installation instructions if automatic install fails
+  - Installation continues even if gum is not available (fallback to bash)
+
+### Files Modified
+
+- `adamantium` - Renamed `BOLD` → `STYLE_BOLD` in definition and all exports
+- `install.sh` - Added optional gum installation section
+- `lib/file_selector.sh` - Updated `BOLD` references
+- `lib/epub_handler.sh` - Updated `BOLD` references
+- `lib/archive_handler.sh` - Updated `BOLD` references
+- `lib/batch_core.sh` - Updated `BOLD` references
+- `lib/torrent_handler.sh` - Updated `BOLD` references
+- `lib/interactive_mode.sh` - Updated `BOLD` references
+- `lib/reencode_handler.sh` - Updated `BOLD` references
+
+---
+
 ## [2.4.0] - 2025-12-30
 
 ### NEW FEATURES - Optional Re-encoding for Multimedia

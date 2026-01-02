@@ -69,7 +69,7 @@ interactive_single_file() {
     # Mostrar info del archivo
     echo ""
     echo -e "${CYAN}╔═══════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║${NC} ${BOLD}${FILE_ICON} File selected${NC}"
+    echo -e "${CYAN}║${NC} ${STYLE_BOLD}${FILE_ICON} File selected${NC}"
     echo -e "${CYAN}╠═══════════════════════════════════════════════════════════╣${NC}"
     echo -e "${CYAN}║${NC} ${ARROW} $(basename "$file")"
     echo -e "${CYAN}║${NC} ${SIZE_ICON} Size: $(du -h "$file" 2>/dev/null | cut -f1)"
@@ -179,7 +179,7 @@ interactive_batch_mode() {
     # Mostrar resumen
     echo ""
     echo -e "${CYAN}╔═══════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║${NC} ${BOLD}${CLEAN} Batch Configuration${NC}"
+    echo -e "${CYAN}║${NC} ${STYLE_BOLD}${CLEAN} Batch Configuration${NC}"
     echo -e "${CYAN}╠═══════════════════════════════════════════════════════════╣${NC}"
     echo -e "${CYAN}║${NC} ${ARROW} Directory: ${WHITE}$dir${NC}"
     echo -e "${CYAN}║${NC} ${BULLET} Pattern: ${WHITE}$pattern${NC}"
@@ -260,7 +260,7 @@ interactive_archive_mode() {
     # Mostrar info del archivo
     echo ""
     echo -e "${CYAN}╔═══════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║${NC} ${BOLD}${ARCHIVE_ICON} Archive selected${NC}"
+    echo -e "${CYAN}║${NC} ${STYLE_BOLD}${ARCHIVE_ICON} Archive selected${NC}"
     echo -e "${CYAN}╠═══════════════════════════════════════════════════════════╣${NC}"
     echo -e "${CYAN}║${NC} ${ARROW} $(basename "$file")"
     echo -e "${CYAN}║${NC} ${SIZE_ICON} Size: $(du -h "$file" 2>/dev/null | cut -f1)"
@@ -370,22 +370,22 @@ interactive_settings() {
 interactive_check_tools() {
     echo ""
     echo -e "${CYAN}╔═══════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║${NC} ${BOLD}${TOOL_ICON} Installed Tools Status${NC}"
+    echo -e "${CYAN}║${NC} ${STYLE_BOLD}${TOOL_ICON} Installed Tools Status${NC}"
     echo -e "${CYAN}╚═══════════════════════════════════════════════════════════╝${NC}"
     echo ""
 
     # Herramientas requeridas
-    echo -e "${BOLD}Required:${NC}"
+    echo -e "${STYLE_BOLD}Required:${NC}"
     interactive_check_single_tool "exiftool" "$(exiftool -ver 2>/dev/null)"
     interactive_check_single_tool "ffmpeg" "$(ffmpeg -version 2>&1 | head -1 | grep -oP 'version n?\K[0-9.]+' | head -1)"
 
     echo ""
-    echo -e "${BOLD}Optional (TUI):${NC}"
+    echo -e "${STYLE_BOLD}Optional (TUI):${NC}"
     interactive_check_single_tool "gum" "$(gum --version 2>/dev/null | grep -oP '[0-9.]+')"
     interactive_check_single_tool "fzf" "$(fzf --version 2>/dev/null | grep -oP '^[0-9.]+')"
 
     echo ""
-    echo -e "${BOLD}Optional (Archives - v1.4+):${NC}"
+    echo -e "${STYLE_BOLD}Optional (Archives - v1.4+):${NC}"
     interactive_check_single_tool "unzip" "$(unzip -v 2>&1 | head -1 | grep -oP '[0-9.]+' | head -1)"
     interactive_check_single_tool "zip" "$(zip -v 2>&1 | head -2 | tail -1 | grep -oP '[0-9.]+' | head -1)"
     interactive_check_single_tool "7z" "$(7z 2>&1 | head -2 | grep -oP '[0-9.]+' | head -1)"
@@ -393,7 +393,7 @@ interactive_check_tools() {
 
     echo ""
     echo -e "${GRAY}─────────────────────────────────────────────────────────────${NC}"
-    echo -e "${CYAN}${INFO}${NC} TUI Backend: ${BOLD}${TUI_BACKEND}${NC}"
+    echo -e "${CYAN}${INFO}${NC} TUI Backend: ${STYLE_BOLD}${TUI_BACKEND}${NC}"
     echo ""
 }
 
@@ -489,15 +489,15 @@ EOF
     echo ""
     echo -e "  ${CYAN}───────────────────────────────────────────────────────────${NC}"
     echo ""
-    echo -e "    ${BOLD}Version:${NC}     ${ADAMANTIUM_VERSION}"
-    echo -e "    ${BOLD}Created by:${NC}  platinum8300"
-    echo -e "    ${BOLD}License:${NC}     AGPL-3.0"
-    echo -e "    ${BOLD}Repository:${NC}  github.com/platinum8300/adamantium"
-    echo -e "    ${BOLD}TUI Backend:${NC} ${TUI_BACKEND}"
+    echo -e "    ${STYLE_BOLD}Version:${NC}     ${ADAMANTIUM_VERSION}"
+    echo -e "    ${STYLE_BOLD}Created by:${NC}  platinum8300"
+    echo -e "    ${STYLE_BOLD}License:${NC}     AGPL-3.0"
+    echo -e "    ${STYLE_BOLD}Repository:${NC}  github.com/platinum8300/adamantium"
+    echo -e "    ${STYLE_BOLD}TUI Backend:${NC} ${TUI_BACKEND}"
     echo ""
     echo -e "  ${CYAN}───────────────────────────────────────────────────────────${NC}"
     echo ""
-    echo -e "    ${BOLD}Core Tools:${NC}"
+    echo -e "    ${STYLE_BOLD}Core Tools:${NC}"
     echo -e "    ${GRAY}•${NC} ExifTool by Phil Harvey"
     echo -e "    ${GRAY}•${NC} ffmpeg by FFmpeg team"
     echo -e "    ${GRAY}•${NC} gum by Charmbracelet"

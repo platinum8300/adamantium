@@ -147,6 +147,13 @@ adamantium allows you to **clean all this metadata in seconds**, showing you exa
 - **exiftool**: For standard metadata cleaning (minimum v13.39)
 - **ffmpeg**: For deep multimedia container cleaning (minimum v8.0)
 
+### Optional Dependencies
+
+- **gum**: For enhanced interactive mode experience ([Charmbracelet/gum](https://github.com/charmbracelet/gum))
+  - The installer will offer to install gum automatically
+  - Without gum, adamantium falls back to fzf or basic bash menus
+  - Available in Fedora 41+, Arch Linux, and via Charm repository
+
 ### Installation by Distribution
 
 ```bash

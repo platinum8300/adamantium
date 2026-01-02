@@ -186,25 +186,25 @@ show_batch_summary() {
 
     # Mostrar resumen
     echo -e "${GRAY}═══════════════════════════════════════════════════${NC}"
-    echo -e "${BOLD}${GREEN}${SPARKLES} $(msg BATCH_SUMMARY)${NC}"
+    echo -e "${STYLE_BOLD}${GREEN}${SPARKLES} $(msg BATCH_SUMMARY)${NC}"
     echo -e "${GRAY}═══════════════════════════════════════════════════${NC}"
     echo ""
-    echo -e "  ${GREEN}●${NC} ${BOLD}$(msg SUCCESSFUL):${NC} ${GREEN}${success}${NC}"
+    echo -e "  ${GREEN}●${NC} ${STYLE_BOLD}$(msg SUCCESSFUL):${NC} ${GREEN}${success}${NC}"
 
     if [ $errors -gt 0 ]; then
-        echo -e "  ${RED}●${NC} ${BOLD}$(msg FAILED):${NC} ${RED}${errors}${NC}"
+        echo -e "  ${RED}●${NC} ${STYLE_BOLD}$(msg FAILED):${NC} ${RED}${errors}${NC}"
     fi
 
-    echo -e "  ${CYAN}●${NC} ${BOLD}Total:${NC} ${current}/${total}"
-    echo -e "  ${BLUE}●${NC} ${BOLD}$(msg ELAPSED_TIME):${NC} ${elapsed_formatted}"
-    echo -e "  ${YELLOW}●${NC} ${BOLD}$(msg AVERAGE_SPEED):${NC} ${avg_speed} $(msg FILES_PER_SECOND)"
+    echo -e "  ${CYAN}●${NC} ${STYLE_BOLD}Total:${NC} ${current}/${total}"
+    echo -e "  ${BLUE}●${NC} ${STYLE_BOLD}$(msg ELAPSED_TIME):${NC} ${elapsed_formatted}"
+    echo -e "  ${YELLOW}●${NC} ${STYLE_BOLD}$(msg AVERAGE_SPEED):${NC} ${avg_speed} $(msg FILES_PER_SECOND)"
     echo ""
 
     # Mostrar archivos fallidos si hay
     if [ $errors -gt 0 ] && [ -f "${BATCH_STATE_DIR}/error_files.txt" ]; then
         local error_count=$(wc -l < "${BATCH_STATE_DIR}/error_files.txt")
 
-        echo -e "${YELLOW}${WARN} ${BOLD}Failed Files:${NC}"
+        echo -e "${YELLOW}${WARN} ${STYLE_BOLD}Failed Files:${NC}"
         echo ""
 
         # Mostrar máximo 10 archivos fallidos

@@ -126,6 +126,13 @@ adamantium es una herramienta de línea de comandos con interfaz TUI (Text User 
 - **exiftool**: Para limpieza de metadatos estándar (mínimo v13.39)
 - **ffmpeg**: Para limpieza profunda de contenedores multimedia (mínimo v8.0)
 
+### Dependencias opcionales
+
+- **gum**: Para una experiencia mejorada en el modo interactivo ([Charmbracelet/gum](https://github.com/charmbracelet/gum))
+  - El instalador ofrecerá instalar gum automáticamente
+  - Sin gum, adamantium usa fzf o menús básicos de bash como alternativa
+  - Disponible en Fedora 41+, Arch Linux y mediante el repositorio de Charm
+
 ### Instalación de dependencias por distribución
 
 ```bash

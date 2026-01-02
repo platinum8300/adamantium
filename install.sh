@@ -76,6 +76,10 @@ get_package_name() {
         ffmpeg)
             echo "ffmpeg"  # Mismo nombre en todas las distros
             ;;
+        gum)
+            # gum está disponible en repos nativos de Fedora 41+, Arch, etc.
+            echo "gum"
+            ;;
         *)
             echo "$pkg"
             ;;
@@ -155,6 +159,53 @@ else
     else
         echo -e "${RED}✗${NC} Error al instalar ffmpeg"
         exit 1
+    fi
+fi
+
+# ═══════════════════════════════════════════════════════════════
+# DEPENDENCIAS OPCIONALES
+# ═══════════════════════════════════════════════════════════════
+
+echo ""
+echo -e "${YELLOW}Verificando dependencias opcionales...${NC}\n"
+
+# Verificar gum (opcional - para mejor experiencia en modo interactivo)
+if command -v gum &> /dev/null; then
+    VERSION=$(gum --version 2>/dev/null | grep -oP '[0-9.]+' | head -1)
+    echo -e "${GREEN}✓${NC} gum instalado: ${CYAN}${VERSION}${NC} (modo interactivo mejorado)"
+else
+    echo -e "${YELLOW}⚠${NC} gum NO encontrado (opcional)"
+    echo -e "${GRAY}  gum mejora la experiencia del modo interactivo (adamantium -i)${NC}"
+    echo -e "${GRAY}  Sin gum, adamantium usará un fallback básico en bash${NC}"
+    echo ""
+    read -p "¿Deseas instalar gum? [s/N]: " install_gum
+
+    if [[ "$install_gum" =~ ^[SsYy]$ ]]; then
+        echo -e "${YELLOW}  Instalando gum...${NC}"
+        if install_package "gum"; then
+            echo -e "${GREEN}✓${NC} gum instalado correctamente"
+        else
+            echo -e "${YELLOW}⚠${NC} No se pudo instalar gum automáticamente"
+            echo -e "${GRAY}  Puedes instalarlo manualmente después:${NC}"
+            case "$PACKAGE_MANAGER" in
+                pacman)
+                    echo -e "${GRAY}    pacman -S gum${NC}"
+                    ;;
+                dnf|yum)
+                    echo -e "${GRAY}    dnf install gum${NC}"
+                    ;;
+                apt)
+                    echo -e "${GRAY}    # Añadir repositorio de Charm:${NC}"
+                    echo -e "${GRAY}    # https://github.com/charmbracelet/gum#installation${NC}"
+                    ;;
+                *)
+                    echo -e "${GRAY}    Visita: https://github.com/charmbracelet/gum#installation${NC}"
+                    ;;
+            esac
+            echo ""
+        fi
+    else
+        echo -e "${GRAY}  Omitiendo instalación de gum${NC}"
     fi
 fi
 

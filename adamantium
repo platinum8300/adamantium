@@ -10,13 +10,13 @@
 # ═══════════════════════════════════════════════════════════════
 # Deep metadata cleaning | The tool that excited Edward Snowden
 # Full Mode: ExifTool + ffmpeg
-# Version: 2.3.2
+# Version: 2.4.1
 # ═══════════════════════════════════════════════════════════════
 
 set -euo pipefail
 
 # Version (single source of truth - update here only)
-export ADAMANTIUM_VERSION="2.4.0"
+export ADAMANTIUM_VERSION="2.4.1"
 
 # Colores
 readonly RED='\033[0;31m'
@@ -27,7 +27,7 @@ readonly MAGENTA='\033[0;35m'
 readonly CYAN='\033[0;36m'
 readonly WHITE='\033[1;37m'
 readonly GRAY='\033[0;90m'
-readonly BOLD='\033[1m'
+readonly STYLE_BOLD='\033[1m'
 readonly NC='\033[0m' # No Color
 
 # Emojis y símbolos
@@ -857,7 +857,7 @@ print_box() {
     local content="$3"
 
     echo -e "${color}╭─────────────────────────────────────────────────────────────╮${NC}"
-    echo -e "${color}│${NC} ${BOLD}${title}${NC}"
+    echo -e "${color}│${NC} ${STYLE_BOLD}${title}${NC}"
     echo -e "${color}├─────────────────────────────────────────────────────────────┤${NC}"
     echo -e "${content}" | while IFS= read -r line; do
         echo -e "${color}│${NC} ${line}"
@@ -1035,7 +1035,7 @@ show_metadata() {
 
     echo ""
     echo -e "${color}╔═══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${color}║${NC} ${BOLD}${SEARCH_ICON} ${title}${NC}"
+    echo -e "${color}║${NC} ${STYLE_BOLD}${SEARCH_ICON} ${title}${NC}"
     echo -e "${color}╚═══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
 
@@ -1216,7 +1216,7 @@ verify_hashes() {
 
     echo ""
     print_separator
-    echo -e "${BOLD}${CYAN}$(msg HASH_VERIFICATION)${NC}"
+    echo -e "${STYLE_BOLD}${CYAN}$(msg HASH_VERIFICATION)${NC}"
     print_separator
     echo ""
 
@@ -1279,7 +1279,7 @@ show_css_metadata() {
 
     echo ""
     echo -e "${color}╔═══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${color}║${NC} ${BOLD}${SEARCH_ICON} ${title}${NC}"
+    echo -e "${color}║${NC} ${STYLE_BOLD}${SEARCH_ICON} ${title}${NC}"
     echo -e "${color}╚═══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
 
@@ -1295,7 +1295,7 @@ show_css_metadata() {
     local comment_count
     comment_count=$(echo "$comments" | grep -c '/\*') || comment_count=0
 
-    echo -e "${BOLD}  $(msg CSS_COMMENTS_FOUND): ${WHITE}${comment_count}${NC}"
+    echo -e "${STYLE_BOLD}  $(msg CSS_COMMENTS_FOUND): ${WHITE}${comment_count}${NC}"
     echo ""
 
     # Mostrar hasta 10 comentarios (truncados si son largos)
@@ -1385,7 +1385,7 @@ perform_cleaning() {
 
     echo ""
     print_separator
-    echo -e "${BOLD}${MAGENTA}$(msg STARTING_DEEP_CLEAN)${NC}"
+    echo -e "${STYLE_BOLD}${MAGENTA}$(msg STARTING_DEEP_CLEAN)${NC}"
     print_separator
     echo ""
 
@@ -1402,7 +1402,7 @@ perform_cleaning() {
             fi
 
             # Export necessary variables
-            export RED GREEN YELLOW BLUE MAGENTA CYAN WHITE GRAY BOLD NC
+            export RED GREEN YELLOW BLUE MAGENTA CYAN WHITE GRAY STYLE_BOLD NC
             export CHECK CROSS ARROW BULLET WARN INFO CLEAN SHIELD FILE_ICON SIZE_ICON
             export SPARKLES SEARCH_ICON TOOL_ICON
             export LANG_CODE
@@ -1720,11 +1720,11 @@ main() {
                 ;;
             -h|--help)
                 print_header
-                echo -e "${BOLD}$(msg USAGE)${NC}"
+                echo -e "${STYLE_BOLD}$(msg USAGE)${NC}"
                 echo -e "  $0 [$(msg OPTIONS)] <file> [output_file]"
                 echo -e "  $0 --batch --pattern PATTERN [$(msg OPTIONS)] [directory]"
                 echo ""
-                echo -e "${BOLD}$(msg OPTIONS)${NC}"
+                echo -e "${STYLE_BOLD}$(msg OPTIONS)${NC}"
                 echo -e "  ${CYAN}--verify${NC}              $(msg HASH_VERIFICATION | tr '[:upper:]' '[:lower:]')"
                 echo -e "  ${CYAN}--dry-run${NC}             $(msg DRY_RUN_NOTICE | tr '[:upper:]' '[:lower:]')"
                 echo -e "  ${CYAN}--show-only${NC}           Display metadata without cleaning"
@@ -1741,7 +1741,7 @@ main() {
                 echo -e "  ${CYAN}--notify${NC}              Send desktop notification on completion"
                 echo -e "  ${CYAN}-h, --help${NC}            Show this help"
                 echo ""
-                echo -e "${BOLD}Re-encoding Mode (v2.4):${NC}"
+                echo -e "${STYLE_BOLD}Re-encoding Mode (v2.4):${NC}"
                 echo -e "  ${CYAN}--reencode${NC}            Re-encode multimedia (uses medium preset)"
                 echo -e "  ${CYAN}--reencode=PRESET${NC}     Re-encode with quality preset (high/medium/low)"
                 echo -e "  ${CYAN}--reencode-crf=N${NC}      Custom CRF value (0-63, lower=better)"
@@ -1752,7 +1752,7 @@ main() {
                 echo -e "                          auto (default), nvidia, amd, intel, cpu"
                 echo -e "  ${CYAN}--reencode-no-confirm${NC} Skip confirmation prompt"
                 echo ""
-                echo -e "${BOLD}$(msg BATCH_MODE):${NC}"
+                echo -e "${STYLE_BOLD}$(msg BATCH_MODE):${NC}"
                 echo -e "  ${CYAN}--batch${NC}               Enable batch processing"
                 echo -e "  ${CYAN}--pattern PATTERN${NC}     File pattern (can repeat, e.g., '*.jpg')"
                 echo -e "  ${CYAN}--jobs N, -j N${NC}       Parallel jobs (default: auto-detect)"
@@ -1762,7 +1762,7 @@ main() {
                 echo -e "  ${CYAN}--verbose, -v${NC}        Verbose output"
                 echo -e "  ${CYAN}--quiet, -q${NC}          Minimal output"
                 echo ""
-                echo -e "${BOLD}$(msg EXAMPLES)${NC}"
+                echo -e "${STYLE_BOLD}$(msg EXAMPLES)${NC}"
                 echo -e "  ${GRAY}# Single file mode${NC}"
                 echo -e "  $0 documento.pdf"
                 echo -e "  $0 video.mp4 video_clean.mp4"
@@ -1864,7 +1864,7 @@ main() {
         fi
 
         # Exportar variables necesarias para interactive mode
-        export RED GREEN YELLOW BLUE MAGENTA CYAN WHITE GRAY BOLD NC
+        export RED GREEN YELLOW BLUE MAGENTA CYAN WHITE GRAY STYLE_BOLD NC
         export CHECK CROSS ARROW BULLET WARN INFO CLEAN SHIELD FILE_ICON SIZE_ICON
         export VIDEO_ICON IMAGE_ICON PDF_ICON OFFICE_ICON SPARKLES SEARCH_ICON
         export LOCATION_ICON CAMERA_ICON COMPUTER_ICON CALENDAR_ICON TOOL_ICON
@@ -1898,7 +1898,7 @@ main() {
 
         # Exportar variables necesarias para batch
         export BATCH_MODE BATCH_JOBS BATCH_PATTERNS BATCH_RECURSIVE BATCH_CONFIRM BATCH_VERBOSE BATCH_QUIET BATCH_LIGHTWEIGHT
-        export RED GREEN YELLOW BLUE MAGENTA CYAN WHITE GRAY BOLD NC
+        export RED GREEN YELLOW BLUE MAGENTA CYAN WHITE GRAY STYLE_BOLD NC
         export CHECK CROSS ARROW BULLET WARN INFO CLEAN SHIELD FILE_ICON SIZE_ICON
         export VIDEO_ICON IMAGE_ICON PDF_ICON OFFICE_ICON SPARKLES SEARCH_ICON
         export LOCATION_ICON CAMERA_ICON COMPUTER_ICON CALENDAR_ICON TOOL_ICON
@@ -1920,10 +1920,10 @@ main() {
     if [ -z "$file_arg" ]; then
         print_header
         echo -e "${RED}${CROSS} $(msg ERROR_NO_FILE)${NC}\n"
-        echo -e "${BOLD}$(msg USAGE)${NC}"
+        echo -e "${STYLE_BOLD}$(msg USAGE)${NC}"
         echo -e "  $0 [options] <file> [output_file]"
         echo ""
-        echo -e "${BOLD}$(msg EXAMPLES)${NC}"
+        echo -e "${STYLE_BOLD}$(msg EXAMPLES)${NC}"
         echo -e "  $0 documento.pdf"
         echo -e "  $0 video.mp4 video_clean.mp4"
         echo -e "  $0 imagen.jpg --verify"
@@ -1966,12 +1966,12 @@ main() {
 
         # Modo DRY-RUN
         if [ "$DRY_RUN" = true ]; then
-            echo -e "${YELLOW}${WARN} ${BOLD}$(msg DRY_RUN_MODE)${NC}"
+            echo -e "${YELLOW}${WARN} ${STYLE_BOLD}$(msg DRY_RUN_MODE)${NC}"
             echo -e "${GRAY}$(msg DRY_RUN_NOTICE)${NC}"
             echo ""
         fi
 
-        echo -e "${BOLD}${FILE_ICON} $(msg FILE_TO_PROCESS)${NC}"
+        echo -e "${STYLE_BOLD}${FILE_ICON} $(msg FILE_TO_PROCESS)${NC}"
         echo -e "  ${ARROW} ${WHITE}${ORIGINAL_FILE}${NC}"
         show_file_info "$ORIGINAL_FILE"
         echo ""
@@ -1990,7 +1990,7 @@ main() {
         fi
 
         # Exportar variables necesarias para EPUB mode
-        export RED GREEN YELLOW BLUE MAGENTA CYAN WHITE GRAY BOLD NC
+        export RED GREEN YELLOW BLUE MAGENTA CYAN WHITE GRAY STYLE_BOLD NC
         export CHECK CROSS ARROW BULLET WARN INFO CLEAN SHIELD FILE_ICON SIZE_ICON
         export SPARKLES SEARCH_ICON TOOL_ICON
         export LANG_CODE DRY_RUN VERIFY_HASH SHOW_ONLY
@@ -2004,7 +2004,7 @@ main() {
         # Modo SHOW-ONLY para EPUB
         if [ "$SHOW_ONLY" = true ]; then
             echo ""
-            echo -e "${CYAN}${INFO} ${BOLD}$(msg SHOW_ONLY_MODE)${NC}"
+            echo -e "${CYAN}${INFO} ${STYLE_BOLD}$(msg SHOW_ONLY_MODE)${NC}"
             echo -e "${GRAY}$(msg SHOW_ONLY_NOTICE)${NC}"
             epub_show_metadata "$ORIGINAL_FILE" "$(msg METADATA_BEFORE)" "$CYAN"
             exit 0
@@ -2038,7 +2038,7 @@ main() {
 
             # Resumen final
             print_separator
-            echo -e "${BOLD}${GREEN}${SPARKLES} $(msg PROCESS_COMPLETED)${NC}"
+            echo -e "${STYLE_BOLD}${GREEN}${SPARKLES} $(msg PROCESS_COMPLETED)${NC}"
             print_separator
             echo ""
             echo -e "  ${FILE_ICON} $(msg ORIGINAL_FILE) ${GRAY}${ORIGINAL_FILE}${NC}"
@@ -2064,7 +2064,7 @@ main() {
         fi
 
         # Exportar variables necesarias para torrent mode
-        export RED GREEN YELLOW BLUE MAGENTA CYAN WHITE GRAY BOLD NC
+        export RED GREEN YELLOW BLUE MAGENTA CYAN WHITE GRAY STYLE_BOLD NC
         export CHECK CROSS ARROW BULLET WARN INFO CLEAN SHIELD FILE_ICON SIZE_ICON
         export SPARKLES SEARCH_ICON TOOL_ICON
         export LANG_CODE DRY_RUN VERIFY_HASH SHOW_ONLY
@@ -2079,7 +2079,7 @@ main() {
         # Modo SHOW-ONLY para torrent
         if [ "$SHOW_ONLY" = true ]; then
             echo ""
-            echo -e "${CYAN}${INFO} ${BOLD}$(msg SHOW_ONLY_MODE)${NC}"
+            echo -e "${CYAN}${INFO} ${STYLE_BOLD}$(msg SHOW_ONLY_MODE)${NC}"
             echo -e "${GRAY}$(msg SHOW_ONLY_NOTICE)${NC}"
             torrent_show_metadata "$ORIGINAL_FILE" "$(msg METADATA_BEFORE)" "$CYAN"
             exit 0
@@ -2113,7 +2113,7 @@ main() {
 
             # Resumen final
             print_separator
-            echo -e "${BOLD}${GREEN}${SPARKLES} $(msg PROCESS_COMPLETED)${NC}"
+            echo -e "${STYLE_BOLD}${GREEN}${SPARKLES} $(msg PROCESS_COMPLETED)${NC}"
             print_separator
             echo ""
             echo -e "  ${FILE_ICON} $(msg ORIGINAL_FILE) ${GRAY}${ORIGINAL_FILE}${NC}"
@@ -2140,7 +2140,7 @@ main() {
         fi
 
         # Exportar variables necesarias para archive mode
-        export RED GREEN YELLOW BLUE MAGENTA CYAN WHITE GRAY BOLD NC
+        export RED GREEN YELLOW BLUE MAGENTA CYAN WHITE GRAY STYLE_BOLD NC
         export CHECK CROSS ARROW BULLET WARN INFO CLEAN SHIELD FILE_ICON SIZE_ICON
         export VIDEO_ICON IMAGE_ICON PDF_ICON OFFICE_ICON SPARKLES SEARCH_ICON
         export LOCATION_ICON CAMERA_ICON COMPUTER_ICON CALENDAR_ICON TOOL_ICON
@@ -2171,7 +2171,7 @@ main() {
     if [ "$CHECK_DUPLICATES" = true ] && [ "$FILE_TYPE" != "$(msg CSS_FILE)" ] && [ "$LIGHTWEIGHT_MODE" != true ]; then
         if detect_duplicate "$ORIGINAL_FILE"; then
             echo ""
-            echo -e "${YELLOW}${WARN} ${BOLD}$(msg DUPLICATE_WARNING)${NC}"
+            echo -e "${YELLOW}${WARN} ${STYLE_BOLD}$(msg DUPLICATE_WARNING)${NC}"
             echo -e "${GRAY}$(msg DUPLICATE_REASON)${NC}"
             echo ""
         fi
@@ -2223,7 +2223,7 @@ main() {
     # Modo SHOW-ONLY: solo mostrar metadatos sin limpiar
     if [ "$SHOW_ONLY" = true ]; then
         echo ""
-        echo -e "${CYAN}${INFO} ${BOLD}$(msg SHOW_ONLY_MODE)${NC}"
+        echo -e "${CYAN}${INFO} ${STYLE_BOLD}$(msg SHOW_ONLY_MODE)${NC}"
         echo -e "${GRAY}$(msg SHOW_ONLY_NOTICE)${NC}"
         echo ""
 
@@ -2274,7 +2274,7 @@ main() {
 
     # Resumen final
     print_separator
-    echo -e "${BOLD}${GREEN}${SPARKLES} $(msg PROCESS_COMPLETED)${NC}"
+    echo -e "${STYLE_BOLD}${GREEN}${SPARKLES} $(msg PROCESS_COMPLETED)${NC}"
     print_separator
     echo ""
     echo -e "  ${FILE_ICON} $(msg ORIGINAL_FILE) ${GRAY}${ORIGINAL_FILE}${NC}"

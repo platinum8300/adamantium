@@ -148,7 +148,7 @@ select_with_confirmation() {
     local file_count=${#files[@]}
 
     # Mostrar lista de archivos encontrados
-    echo -e "${CYAN}${INFO} $(msg FILES_FOUND): ${BOLD}${file_count}${NC}"
+    echo -e "${CYAN}${INFO} $(msg FILES_FOUND): ${STYLE_BOLD}${file_count}${NC}"
     echo ""
 
     # Mostrar preview de archivos (máximo 20)
@@ -212,9 +212,9 @@ display_selection_summary() {
 
     # Mostrar resumen
     echo -e "${CYAN}╔═══════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║${NC}  ${BOLD}$(msg BATCH_PROCESSING) $(msg SUMMARY)${NC}"
+    echo -e "${CYAN}║${NC}  ${STYLE_BOLD}$(msg BATCH_PROCESSING) $(msg SUMMARY)${NC}"
     echo -e "${CYAN}╠═══════════════════════════════════════╣${NC}"
-    echo -e "${CYAN}║${NC}  $(msg FILES_SELECTED): ${GREEN}${BOLD}${count}${NC}"
+    echo -e "${CYAN}║${NC}  $(msg FILES_SELECTED): ${GREEN}${STYLE_BOLD}${count}${NC}"
     echo -e "${CYAN}║${NC}  Total size: ${YELLOW}${size_human}${NC}"
     echo -e "${CYAN}╚═══════════════════════════════════════╝${NC}"
     echo ""

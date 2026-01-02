@@ -90,7 +90,7 @@ epub_show_metadata() {
 
     echo ""
     echo -e "${color}╔═══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${color}║${NC} ${BOLD}${SEARCH_ICON} ${title}${NC}"
+    echo -e "${color}║${NC} ${STYLE_BOLD}${SEARCH_ICON} ${title}${NC}"
     echo -e "${color}╚═══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
 
@@ -115,7 +115,7 @@ epub_show_metadata() {
 
     local opf_file="${temp_dir}/${opf_path}"
 
-    echo -e "${BOLD}  $(msg EPUB_OPF_FILE): ${GRAY}${opf_path}${NC}"
+    echo -e "${STYLE_BOLD}  $(msg EPUB_OPF_FILE): ${GRAY}${opf_path}${NC}"
     echo ""
 
     # Patrones sensibles a destacar

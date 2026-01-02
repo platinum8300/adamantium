@@ -403,7 +403,7 @@ reencode_show_estimation() {
 
     echo ""
     echo -e "${CYAN}╔═══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║${NC} ${BOLD}$(msg REENCODE_ESTIMATION_TITLE)${NC}"
+    echo -e "${CYAN}║${NC} ${STYLE_BOLD}$(msg REENCODE_ESTIMATION_TITLE)${NC}"
     echo -e "${CYAN}╚═══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
 

@@ -218,7 +218,7 @@ torrent_show_metadata() {
 
     echo ""
     echo -e "${color}╔═══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${color}║${NC} ${BOLD}${SEARCH_ICON} ${title}${NC}"
+    echo -e "${color}║${NC} ${STYLE_BOLD}${SEARCH_ICON} ${title}${NC}"
     echo -e "${color}╚═══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
 

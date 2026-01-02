@@ -709,11 +709,11 @@ archive_show_preview() {
 
     echo ""
     echo -e "${CYAN}╔═══════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║${NC} ${BOLD}${ARCHIVE_ICON} $(msg ARCHIVE_CONTENTS_PREVIEW)${NC}"
+    echo -e "${CYAN}║${NC} ${STYLE_BOLD}${ARCHIVE_ICON} $(msg ARCHIVE_CONTENTS_PREVIEW)${NC}"
     echo -e "${CYAN}╚═══════════════════════════════════════════════════════════╝${NC}"
     echo ""
 
-    echo -e "${BOLD}$(msg ARCHIVE_CLEANABLE_FILES):${NC}"
+    echo -e "${STYLE_BOLD}$(msg ARCHIVE_CLEANABLE_FILES):${NC}"
 
     while IFS= read -r entry; do
         [[ "$entry" == */ ]] && continue
@@ -732,7 +732,7 @@ archive_show_preview() {
     done <<< "$(archive_list_contents "$file" "$password")"
 
     echo ""
-    echo -e "${BOLD}$(msg SUMMARY):${NC}"
+    echo -e "${STYLE_BOLD}$(msg SUMMARY):${NC}"
     echo -e "  ${GREEN}●${NC} $(msg ARCHIVE_CLEANABLE_FILES): ${WHITE}$cleanable${NC}"
     if [ $nested -gt 0 ]; then
         echo -e "  ${MAGENTA}●${NC} $(msg ARCHIVE_NESTED): ${WHITE}$nested${NC}"
@@ -811,7 +811,7 @@ archive_process() {
 
     # Mostrar información del archivo
     echo -e "${CYAN}╔═══════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║${NC} ${BOLD}${ARCHIVE_ICON} $(msg ARCHIVE_DETECTED)${NC}"
+    echo -e "${CYAN}║${NC} ${STYLE_BOLD}${ARCHIVE_ICON} $(msg ARCHIVE_DETECTED)${NC}"
     echo -e "${CYAN}╠═══════════════════════════════════════════════════════════╣${NC}"
     echo -e "${CYAN}║${NC} ${ARROW} ${WHITE}$(basename "$input_file")${NC}"
     echo -e "${CYAN}║${NC} ${BULLET} $(msg ARCHIVE_FORMAT): ${YELLOW}${ARCHIVE_TYPE}${NC}"
@@ -868,7 +868,7 @@ archive_process() {
     # Mostrar resumen
     echo ""
     echo -e "${GRAY}═══════════════════════════════════════════════════${NC}"
-    echo -e "${BOLD}${GREEN}${SPARKLES} $(msg PROCESS_COMPLETED)${NC}"
+    echo -e "${STYLE_BOLD}${GREEN}${SPARKLES} $(msg PROCESS_COMPLETED)${NC}"
     echo -e "${GRAY}═══════════════════════════════════════════════════${NC}"
     echo ""
     echo -e "  ${FILE_ICON} $(msg ORIGINAL_FILE): ${GRAY}$(basename "$input_file")${NC}"
