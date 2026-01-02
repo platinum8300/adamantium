@@ -74,7 +74,7 @@ sudo zypper install exiftool ffmpeg
 ### Clone and Setup
 
 ```bash
-git clone https://github.com/yourusername/adamantium.git
+git clone https://github.com/platinum8300/adamantium.git
 cd adamantium
 chmod +x adamantium install.sh
 ```

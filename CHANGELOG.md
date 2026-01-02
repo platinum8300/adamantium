@@ -1281,7 +1281,7 @@ Removes sensitive metadata including:
 
 **Quick Install:**
 ```bash
-git clone https://github.com/yourusername/adamantium.git
+git clone https://github.com/platinum8300/adamantium.git
 cd adamantium
 chmod +x install.sh
 ./install.sh

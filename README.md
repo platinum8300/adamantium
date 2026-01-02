@@ -185,7 +185,7 @@ sudo apk add exiftool ffmpeg
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/adamantium.git
+git clone https://github.com/platinum8300/adamantium.git
 cd adamantium
 
 # Run the installer
@@ -203,7 +203,7 @@ The installer will:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/adamantium.git
+git clone https://github.com/platinum8300/adamantium.git
 cd adamantium
 
 # Make the script executable
@@ -839,6 +839,7 @@ A: Yes, it's completely legal to remove metadata from YOUR files.
 
 - **ExifTool** by Phil Harvey
 - **ffmpeg** by FFmpeg team
+- **gum** by [Charmbracelet](https://github.com/charmbracelet) - Beautiful terminal UI components
 - All contributors and the open source community
 
 ---

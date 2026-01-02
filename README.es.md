@@ -182,7 +182,7 @@ adamantium te permite **limpiar todos estos metadatos en segundos**, mostrándot
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/yourusername/adamantium.git
+git clone https://github.com/platinum8300/adamantium.git
 cd adamantium
 
 # Ejecutar el instalador
@@ -200,7 +200,7 @@ El instalador:
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/yourusername/adamantium.git
+git clone https://github.com/platinum8300/adamantium.git
 cd adamantium
 
 # Hacer el script ejecutable
@@ -871,6 +871,15 @@ R: NO. No toques archivos protegidos por DRM.
 
 **P: ¿Es legal?**
 R: Sí, es completamente legal eliminar metadatos de TUS archivos.
+
+---
+
+## 🙏 Agradecimientos
+
+- **ExifTool** por Phil Harvey
+- **ffmpeg** por el equipo de FFmpeg
+- **gum** por [Charmbracelet](https://github.com/charmbracelet) - Componentes de interfaz terminal modernos
+- Todos los contribuidores y la comunidad open source
 
 ---
 
