@@ -12,7 +12,7 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Platform: Linux](https://img.shields.io/badge/Platform-Linux-blue.svg)](https://www.linux.org/)
-[![Version: 2.3](https://img.shields.io/badge/Version-2.3-green.svg)](https://github.com/platinum8300/adamantium/releases)
+[![Version: 2.5](https://img.shields.io/badge/Version-2.5-green.svg)](https://github.com/platinum8300/adamantium/releases)
 
 ---
 
@@ -39,7 +39,26 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
 - **Automatic Detection**: Identifies file type and applies optimal method
 - **Metadata Counter**: Shows how many fields were found and removed
 
-### 🆕 New in v2.4 (Re-encoding for Multimedia)
+### 🆕 New in v2.5 (Dangerous Metadata Detection)
+
+- **Risk Analysis**: Automatic detection and classification of dangerous metadata
+  - **3 Risk Levels**: CRITICAL (red), WARNING (yellow), INFO (blue)
+  - **Categories**: Location, Identity, Contact, Device ID, AI Prompts, Timestamps, Software
+- **Visual Alerts**: Beautiful risk summary panel with Charmbracelet-style UI
+  - Shows risk counts by level with affected categories
+  - Inline badges highlighting dangerous fields in metadata listing
+- **Interactive Risk Details**: View detailed risk table in interactive mode
+  - Shows each dangerous field, its value, risk level, and category
+  - Option to view details before proceeding with cleaning
+- **Report Integration**: Risk analysis included in JSON/CSV reports
+  - `risk_critical_count`, `risk_warning_count`, `risk_info_count`
+  - List of critical fields and categories detected
+- **Configurable**: Options in `.adamantiumrc`:
+  - `DANGER_DETECTION=true|false` - Enable/disable risk analysis
+  - `DANGER_SHOW_SUMMARY=true|false` - Show risk summary panel
+  - `DANGER_SHOW_INLINE=true|false` - Show inline risk badges
+
+### 🎬 v2.4 Features (Re-encoding for Multimedia)
 
 - **Optional Re-encoding**: Full transcoding for complete metadata removal
   - Guarantees 100% metadata removal (some codecs may retain metadata with `-c copy`)

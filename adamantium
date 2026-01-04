@@ -16,7 +16,7 @@
 set -euo pipefail
 
 # Version (single source of truth - update here only)
-export ADAMANTIUM_VERSION="2.4.1"
+export ADAMANTIUM_VERSION="2.5"
 
 # Colores
 readonly RED='\033[0;31m'
@@ -323,6 +323,28 @@ declare -A MSG_ES=(
     [REENCODE_CANCELLED]="Re-encoding cancelado por el usuario"
     [REENCODE_INVALID_COMBINATION]="Combinacion codec/contenedor invalida"
     [REENCODE_SUGGEST_MKV]="Sugerencia: usa MKV como contenedor (soporta todos los codecs)"
+    # Risk analysis messages (v2.5)
+    [RISK_ANALYSIS]="ANALISIS DE RIESGOS"
+    [RISK_CRITICAL]="CRITICO"
+    [RISK_WARNING]="ADVERTENCIA"
+    [RISK_INFO]="INFO"
+    [RISK_LOCATION]="Ubicacion"
+    [RISK_IDENTITY]="Identidad"
+    [RISK_CONTACT]="Contacto"
+    [RISK_DEVICE_ID]="ID Dispositivo"
+    [RISK_TRACKING]="Rastreo"
+    [RISK_AI_PROMPT]="Prompt IA"
+    [RISK_HISTORY]="Historial"
+    [RISK_SOFTWARE]="Software"
+    [RISK_TIMESTAMP]="Marca de tiempo"
+    [RISK_HARDWARE]="Hardware"
+    [RISK_DOCUMENT]="Documento"
+    [RISK_TOTAL_FOUND]="campos de metadatos potencialmente peligrosos detectados"
+    [RISK_VIEW_DETAILS]="Ver detalles de riesgos"
+    [RISK_FIELD]="Campo"
+    [RISK_VALUE]="Valor"
+    [RISK_LEVEL]="Nivel"
+    [RISK_CATEGORY]="Categoria"
 )
 
 # Mensajes en inglés (idioma por defecto)
@@ -505,6 +527,28 @@ declare -A MSG_EN=(
     [REENCODE_CANCELLED]="Re-encoding cancelled by user"
     [REENCODE_INVALID_COMBINATION]="Invalid codec/container combination"
     [REENCODE_SUGGEST_MKV]="Suggestion: use MKV as container (supports all codecs)"
+    # Risk analysis messages (v2.5)
+    [RISK_ANALYSIS]="RISK ANALYSIS"
+    [RISK_CRITICAL]="CRITICAL"
+    [RISK_WARNING]="WARNING"
+    [RISK_INFO]="INFO"
+    [RISK_LOCATION]="Location"
+    [RISK_IDENTITY]="Identity"
+    [RISK_CONTACT]="Contact"
+    [RISK_DEVICE_ID]="Device ID"
+    [RISK_TRACKING]="Tracking"
+    [RISK_AI_PROMPT]="AI Prompt"
+    [RISK_HISTORY]="History"
+    [RISK_SOFTWARE]="Software"
+    [RISK_TIMESTAMP]="Timestamp"
+    [RISK_HARDWARE]="Hardware"
+    [RISK_DOCUMENT]="Document"
+    [RISK_TOTAL_FOUND]="potentially dangerous metadata fields detected"
+    [RISK_VIEW_DETAILS]="View risk details"
+    [RISK_FIELD]="Field"
+    [RISK_VALUE]="Value"
+    [RISK_LEVEL]="Risk"
+    [RISK_CATEGORY]="Category"
 )
 
 # Función para obtener mensaje traducido
@@ -1033,26 +1077,27 @@ show_metadata() {
     local title="$2"
     local color="$3"
 
+    # Obtener TODOS los metadatos con exiftool (sin filtrar)
+    local metadata
+    metadata=$(exiftool "$file" 2>/dev/null)
+
+    # Analizar riesgos si el módulo está cargado (v2.5)
+    if declare -f danger_analyze_metadata &>/dev/null && [ "$LIGHTWEIGHT_MODE" != "true" ]; then
+        danger_analyze_metadata "$metadata"
+        # Mostrar panel de resumen de riesgos
+        danger_show_summary_panel
+    fi
+
     echo ""
     echo -e "${color}╔═══════════════════════════════════════════════════════════════╗${NC}"
     echo -e "${color}║${NC} ${STYLE_BOLD}${SEARCH_ICON} ${title}${NC}"
     echo -e "${color}╚═══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
 
-    # Obtener TODOS los metadatos con exiftool (sin filtrar)
-    local metadata
-    metadata=$(exiftool "$file" 2>/dev/null)
-
     if [ -z "$metadata" ] || [ "$(echo "$metadata" | wc -l)" -le 1 ]; then
         echo -e "${GREEN}  ${CHECK} $(msg NO_METADATA_FOUND)${NC}"
         return
     fi
-
-    # Campos sensibles a destacar en rojo
-    local sensitive_patterns="Author|Creator|GPS|Location|Artist|Company|Owner|Serial|Parameters|Model|Software|Camera|Device|Make|Copyright|Last Modified By|User|Comment|Description|Subject|Keywords"
-
-    # Campos técnicos/fechas en amarillo
-    local technical_patterns="Date|Time|Timestamp|Encoder|Codec|Compression|Version|Tool"
 
     # Campos básicos del sistema en gris (menos importantes visualmente)
     local system_patterns="ExifTool|File Name|Directory|File Size|File Permissions|File Inode|File Access Date"
@@ -1076,22 +1121,21 @@ show_metadata() {
             local key=$(echo "$line" | cut -d: -f1 | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
             local value=$(echo "$line" | cut -d: -f2- | sed 's/^[[:space:]]*//')
 
-            # Colorear según nivel de sensibilidad
-            # EXCEPCIÓN: Handler con valores genéricos → AZUL (no sensible)
-            if echo "$key" | grep -qi "Handler" && echo "$value" | grep -qE "(${generic_handler_values})"; then
-                # AZUL: Handler genérico (estructura estándar MP4, no sensible)
+            # Verificar si danger_detector está disponible y tiene riesgo
+            local risk_level="none"
+            if declare -f danger_get_field_risk &>/dev/null; then
+                risk_level=$(danger_get_field_risk "$key")
+            fi
+
+            # Mostrar con formato de riesgo si aplica (v2.5)
+            if [[ "$risk_level" != "none" ]] && declare -f danger_highlight_line &>/dev/null; then
+                danger_highlight_line "$key" "${key}: ${value}"
+            # Fallback al formato original
+            elif echo "$key" | grep -qi "Handler" && echo "$value" | grep -qE "(${generic_handler_values})"; then
                 echo -e "  ${BLUE}●${NC} ${CYAN}${key}:${NC} ${value}"
-            elif echo "$key" | grep -qE "(${sensitive_patterns})"; then
-                # ROJO: Metadatos sensibles (privacidad crítica)
-                echo -e "  ${RED}●${NC} ${RED}${key}:${NC} ${WHITE}${value}${NC}"
-            elif echo "$key" | grep -qE "(${technical_patterns})"; then
-                # AMARILLO: Metadatos técnicos
-                echo -e "  ${YELLOW}●${NC} ${YELLOW}${key}:${NC} ${CYAN}${value}${NC}"
             elif echo "$key" | grep -qE "(${system_patterns})"; then
-                # GRIS: Info del sistema (menos crítico)
                 echo -e "  ${GRAY}●${NC} ${GRAY}${key}:${NC} ${GRAY}${value}${NC}"
             else
-                # AZUL: Resto de metadatos
                 echo -e "  ${BLUE}●${NC} ${CYAN}${key}:${NC} ${value}"
             fi
         fi
@@ -1505,6 +1549,12 @@ main() {
     # Cargar módulo de notificaciones
     if [ -f "${lib_dir}/notifier.sh" ]; then
         source "${lib_dir}/notifier.sh"
+    fi
+
+    # Cargar módulo de detección de riesgos (v2.5)
+    if [ -f "${lib_dir}/danger_detector.sh" ]; then
+        source "${lib_dir}/danger_detector.sh"
+        danger_init
     fi
 
     # Parsear argumentos

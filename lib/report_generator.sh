@@ -139,7 +139,21 @@ report_add_entry() {
 
     local timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-    # Crear entrada JSON
+    # Obtener análisis de riesgos si está disponible (v2.5)
+    local risk_analysis_json='"risk_analysis": null'
+    local risk_csv_fields="0,0,0,\"\",\"\""
+    if declare -f danger_get_json_report &>/dev/null; then
+        local risk_json
+        risk_json=$(danger_get_json_report)
+        if [ -n "$risk_json" ] && [ "$risk_json" != "{}" ]; then
+            risk_analysis_json="\"risk_analysis\": $risk_json"
+        fi
+    fi
+    if declare -f danger_get_csv_fields &>/dev/null; then
+        risk_csv_fields=$(danger_get_csv_fields)
+    fi
+
+    # Crear entrada JSON con análisis de riesgos
     local entry=$(cat <<EOF
 {
     "original_path": "$(report_escape_json "$original_path")",
@@ -151,7 +165,8 @@ report_add_entry() {
     "clean_hash": "$clean_hash",
     "status": "$status",
     "error_message": "$(report_escape_json "$error_message")",
-    "timestamp": "$timestamp"
+    "timestamp": "$timestamp",
+    $risk_analysis_json
 }
 EOF
 )
@@ -168,7 +183,7 @@ EOF
     if [ -n "$REPORT_CSV_FILE" ]; then
         report_write_csv_entry "$original_path" "$output_path" "$file_type" \
             "$original_size" "$clean_size" "$original_hash" "$clean_hash" \
-            "$status" "$error_message" "$timestamp"
+            "$status" "$error_message" "$timestamp" "$risk_csv_fields"
     fi
 
     return 0
@@ -253,7 +268,8 @@ report_write_csv_header() {
 
     [ -z "$REPORT_CSV_FILE" ] && return 0
 
-    echo "original_path,output_path,file_type,original_size_bytes,clean_size_bytes,original_hash,clean_hash,status,error_message,timestamp" > "$REPORT_CSV_FILE"
+    # v2.5: Añadidos campos de análisis de riesgos
+    echo "original_path,output_path,file_type,original_size_bytes,clean_size_bytes,original_hash,clean_hash,status,error_message,timestamp,risk_critical_count,risk_warning_count,risk_info_count,risk_critical_fields,risk_categories" > "$REPORT_CSV_FILE"
 }
 
 report_write_csv_entry() {
@@ -268,6 +284,7 @@ report_write_csv_entry() {
     local status="$8"
     local error_message="$9"
     local timestamp="${10}"
+    local risk_csv_fields="${11:-0,0,0,\"\",\"\"}"  # v2.5: campos de riesgo
 
     [ -z "$REPORT_CSV_FILE" ] && return 0
 
@@ -276,7 +293,8 @@ report_write_csv_entry() {
     output_path=$(report_escape_csv "$output_path")
     error_message=$(report_escape_csv "$error_message")
 
-    echo "\"$original_path\",\"$output_path\",\"$file_type\",$original_size,$clean_size,\"$original_hash\",\"$clean_hash\",\"$status\",\"$error_message\",\"$timestamp\"" >> "$REPORT_CSV_FILE"
+    # v2.5: Incluir campos de análisis de riesgos
+    echo "\"$original_path\",\"$output_path\",\"$file_type\",$original_size,$clean_size,\"$original_hash\",\"$clean_hash\",\"$status\",\"$error_message\",\"$timestamp\",$risk_csv_fields" >> "$REPORT_CSV_FILE"
 }
 
 # ─────────────────────────────────────────────────────────────

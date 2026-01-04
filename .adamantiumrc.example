@@ -189,6 +189,22 @@ REENCODE_CONFIRM=true
 # Options: mp4, mkv, webm
 REENCODE_DEFAULT_CONTAINER=""
 
+# ───────────────────────────────────────────────────────────────
+# DANGER DETECTION OPTIONS (v2.5+)
+# ───────────────────────────────────────────────────────────────
+
+# Enable dangerous metadata detection and risk analysis (true/false)
+# When enabled, shows risk levels (CRITICAL, WARNING, INFO) for metadata
+DANGER_DETECTION=true
+
+# Show risk summary panel before metadata listing (true/false)
+# Displays a box with risk counts and categories
+DANGER_SHOW_SUMMARY=true
+
+# Show inline risk badges in metadata listing (true/false)
+# Adds [CRITICAL], [WARNING], [INFO] badges next to dangerous fields
+DANGER_SHOW_INLINE=true
+
 # ═══════════════════════════════════════════════════════════════
 # USAGE
 # ═══════════════════════════════════════════════════════════════

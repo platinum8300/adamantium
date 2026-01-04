@@ -77,17 +77,43 @@ interactive_single_file() {
     echo -e "${CYAN}╚═══════════════════════════════════════════════════════════╝${NC}"
     echo ""
 
+    # Obtener metadatos completos para análisis
+    local full_metadata=$(exiftool "$file" 2>/dev/null)
+    local metadata_count=$(echo "$full_metadata" | wc -l)
+
+    # Analizar riesgos si el módulo está disponible (v2.5)
+    local has_risks=false
+    if declare -f danger_analyze_metadata &>/dev/null; then
+        danger_analyze_metadata "$full_metadata"
+        danger_show_summary_panel
+        if declare -f danger_has_risks &>/dev/null && danger_has_risks; then
+            has_risks=true
+        fi
+    fi
+
     # Mostrar preview de metadatos
     echo -e "${CYAN}${SEARCH_ICON} Metadata preview:${NC}"
     echo -e "${GRAY}─────────────────────────────────────────────────────────────${NC}"
 
-    local metadata=$(exiftool "$file" 2>/dev/null | head -25)
-    local metadata_count=$(exiftool "$file" 2>/dev/null | wc -l)
+    local metadata=$(echo "$full_metadata" | head -25)
 
     if [ -n "$metadata" ]; then
-        # Colorear metadatos sensibles
+        # Colorear metadatos usando danger_detector si disponible
         echo "$metadata" | while IFS= read -r line; do
-            if echo "$line" | grep -qiE "(GPS|Author|Creator|Artist|Location|Company|Owner|Parameters|Camera|Device)"; then
+            local key=$(echo "$line" | cut -d: -f1 | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+            local risk_level="none"
+
+            if declare -f danger_get_field_risk &>/dev/null; then
+                risk_level=$(danger_get_field_risk "$key")
+            fi
+
+            if [[ "$risk_level" == "critical" ]]; then
+                echo -e "🔴 $line"
+            elif [[ "$risk_level" == "warning" ]]; then
+                echo -e "🟡 $line"
+            elif [[ "$risk_level" == "info" ]]; then
+                echo -e "🔵 $line"
+            elif echo "$line" | grep -qiE "(GPS|Author|Creator|Artist|Location|Company|Owner|Parameters|Camera|Device)"; then
                 echo -e "${RED}●${NC} $line"
             elif echo "$line" | grep -qiE "(Date|Time|Software|Encoder)"; then
                 echo -e "${YELLOW}●${NC} $line"
@@ -114,22 +140,49 @@ interactive_single_file() {
         echo ""
     fi
 
-    # Confirmar limpieza
-    if gum_confirm "$(msg PROCEED_WITH_CLEANING)"; then
-        echo ""
-
-        # Construir comando
-        local args=()
-        [ "$INTERACTIVE_VERIFY" = true ] && args+=(--verify)
-        [ "$INTERACTIVE_DRY_RUN" = true ] && args+=(--dry-run)
-        args+=("$file")
-
-        # Ejecutar limpieza
-        "$ADAMANTIUM_BIN" "${args[@]}"
-    else
-        echo ""
-        echo -e "${YELLOW}${WARN} Cleaning cancelled${NC}"
+    # Menú de acciones con opción de ver detalles de riesgos (v2.5)
+    local action_options=()
+    action_options+=("✅ $(msg PROCEED_WITH_CLEANING)")
+    if [ "$has_risks" = true ] && declare -f danger_show_detailed_table &>/dev/null; then
+        action_options+=("🛡️ $(msg RISK_VIEW_DETAILS)")
     fi
+    action_options+=("❌ Cancel")
+
+    local selected_action
+    selected_action=$(gum_choose "Select action:" "${action_options[@]}")
+
+    case "$selected_action" in
+        *"$(msg PROCEED_WITH_CLEANING)"*|*"Proceed"*|*"Clean"*)
+            echo ""
+            # Construir comando
+            local args=()
+            [ "$INTERACTIVE_VERIFY" = true ] && args+=(--verify)
+            [ "$INTERACTIVE_DRY_RUN" = true ] && args+=(--dry-run)
+            args+=("$file")
+
+            # Ejecutar limpieza
+            "$ADAMANTIUM_BIN" "${args[@]}"
+            ;;
+        *"$(msg RISK_VIEW_DETAILS)"*|*"risk"*|*"Risk"*)
+            echo ""
+            danger_show_detailed_table
+            echo ""
+            # Después de ver detalles, preguntar si continuar
+            if gum_confirm "$(msg PROCEED_WITH_CLEANING)"; then
+                local args=()
+                [ "$INTERACTIVE_VERIFY" = true ] && args+=(--verify)
+                [ "$INTERACTIVE_DRY_RUN" = true ] && args+=(--dry-run)
+                args+=("$file")
+                "$ADAMANTIUM_BIN" "${args[@]}"
+            else
+                echo -e "${YELLOW}${WARN} Cleaning cancelled${NC}"
+            fi
+            ;;
+        *)
+            echo ""
+            echo -e "${YELLOW}${WARN} Cleaning cancelled${NC}"
+            ;;
+    esac
 
     echo ""
     interactive_press_enter

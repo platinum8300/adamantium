@@ -12,7 +12,7 @@ adamantium es una herramienta de línea de comandos con interfaz TUI (Text User 
 
 [![Licencia: AGPL v3](https://img.shields.io/badge/Licencia-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Plataforma: Linux](https://img.shields.io/badge/Plataforma-Linux-blue.svg)](https://www.linux.org/)
-[![Versión: 2.3](https://img.shields.io/badge/Versión-2.3-green.svg)](https://github.com/platinum8300/adamantium/releases)
+[![Versión: 2.5](https://img.shields.io/badge/Versión-2.5-green.svg)](https://github.com/platinum8300/adamantium/releases)
 
 ---
 
@@ -36,7 +36,26 @@ adamantium es una herramienta de línea de comandos con interfaz TUI (Text User 
 - **Detección automática**: Identifica el tipo de archivo y aplica el método óptimo
 - **Contador de metadatos**: Muestra cuántos campos se encontraron y eliminaron
 
-### 🆕 Nuevo en v2.4 (Re-encoding para Multimedia)
+### 🆕 Nuevo en v2.5 (Detección de Metadatos Peligrosos)
+
+- **Análisis de Riesgos**: Detección y clasificación automática de metadatos peligrosos
+  - **3 Niveles de Riesgo**: CRÍTICO (rojo), ADVERTENCIA (amarillo), INFO (azul)
+  - **Categorías**: Ubicación, Identidad, Contacto, ID Dispositivo, Prompts IA, Timestamps, Software
+- **Alertas Visuales**: Panel de resumen de riesgos con estilo Charmbracelet
+  - Muestra conteo de riesgos por nivel con categorías afectadas
+  - Badges inline resaltando campos peligrosos en el listado de metadatos
+- **Detalles de Riesgo Interactivos**: Ver tabla detallada de riesgos en modo interactivo
+  - Muestra cada campo peligroso, su valor, nivel de riesgo y categoría
+  - Opción de ver detalles antes de proceder con la limpieza
+- **Integración con Reportes**: Análisis de riesgos incluido en reportes JSON/CSV
+  - `risk_critical_count`, `risk_warning_count`, `risk_info_count`
+  - Lista de campos críticos y categorías detectadas
+- **Configurable**: Opciones en `.adamantiumrc`:
+  - `DANGER_DETECTION=true|false` - Habilitar/deshabilitar análisis de riesgos
+  - `DANGER_SHOW_SUMMARY=true|false` - Mostrar panel de resumen de riesgos
+  - `DANGER_SHOW_INLINE=true|false` - Mostrar badges inline de riesgo
+
+### 🎬 Funciones v2.4 (Re-encoding para Multimedia)
 
 - **Re-encoding Opcional**: Transcodificación completa para eliminación total de metadatos
   - Garantiza 100% de eliminación de metadatos (algunos codecs pueden retener metadatos con `-c copy`)

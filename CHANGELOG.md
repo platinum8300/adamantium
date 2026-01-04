@@ -4,6 +4,83 @@ All notable changes to adamantium will be documented in this file.
 
 ---
 
+## [2.5.0] - 2026-01-04
+
+### NEW FEATURE - Dangerous Metadata Detection with Risk Levels
+
+adamantium v2.5 introduces intelligent detection and classification of dangerous metadata with visual alerts and detailed risk analysis.
+
+### New Features
+
+- **Risk Analysis Engine** - Automatic classification of dangerous metadata
+  - 3 risk levels: CRITICAL (red), WARNING (yellow), INFO (blue)
+  - CRITICAL: GPS location, personal identity, contact information
+  - WARNING: Device serial numbers, AI generation prompts, tracking IDs
+  - INFO: Software, timestamps, hardware information
+  - Categories: Location, Identity, Contact, Device ID, Tracking, AI Prompt, History, Software, Timestamp, Hardware, Document
+
+- **Visual Risk Summary Panel** - Charmbracelet-style UI component
+  - Beautiful box display with risk counts by level
+  - Shows affected categories for each risk level
+  - Total count of potentially dangerous fields
+  - Appears before metadata listing (configurable)
+
+- **Inline Risk Badges** - Visual markers in metadata listing
+  - Fields marked with colored circles: 🔴 🟡 🔵
+  - Risk level and category shown as badge: `[CRITICAL: Location]`
+  - Helps quickly identify dangerous metadata
+
+- **Interactive Risk Details** - Detailed table view in interactive mode
+  - New menu option "View risk details" when risks detected
+  - Table shows: Field name, Value, Risk level, Category
+  - Available with gum (styled table) or plain text fallback
+  - Option to review risks before proceeding with cleaning
+
+- **Report Integration** - Risk analysis in JSON/CSV reports
+  - JSON: Full `risk_analysis` object with counts and field details
+  - CSV: New columns: `risk_critical_count`, `risk_warning_count`, `risk_info_count`, `risk_critical_fields`, `risk_categories`
+  - Enables automated risk assessment workflows
+
+- **AI Prompt Detection** - Identifies AI-generated image metadata
+  - Detects Stable Diffusion parameters, prompts, negative prompts
+  - Keywords: masterpiece, best quality, steps, sampler, cfg scale, seed
+  - Catches DALL-E, Midjourney, ComfyUI metadata
+  - Smart detection in UserComment/Description fields
+
+### Configuration
+
+New options in `.adamantiumrc`:
+- `DANGER_DETECTION=true|false` - Enable/disable risk analysis (default: true)
+- `DANGER_SHOW_SUMMARY=true|false` - Show risk summary panel (default: true)
+- `DANGER_SHOW_INLINE=true|false` - Show inline risk badges (default: true)
+
+### i18n
+
+Added 22 new translated messages for risk analysis:
+- Risk level names (CRITICAL, WARNING, INFO)
+- Category names (Location, Identity, Device ID, AI Prompt, etc.)
+- UI labels (Field, Value, Risk, Category)
+- Available in English and Spanish
+
+### Files Added
+
+- `lib/danger_detector.sh` - New module (~550 lines)
+  - Pattern definitions for CRITICAL, WARNING, INFO levels
+  - Detection and classification functions
+  - UI rendering functions (summary panel, table, inline badges)
+  - Report generation functions (JSON/CSV)
+
+### Files Modified
+
+- `adamantium` - i18n messages, module loading, show_metadata() integration
+- `lib/interactive_mode.sh` - Risk analysis display and menu option
+- `lib/report_generator.sh` - Risk fields in JSON/CSV reports
+- `.adamantiumrc.example` - New danger detection options
+- `README.md` - v2.5 feature documentation
+- `README.es.md` - v2.5 feature documentation (Spanish)
+
+---
+
 ## [2.4.1] - 2026-01-02
 
 ### Bug Fixes
