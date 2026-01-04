@@ -698,8 +698,18 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 - [x] Estimación de tiempo y tamaño antes de procesar
 - [x] Confirmación con opción `--reencode-no-confirm`
 
+### v2.5 (Detección de Metadatos Peligrosos) ✅ COMPLETADO
+
+- [x] Motor de análisis de riesgos con 3 niveles (CRITICAL, WARNING, INFO)
+- [x] Panel visual de resumen de riesgos estilo Charmbracelet
+- [x] Badges de riesgo inline en listado de metadatos
+- [x] Vista de tabla detallada de riesgos en modo interactivo
+- [x] Detección de prompts de IA (Stable Diffusion, DALL-E, Midjourney)
+- [x] Análisis de riesgos en reportes JSON/CSV
+- [x] Configurable vía opciones de `.adamantiumrc`
+
 ### v3.0 (Avanzado y Profesional)
-- [ ] Detección de metadatos peligrosos con alertas y niveles de riesgo
+
 - [ ] Integración con herramientas forenses (compatibilidad con informes)
 - [ ] API REST para uso remoto
 - [ ] Sistema de plugins para extensibilidad
@@ -708,6 +718,16 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 ---
 
 ## 📜 Historial de Versiones
+
+### v2.5 (Detección de Metadatos Peligrosos) - 2025-01-04
+
+- **Motor de Análisis de Riesgos**: Detección y clasificación automática de metadatos peligrosos
+- **3 Niveles de Riesgo**: CRITICAL (ubicación, identidad), WARNING (IDs de dispositivo, prompts IA), INFO (timestamps, software)
+- **Panel Visual de Riesgos**: Resumen estilo Charmbracelet con conteo por categoría
+- **Badges Inline**: Indicadores de riesgo directamente en el listado de metadatos
+- **Detección de Prompts IA**: Identifica parámetros de generación de Stable Diffusion, DALL-E, Midjourney
+- **Integración en Reportes**: Análisis de riesgos incluido en reportes JSON y CSV
+- **Nuevo módulo**: `lib/danger_detector.sh` (~850 líneas)
 
 ### v2.4 (Re-encoding para Multimedia) - 2025-12-30
 

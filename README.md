@@ -646,7 +646,7 @@ See [EXAMPLES.md](EXAMPLES.md) for more practical examples.
 - [x] Lightweight mode (`--lightweight`, `-l`) for minimal output
 - [x] Performance optimizations (MIME caching, progress buffering)
 
-### v2.4 (Re-encoding for Multimedia) - COMPLETED
+### v2.4 (Re-encoding for Multimedia) ✅ COMPLETED
 
 - [x] Optional re-encoding for multimedia (with quality control)
 - [x] Hardware acceleration detection (NVIDIA NVENC, AMD VAAPI, Intel QSV)
@@ -656,9 +656,18 @@ See [EXAMPLES.md](EXAMPLES.md) for more practical examples.
 - [x] Time and size estimation before processing
 - [x] Confirmation prompt with `--reencode-no-confirm` option
 
+### v2.5 (Dangerous Metadata Detection) ✅ COMPLETED
+
+- [x] Risk analysis engine with 3 levels (CRITICAL, WARNING, INFO)
+- [x] Visual risk summary panel with Charmbracelet-style UI
+- [x] Inline risk badges in metadata listing
+- [x] Interactive risk details table view
+- [x] AI prompt detection (Stable Diffusion, DALL-E, Midjourney)
+- [x] Risk analysis in JSON/CSV reports
+- [x] Configurable via `.adamantiumrc` options
+
 ### v3.0 (Advanced and Professional)
 
-- [ ] Dangerous metadata detection with alerts and risk levels
 - [ ] Forensic tools integration (report compatibility)
 - [ ] REST API for remote use
 - [ ] Plugin system for extensibility
@@ -680,6 +689,16 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
 ---
 
 ## 📜 Version History
+
+### v2.5 (Dangerous Metadata Detection) - 2025-01-04
+
+- **Risk Analysis Engine**: Automatic detection and classification of dangerous metadata
+- **3 Risk Levels**: CRITICAL (location, identity), WARNING (device IDs, AI prompts), INFO (timestamps, software)
+- **Visual Risk Panel**: Charmbracelet-style summary with risk counts by category
+- **Inline Badges**: Risk indicators directly in metadata listing
+- **AI Prompt Detection**: Identifies Stable Diffusion, DALL-E, Midjourney generation parameters
+- **Report Integration**: Risk analysis included in JSON and CSV reports
+- **New module**: `lib/danger_detector.sh` (~850 lines)
 
 ### v2.4 (Re-encoding for Multimedia) - 2025-12-30
 
