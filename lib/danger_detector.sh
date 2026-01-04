@@ -267,7 +267,7 @@ danger_classify_field() {
     fi
 
     echo "none"
-    return 1
+    return 0
 }
 
 danger_detect_ai_content() {
@@ -330,15 +330,15 @@ danger_analyze_metadata() {
                 case "$risk_level" in
                     critical)
                         DANGER_RESULTS_CRITICAL["$field_name"]="$field_value"
-                        ((DANGER_TOTAL_CRITICAL++))
+                        : $((DANGER_TOTAL_CRITICAL++))
                         ;;
                     warning)
                         DANGER_RESULTS_WARNING["$field_name"]="$field_value"
-                        ((DANGER_TOTAL_WARNING++))
+                        : $((DANGER_TOTAL_WARNING++))
                         ;;
                     info)
                         DANGER_RESULTS_INFO["$field_name"]="$field_value"
-                        ((DANGER_TOTAL_INFO++))
+                        : $((DANGER_TOTAL_INFO++))
                         ;;
                 esac
 
@@ -394,11 +394,11 @@ danger_show_summary_panel() {
     local total_msg
 
     if declare -f msg &>/dev/null; then
-        title=$(msg "risk_analysis")
-        critical_label=$(msg "risk_critical")
-        warning_label=$(msg "risk_warning")
-        info_label=$(msg "risk_info")
-        total_msg=$(msg "risk_total_found")
+        title=$(msg "RISK_ANALYSIS")
+        critical_label=$(msg "RISK_CRITICAL")
+        warning_label=$(msg "RISK_WARNING")
+        info_label=$(msg "RISK_INFO")
+        total_msg=$(msg "RISK_TOTAL_FOUND")
     else
         title="RISK ANALYSIS"
         critical_label="CRITICAL"
@@ -473,7 +473,7 @@ danger_get_category_summary() {
         critical)
             for field in "${!DANGER_RESULTS_CRITICAL[@]}"; do
                 local cat="${DANGER_RESULTS_CATEGORIES[$field]}"
-                if [[ -n "$cat" && -z "${seen_cats[$cat]}" ]]; then
+                if [[ -n "$cat" && -z "${seen_cats[$cat]:-}" ]]; then
                     seen_cats[$cat]=1
                     [ -n "$categories" ] && categories+=", "
                     categories+=$(danger_translate_category "$cat")
@@ -483,7 +483,7 @@ danger_get_category_summary() {
         warning)
             for field in "${!DANGER_RESULTS_WARNING[@]}"; do
                 local cat="${DANGER_RESULTS_CATEGORIES[$field]}"
-                if [[ -n "$cat" && -z "${seen_cats[$cat]}" ]]; then
+                if [[ -n "$cat" && -z "${seen_cats[$cat]:-}" ]]; then
                     seen_cats[$cat]=1
                     [ -n "$categories" ] && categories+=", "
                     categories+=$(danger_translate_category "$cat")
@@ -493,7 +493,7 @@ danger_get_category_summary() {
         info)
             for field in "${!DANGER_RESULTS_INFO[@]}"; do
                 local cat="${DANGER_RESULTS_CATEGORIES[$field]}"
-                if [[ -n "$cat" && -z "${seen_cats[$cat]}" ]]; then
+                if [[ -n "$cat" && -z "${seen_cats[$cat]:-}" ]]; then
                     seen_cats[$cat]=1
                     [ -n "$categories" ] && categories+=", "
                     categories+=$(danger_translate_category "$cat")
@@ -510,17 +510,17 @@ danger_translate_category() {
 
     if declare -f msg &>/dev/null; then
         case "$cat" in
-            location) msg "risk_location" ;;
-            identity) msg "risk_identity" ;;
-            contact) msg "risk_contact" ;;
-            device_id) msg "risk_device_id" ;;
-            tracking) msg "risk_tracking" ;;
-            ai_prompt) msg "risk_ai_prompt" ;;
-            history) msg "risk_history" ;;
-            software) msg "risk_software" ;;
-            timestamp) msg "risk_timestamp" ;;
-            hardware) msg "risk_hardware" ;;
-            document) msg "risk_document" ;;
+            location) msg "RISK_LOCATION" ;;
+            identity) msg "RISK_IDENTITY" ;;
+            contact) msg "RISK_CONTACT" ;;
+            device_id) msg "RISK_DEVICE_ID" ;;
+            tracking) msg "RISK_TRACKING" ;;
+            ai_prompt) msg "RISK_AI_PROMPT" ;;
+            history) msg "RISK_HISTORY" ;;
+            software) msg "RISK_SOFTWARE" ;;
+            timestamp) msg "RISK_TIMESTAMP" ;;
+            hardware) msg "RISK_HARDWARE" ;;
+            document) msg "RISK_DOCUMENT" ;;
             *) echo "$cat" ;;
         esac
     else
@@ -606,10 +606,10 @@ danger_show_detailed_table() {
     # Get translated headers
     local h_field h_value h_risk h_category
     if declare -f msg &>/dev/null; then
-        h_field=$(msg "risk_field")
-        h_value=$(msg "risk_value")
-        h_risk=$(msg "risk_level")
-        h_category=$(msg "risk_category")
+        h_field=$(msg "RISK_FIELD")
+        h_value=$(msg "RISK_VALUE")
+        h_risk=$(msg "RISK_LEVEL")
+        h_category=$(msg "RISK_CATEGORY")
     else
         h_field="Field"
         h_value="Value"
@@ -791,7 +791,7 @@ danger_get_csv_fields() {
         [ -n "$critical_fields" ] && critical_fields+=";"
         critical_fields+="$field"
         local cat="${DANGER_RESULTS_CATEGORIES[$field]}"
-        if [[ -n "$cat" && -z "${seen_cats[$cat]}" ]]; then
+        if [[ -n "$cat" && -z "${seen_cats[$cat]:-}" ]]; then
             seen_cats[$cat]=1
             [ -n "$categories" ] && categories+=";"
             categories+="$cat"
@@ -800,7 +800,7 @@ danger_get_csv_fields() {
 
     for field in "${!DANGER_RESULTS_WARNING[@]}"; do
         local cat="${DANGER_RESULTS_CATEGORIES[$field]}"
-        if [[ -n "$cat" && -z "${seen_cats[$cat]}" ]]; then
+        if [[ -n "$cat" && -z "${seen_cats[$cat]:-}" ]]; then
             seen_cats[$cat]=1
             [ -n "$categories" ] && categories+=";"
             categories+="$cat"
@@ -809,7 +809,7 @@ danger_get_csv_fields() {
 
     for field in "${!DANGER_RESULTS_INFO[@]}"; do
         local cat="${DANGER_RESULTS_CATEGORIES[$field]}"
-        if [[ -n "$cat" && -z "${seen_cats[$cat]}" ]]; then
+        if [[ -n "$cat" && -z "${seen_cats[$cat]:-}" ]]; then
             seen_cats[$cat]=1
             [ -n "$categories" ] && categories+=";"
             categories+="$cat"
