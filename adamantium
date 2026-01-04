@@ -1089,9 +1089,7 @@ show_metadata() {
     fi
 
     echo ""
-    echo -e "${color}╔═══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${color}║${NC} ${STYLE_BOLD}${SEARCH_ICON} ${title}${NC}"
-    echo -e "${color}╚═══════════════════════════════════════════════════════════════╝${NC}"
+    echo -e "${color}${SEARCH_ICON} ${STYLE_BOLD}${title}${NC}"
     echo ""
 
     if [ -z "$metadata" ] || [ "$(echo "$metadata" | wc -l)" -le 1 ]; then
@@ -1322,9 +1320,7 @@ show_css_metadata() {
     local color="$3"
 
     echo ""
-    echo -e "${color}╔═══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${color}║${NC} ${STYLE_BOLD}${SEARCH_ICON} ${title}${NC}"
-    echo -e "${color}╚═══════════════════════════════════════════════════════════════╝${NC}"
+    echo -e "${color}${SEARCH_ICON} ${STYLE_BOLD}${title}${NC}"
     echo ""
 
     # Extraer comentarios CSS /* ... */

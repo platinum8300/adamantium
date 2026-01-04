@@ -407,60 +407,30 @@ danger_show_summary_panel() {
         total_msg="potentially dangerous metadata fields detected"
     fi
 
-    # Calculate box width
-    local box_width=66
-    local inner_width=$((box_width - 4))
-
-    # Print box
+    # Print header
     echo ""
-    printf "${CYAN}╭"
-    printf '─%.0s' $(seq 1 $((box_width - 2)))
-    printf "╮${NC}\n"
-
-    # Title
-    printf "${CYAN}│${NC}  🛡️  ${STYLE_BOLD}%-*s${NC}${CYAN}│${NC}\n" $((inner_width - 3)) "$title"
-
-    # Separator
-    printf "${CYAN}├"
-    printf '─%.0s' $(seq 1 $((box_width - 2)))
-    printf "┤${NC}\n"
-
-    # Empty line
-    printf "${CYAN}│${NC}%-*s${CYAN}│${NC}\n" $inner_width ""
+    echo -e "${CYAN}🛡️  ${STYLE_BOLD}${title}${NC}"
+    echo ""
 
     # Risk levels with categories
     if [ "$DANGER_TOTAL_CRITICAL" -gt 0 ]; then
         local critical_cats=$(danger_get_category_summary "critical")
-        printf "${CYAN}│${NC}   ${RISK_CRITICAL_SYMBOL} ${RISK_CRITICAL_COLOR}%-10s${NC} %-3d fields    %-30s${CYAN}│${NC}\n" \
-            "$critical_label" "$DANGER_TOTAL_CRITICAL" "$critical_cats"
+        echo -e "   ${RISK_CRITICAL_SYMBOL} ${RISK_CRITICAL_COLOR}${critical_label}${NC}  ${DANGER_TOTAL_CRITICAL} fields  ${critical_cats}"
     fi
 
     if [ "$DANGER_TOTAL_WARNING" -gt 0 ]; then
         local warning_cats=$(danger_get_category_summary "warning")
-        printf "${CYAN}│${NC}   ${RISK_WARNING_SYMBOL} ${RISK_WARNING_COLOR}%-10s${NC} %-3d fields    %-30s${CYAN}│${NC}\n" \
-            "$warning_label" "$DANGER_TOTAL_WARNING" "$warning_cats"
+        echo -e "   ${RISK_WARNING_SYMBOL} ${RISK_WARNING_COLOR}${warning_label}${NC}  ${DANGER_TOTAL_WARNING} fields  ${warning_cats}"
     fi
 
     if [ "$DANGER_TOTAL_INFO" -gt 0 ]; then
         local info_cats=$(danger_get_category_summary "info")
-        printf "${CYAN}│${NC}   ${RISK_INFO_SYMBOL} ${RISK_INFO_COLOR}%-10s${NC} %-3d fields    %-30s${CYAN}│${NC}\n" \
-            "$info_label" "$DANGER_TOTAL_INFO" "$info_cats"
+        echo -e "   ${RISK_INFO_SYMBOL} ${RISK_INFO_COLOR}${info_label}${NC}  ${DANGER_TOTAL_INFO} fields  ${info_cats}"
     fi
 
-    # Empty line
-    printf "${CYAN}│${NC}%-*s${CYAN}│${NC}\n" $inner_width ""
-
     # Total line
-    printf "${CYAN}│${NC}   Total: ${STYLE_BOLD}%d${NC} %-*s${CYAN}│${NC}\n" \
-        "$total" $((inner_width - 12)) "$total_msg"
-
-    # Empty line
-    printf "${CYAN}│${NC}%-*s${CYAN}│${NC}\n" $inner_width ""
-
-    # Bottom border
-    printf "${CYAN}╰"
-    printf '─%.0s' $(seq 1 $((box_width - 2)))
-    printf "╯${NC}\n"
+    echo ""
+    echo -e "   Total: ${STYLE_BOLD}${total}${NC} ${total_msg}"
     echo ""
 }
 
