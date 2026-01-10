@@ -163,6 +163,7 @@ parallel_execute_xargs() {
     local jobs="$1"
     shift
     local -a files=("$@")
+    local total_files=${#files[@]}
 
     # Exportar variables necesarias
     export PROGRESS_STATE_DIR
@@ -209,7 +210,8 @@ parallel_execute_xargs() {
             ) 200>"${PROGRESS_STATE_DIR}/lock"
         fi
 
-        return $result
+        # Siempre retornar 0 para que xargs no aborte con otros archivos
+        return 0
     }
     export -f _xargs_process_file
 
@@ -219,6 +221,16 @@ parallel_execute_xargs() {
         -P "$jobs" \
         -I {} \
         bash -c '_xargs_process_file "$@"' _ {}
+
+    # Asegurar que el contador llegue al total para que el progress bar termine limpiamente
+    if [ -n "$PROGRESS_STATE_DIR" ] && [ "${BATCH_LIGHTWEIGHT:-false}" != true ]; then
+        # Dar tiempo al renderer para mostrar el estado final
+        sleep 0.2
+        # Forzar contador a total (por si hay discrepancias)
+        echo "$total_files" > "${PROGRESS_STATE_DIR}/counter.txt"
+        # Esperar a que el renderer detecte el 100% y termine
+        sleep 0.3
+    fi
 
     return 0
 }

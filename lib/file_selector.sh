@@ -210,16 +210,16 @@ display_selection_summary() {
     # Formatear tamaño
     local size_human=$(numfmt --to=iec-i --suffix=B $total_size 2>/dev/null || echo "${total_size} bytes")
 
-    # Mostrar resumen
-    echo -e "${CYAN}╔═══════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║${NC}  ${STYLE_BOLD}$(msg BATCH_PROCESSING) $(msg SUMMARY)${NC}"
-    echo -e "${CYAN}╠═══════════════════════════════════════╣${NC}"
-    echo -e "${CYAN}║${NC}  $(msg FILES_SELECTED): ${GREEN}${STYLE_BOLD}${count}${NC}"
-    echo -e "${CYAN}║${NC}  Total size: ${YELLOW}${size_human}${NC}"
-    echo -e "${CYAN}╚═══════════════════════════════════════╝${NC}"
-    echo ""
+    # Mostrar resumen (a stderr para no contaminar stdout)
+    echo -e "${CYAN}╔═══════════════════════════════════════╗${NC}" >&2
+    echo -e "${CYAN}║${NC}  ${STYLE_BOLD}$(msg BATCH_PROCESSING) $(msg SUMMARY)${NC}" >&2
+    echo -e "${CYAN}╠═══════════════════════════════════════╣${NC}" >&2
+    echo -e "${CYAN}║${NC}  $(msg FILES_SELECTED): ${GREEN}${STYLE_BOLD}${count}${NC}" >&2
+    echo -e "${CYAN}║${NC}  Total size: ${YELLOW}${size_human}${NC}" >&2
+    echo -e "${CYAN}╚═══════════════════════════════════════╝${NC}" >&2
+    echo "" >&2
 
-    # Retornar archivos seleccionados
+    # Retornar archivos seleccionados (a stdout para que se capturen)
     printf '%s\n' "${selected_files[@]}"
     return 0
 }

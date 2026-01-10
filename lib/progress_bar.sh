@@ -221,10 +221,19 @@ progress_cleanup() {
     # Flush buffer pendiente antes de limpiar (v2.3)
     progress_flush 2>/dev/null || true
 
-    # Matar renderer si aún está corriendo
+    # Esperar a que el renderer termine naturalmente (máx 2 segundos)
     if [ -n "$PROGRESS_RENDERER_PID" ]; then
-        kill "$PROGRESS_RENDERER_PID" 2>/dev/null || true
-        wait "$PROGRESS_RENDERER_PID" 2>/dev/null || true
+        local wait_count=0
+        while kill -0 "$PROGRESS_RENDERER_PID" 2>/dev/null && [ $wait_count -lt 20 ]; do
+            sleep 0.1
+            wait_count=$((wait_count + 1))
+        done
+
+        # Si aún está corriendo, matarlo limpiamente
+        if kill -0 "$PROGRESS_RENDERER_PID" 2>/dev/null; then
+            kill "$PROGRESS_RENDERER_PID" 2>/dev/null || true
+            wait "$PROGRESS_RENDERER_PID" 2>/dev/null || true
+        fi
     fi
 
     # Restaurar cursor por si acaso
