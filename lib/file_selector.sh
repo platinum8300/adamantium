@@ -110,9 +110,9 @@ select_files_interactive() {
 select_with_fzf() {
     local -a files=("$@")
 
-    echo -e "${CYAN}${INFO} $(msg SELECT_FILES) (fzf mode)${NC}"
-    echo -e "${GRAY}$(msg INTERACTIVE_SELECT)${NC}"
-    echo ""
+    echo -e "${CYAN}${INFO} $(msg SELECT_FILES) (fzf mode)${NC}" >&2
+    echo -e "${GRAY}$(msg INTERACTIVE_SELECT)${NC}" >&2
+    echo "" >&2
 
     # Usar fzf para selección múltiple
     local selected=$(printf '%s\n' "${files[@]}" | fzf \
@@ -130,7 +130,7 @@ select_with_fzf() {
         --color="header:cyan,pointer:green,marker:yellow")
 
     if [ -z "$selected" ]; then
-        echo -e "${YELLOW}${WARN} No files selected. Cancelling.${NC}"
+        echo -e "${YELLOW}${WARN} No files selected. Cancelling.${NC}" >&2
         return 1
     fi
 
@@ -147,9 +147,9 @@ select_with_confirmation() {
     local -a files=("$@")
     local file_count=${#files[@]}
 
-    # Mostrar lista de archivos encontrados
-    echo -e "${CYAN}${INFO} $(msg FILES_FOUND): ${STYLE_BOLD}${file_count}${NC}"
-    echo ""
+    # Mostrar lista de archivos encontrados (a stderr)
+    echo -e "${CYAN}${INFO} $(msg FILES_FOUND): ${STYLE_BOLD}${file_count}${NC}" >&2
+    echo "" >&2
 
     # Mostrar preview de archivos (máximo 20)
     local preview_limit=20
@@ -159,27 +159,27 @@ select_with_confirmation() {
         local file="${files[$i]}"
         local basename=$(basename "$file")
         local filesize=$(du -h "$file" 2>/dev/null | cut -f1)
-        echo -e "  ${CYAN}$((i+1)).${NC} ${basename} ${GRAY}(${filesize})${NC}"
+        echo -e "  ${CYAN}$((i+1)).${NC} ${basename} ${GRAY}(${filesize})${NC}" >&2
     done
 
     if [ $file_count -gt $preview_limit ]; then
-        echo -e "  ${GRAY}... and $((file_count - preview_limit)) more files${NC}"
+        echo -e "  ${GRAY}... and $((file_count - preview_limit)) more files${NC}" >&2
     fi
 
-    echo ""
+    echo "" >&2
 
     # Preguntar confirmación
     if [ "${BATCH_CONFIRM}" = true ]; then
-        echo -e "${YELLOW}${WARN} $(msg PROCEED_WITH_CLEANING)?${NC}"
+        echo -e "${YELLOW}${WARN} $(msg PROCEED_WITH_CLEANING)?${NC}" >&2
         read -p "Continue? [y/N] " response
 
         if [[ ! "$response" =~ ^[yY]$ ]]; then
-            echo -e "${YELLOW}Operation cancelled by user.${NC}"
+            echo -e "${YELLOW}Operation cancelled by user.${NC}" >&2
             return 1
         fi
     fi
 
-    # Retornar todos los archivos (sin filtro)
+    # Retornar todos los archivos (a stdout para que se capturen)
     printf '%s\n' "${files[@]}"
     return 0
 }
