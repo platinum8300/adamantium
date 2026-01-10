@@ -112,9 +112,9 @@ REENCODE_NO_CONFIRM=false      # Skip re-encoding confirmation
 # Performance optimizations (v2.3)
 declare -A MIME_CACHE=()   # Cache for MIME type detection
 
-# Versiones mínimas requeridas (se actualizan automáticamente desde upstream)
+# Versión mínima requerida de ExifTool (se actualiza automáticamente desde upstream)
 REQUIRED_EXIFTOOL_VERSION="13.39"
-REQUIRED_FFMPEG_VERSION="8.0"
+# Nota: ffmpeg no tiene versión mínima fija - cada distro tiene su versión válida en repos
 
 # Archivo de caché para evitar verificar en cada ejecución
 CACHE_FILE="$HOME/.adamantium_last_check"
@@ -171,9 +171,8 @@ declare -A MSG_ES=(
     [VERIFYING_EXIFTOOL]="Verificando ExifTool..."
     [VERIFYING_FFMPEG]="Verificando ffmpeg..."
     [EXIFTOOL_UPDATED]="ExifTool está actualizado"
-    [FFMPEG_UPDATED]="ffmpeg está actualizado"
+    [FFMPEG_UPDATED]="disponible"
     [EXIFTOOL_OUTDATED]="ExifTool desactualizado:"
-    [FFMPEG_OUTDATED]="ffmpeg desactualizado:"
     [UPDATING_FROM_REPOS]="Actualizando desde repositorios..."
     [UPDATED_TO]="actualizado a"
     [FROM_REPOS]="desde repositorios"
@@ -375,9 +374,8 @@ declare -A MSG_EN=(
     [VERIFYING_EXIFTOOL]="Verifying ExifTool..."
     [VERIFYING_FFMPEG]="Verifying ffmpeg..."
     [EXIFTOOL_UPDATED]="ExifTool is up to date"
-    [FFMPEG_UPDATED]="ffmpeg is up to date"
+    [FFMPEG_UPDATED]="available"
     [EXIFTOOL_OUTDATED]="ExifTool outdated:"
-    [FFMPEG_OUTDATED]="ffmpeg outdated:"
     [UPDATING_FROM_REPOS]="Updating from repositories..."
     [UPDATED_TO]="updated to"
     [FROM_REPOS]="from repositories"
@@ -838,26 +836,13 @@ check_and_update_dependencies() {
     fi
 
     # ═══════════════════════════════════════════════════════════
-    # FFMPEG - Repository only (compiling is very slow)
+    # FFMPEG - Solo verificar instalación (cada distro tiene su versión válida)
+    # Nota: No comparamos versiones porque compilar ffmpeg es muy lento
+    # y cada distribución tiene su propia versión optimizada en repos
     # ═══════════════════════════════════════════════════════════
 
     echo -e "${GRAY}$(msg VERIFYING_FFMPEG)${NC}"
-
-    if ! compare_versions "$ffmpeg_version" "$REQUIRED_FFMPEG_VERSION"; then
-        echo -e "${YELLOW}⚠${NC}  $(msg FFMPEG_OUTDATED) ${WHITE}${ffmpeg_version}${NC} → ${CYAN}${REQUIRED_FFMPEG_VERSION}+${NC}"
-        echo -e "${CYAN}${ARROW}${NC} $(msg UPDATING_FROM_REPOS)"
-
-        if install_package "ffmpeg"; then
-            local new_version=$(ffmpeg -version 2>&1 | head -n1 | grep -oP 'version n?\K[0-9]+\.[0-9]+' | head -1)
-            echo -e "${GREEN}${CHECK}${NC} ffmpeg $(msg UPDATED_TO) ${WHITE}${new_version}${NC}"
-            needs_update=true
-        else
-            echo -e "${RED}${CROSS}${NC} $(msg UPDATE_ERROR) ffmpeg. $(msg CONTINUING_CURRENT)"
-        fi
-        echo ""
-    else
-        echo -e "${GREEN}${CHECK}${NC} ffmpeg ${WHITE}${ffmpeg_version}${NC} $(msg FFMPEG_UPDATED)"
-    fi
+    echo -e "${GREEN}${CHECK}${NC} ffmpeg ${WHITE}${ffmpeg_version}${NC} $(msg FFMPEG_UPDATED)"
 
     # Actualizar caché
     update_cache
