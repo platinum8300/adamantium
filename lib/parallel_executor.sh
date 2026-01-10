@@ -164,12 +164,61 @@ parallel_execute_xargs() {
     shift
     local -a files=("$@")
 
+    # Exportar variables necesarias
+    export PROGRESS_STATE_DIR
+    export ADAMANTIUM_BIN
+    export BATCH_VERBOSE
+    export BATCH_LIGHTWEIGHT
+
+    # Para xargs, usamos una función simplificada que escribe directamente a archivos
+    # en lugar de usar progress_update (que depende de variables/funciones no exportables)
+    _xargs_process_file() {
+        local file="$1"
+        local dir=$(dirname "$file")
+        local basename=$(basename "$file")
+        local extension="${basename##*.}"
+        local name="${basename%.*}"
+        local output="${dir}/${name}_clean.${extension}"
+
+        local result=0
+        if [ "${BATCH_LIGHTWEIGHT:-false}" = true ]; then
+            "$ADAMANTIUM_BIN" --lightweight "$file" "$output"
+            result=$?
+        elif [ "${BATCH_VERBOSE:-false}" = true ]; then
+            "$ADAMANTIUM_BIN" "$file" "$output"
+            result=$?
+        else
+            "$ADAMANTIUM_BIN" "$file" "$output" &>/dev/null
+            result=$?
+        fi
+
+        # Actualizar progreso directamente a archivos (sin funciones complejas)
+        if [ "${BATCH_LIGHTWEIGHT:-false}" != true ] && [ -n "$PROGRESS_STATE_DIR" ]; then
+            (
+                flock -x 200
+                local current=$(cat "${PROGRESS_STATE_DIR}/counter.txt" 2>/dev/null || echo "0")
+                echo "$((current + 1))" > "${PROGRESS_STATE_DIR}/counter.txt"
+                if [ $result -eq 0 ]; then
+                    local success=$(cat "${PROGRESS_STATE_DIR}/success.txt" 2>/dev/null || echo "0")
+                    echo "$((success + 1))" > "${PROGRESS_STATE_DIR}/success.txt"
+                else
+                    local errors=$(cat "${PROGRESS_STATE_DIR}/errors.txt" 2>/dev/null || echo "0")
+                    echo "$((errors + 1))" > "${PROGRESS_STATE_DIR}/errors.txt"
+                    echo "$file" >> "${PROGRESS_STATE_DIR}/error_files.txt"
+                fi
+            ) 200>"${PROGRESS_STATE_DIR}/lock"
+        fi
+
+        return $result
+    }
+    export -f _xargs_process_file
+
     # xargs con -P para paralelización
+    # Nota: -I {} implica -n 1, no usar ambos (son mutuamente excluyentes)
     printf '%s\n' "${files[@]}" | xargs \
-        -n 1 \
         -P "$jobs" \
         -I {} \
-        bash -c 'process_single_file "$@"' _ {}
+        bash -c '_xargs_process_file "$@"' _ {}
 
     return 0
 }
