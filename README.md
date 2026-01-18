@@ -712,9 +712,29 @@ See [EXAMPLES.md](EXAMPLES.md) for more practical examples.
 - [x] Risk analysis in JSON/CSV reports
 - [x] Configurable via `.adamantiumrc` options
 
+### v2.6 (Deep Cleaning + Forensic Reporting) ✅ COMPLETED
+
+- [x] Deep cleaning for hidden metadata (`--deep-clean`)
+  - [x] Thumbnail IFD1 cleaning (removes metadata-laden thumbnails)
+  - [x] PDF linearization (removes incremental updates/hidden versions)
+  - [x] Video stream cleaning (chapters, subtitles, attachments)
+- [x] Forensic reporting (`--forensic-report`)
+  - [x] DFXML export (compatible with Autopsy, Sleuth Kit)
+  - [x] Multi-hash calculation (MD5, SHA1, SHA256)
+  - [x] Chain of custody support (case-id, evidence-id, operator)
+  - [x] XSD schema for DFXML validation
+- [x] New modules: `lib/deep_clean/`, `lib/forensic/`, `schemas/`
+
+### v2.7 (Planned)
+
+- [ ] JSON forensic exporter
+- [ ] Office deep clean (comments, revisions, people.xml)
+- [ ] Risk analysis integration in forensic reports
+
 ### v3.0 (Advanced and Professional)
 
-- [ ] Forensic tools integration (report compatibility)
+- [ ] PRNU anonymization (sensor fingerprinting)
+- [ ] CASE/UCO JSON-LD integration
 - [ ] REST API for remote use
 - [ ] Plugin system for extensibility
 - [ ] Optional GUI (GTK4/Qt6)
@@ -736,7 +756,21 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
 
 ## 📜 Version History
 
-### v2.5 (Dangerous Metadata Detection) - 2025-01-04
+### v2.6 (Deep Cleaning + Forensic Reporting) - 2026-01-18
+
+- **Deep Cleaning** (`--deep-clean`): Removes hidden metadata that survives standard cleaning
+  - Thumbnail IFD1 cleaning (embedded thumbnails with original metadata)
+  - PDF linearization (removes incremental updates/hidden versions)
+  - Video stream cleaning (chapters, subtitles, attachments, data streams)
+- **Forensic Reporting** (`--forensic-report`): Professional chain-of-custody documentation
+  - DFXML export compatible with Autopsy, Sleuth Kit, bulk_extractor
+  - Multi-hash calculation (MD5, SHA1, SHA256, optional SHA512)
+  - Chain of custody: `--case-id`, `--evidence-id`, `--operator`
+  - High-precision timestamps (nanoseconds) and UUID execution IDs
+- **New modules**: `lib/deep_clean/` (4 files), `lib/forensic/` (3 files)
+- **New schema**: `schemas/adamantium_dfxml.xsd` for DFXML validation
+
+### v2.5 (Dangerous Metadata Detection) - 2026-01-04
 
 - **Risk Analysis Engine**: Automatic detection and classification of dangerous metadata
 - **3 Risk Levels**: CRITICAL (location, identity), WARNING (device IDs, AI prompts), INFO (timestamps, software)

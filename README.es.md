@@ -754,9 +754,29 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 - [x] Análisis de riesgos en reportes JSON/CSV
 - [x] Configurable vía opciones de `.adamantiumrc`
 
+### v2.6 (Limpieza Profunda + Reportes Forenses) ✅ COMPLETADO
+
+- [x] Limpieza profunda de metadatos ocultos (`--deep-clean`)
+  - [x] Limpieza de thumbnails IFD1 (elimina miniaturas con metadatos originales)
+  - [x] Linearización de PDF (elimina actualizaciones incrementales/versiones ocultas)
+  - [x] Limpieza de streams de video (capítulos, subtítulos, adjuntos)
+- [x] Reportes forenses (`--forensic-report`)
+  - [x] Exportación DFXML (compatible con Autopsy, Sleuth Kit)
+  - [x] Cálculo multi-hash (MD5, SHA1, SHA256)
+  - [x] Soporte de cadena de custodia (case-id, evidence-id, operator)
+  - [x] Esquema XSD para validación DFXML
+- [x] Nuevos módulos: `lib/deep_clean/`, `lib/forensic/`, `schemas/`
+
+### v2.7 (Planificado)
+
+- [ ] Exportador JSON forense
+- [ ] Office deep clean (comentarios, revisiones, people.xml)
+- [ ] Integración de análisis de riesgos en reportes forenses
+
 ### v3.0 (Avanzado y Profesional)
 
-- [ ] Integración con herramientas forenses (compatibilidad con informes)
+- [ ] Anonimización PRNU (huella de sensor)
+- [ ] Integración CASE/UCO JSON-LD
 - [ ] API REST para uso remoto
 - [ ] Sistema de plugins para extensibilidad
 - [ ] GUI opcional (GTK4/Qt6)
@@ -765,7 +785,21 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 
 ## 📜 Historial de Versiones
 
-### v2.5 (Detección de Metadatos Peligrosos) - 2025-01-04
+### v2.6 (Limpieza Profunda + Reportes Forenses) - 2026-01-18
+
+- **Limpieza Profunda** (`--deep-clean`): Elimina metadatos ocultos que sobreviven a la limpieza estándar
+  - Limpieza de thumbnails IFD1 (miniaturas embebidas con metadatos originales)
+  - Linearización de PDF (elimina actualizaciones incrementales/versiones ocultas)
+  - Limpieza de streams de video (capítulos, subtítulos, adjuntos, streams de datos)
+- **Reportes Forenses** (`--forensic-report`): Documentación profesional de cadena de custodia
+  - Exportación DFXML compatible con Autopsy, Sleuth Kit, bulk_extractor
+  - Cálculo multi-hash (MD5, SHA1, SHA256, SHA512 opcional)
+  - Cadena de custodia: `--case-id`, `--evidence-id`, `--operator`
+  - Timestamps de alta precisión (nanosegundos) e IDs de ejecución UUID
+- **Nuevos módulos**: `lib/deep_clean/` (4 archivos), `lib/forensic/` (3 archivos)
+- **Nuevo esquema**: `schemas/adamantium_dfxml.xsd` para validación DFXML
+
+### v2.5 (Detección de Metadatos Peligrosos) - 2026-01-04
 
 - **Motor de Análisis de Riesgos**: Detección y clasificación automática de metadatos peligrosos
 - **3 Niveles de Riesgo**: CRITICAL (ubicación, identidad), WARNING (IDs de dispositivo, prompts IA), INFO (timestamps, software)
