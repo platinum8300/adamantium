@@ -12,7 +12,7 @@ adamantium es una herramienta de línea de comandos con interfaz TUI (Text User 
 
 [![Licencia: AGPL v3](https://img.shields.io/badge/Licencia-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Plataforma: Linux](https://img.shields.io/badge/Plataforma-Linux-blue.svg)](https://www.linux.org/)
-[![Versión: 2.5](https://img.shields.io/badge/Versión-2.5-green.svg)](https://github.com/platinum8300/adamantium/releases)
+[![Versión: 2.6](https://img.shields.io/badge/Versión-2.6-green.svg)](https://github.com/platinum8300/adamantium/releases)
 
 ---
 
@@ -36,7 +36,53 @@ adamantium es una herramienta de línea de comandos con interfaz TUI (Text User 
 - **Detección automática**: Identifica el tipo de archivo y aplica el método óptimo
 - **Contador de metadatos**: Muestra cuántos campos se encontraron y eliminaron
 
-### 🆕 Nuevo en v2.5 (Detección de Metadatos Peligrosos)
+### 🆕 Nuevo en v2.6 (Limpieza Profunda + Reportes Forenses)
+
+adamantium v2.6 introduce dos capacidades principales para mayor privacidad y documentación profesional.
+
+#### Limpieza Profunda (`--deep-clean`)
+
+Elimina metadatos ocultos que sobreviven a la limpieza estándar de ExifTool:
+
+- **Limpieza de Thumbnails**: Elimina thumbnails IFD1 embebidos que retienen metadatos originales (GPS, cámara)
+  - Modos: `remove` (eliminar) o `regenerate` (crear thumbnail limpio)
+- **Linearización PDF**: Elimina actualizaciones incrementales (versiones anteriores ocultas, contenido redactado)
+  - Requiere: `qpdf` o `ghostscript`
+- **Limpieza de Streams de Video**: Elimina streams ocultos más allá de metadatos estándar
+  - Marcadores de capítulos, subtítulos, adjuntos, streams de datos
+
+#### Reportes Forenses (`--forensic-report`)
+
+Documentación de grado profesional para auditorías y procedimientos legales:
+
+- **Exportación DFXML**: Digital Forensics XML (estándar NIST)
+  - Compatible con Autopsy, Sleuth Kit, bulk_extractor
+  - Esquema XSD para validación (`schemas/adamantium_dfxml.xsd`)
+- **Cálculo Multi-Hash** (`--multihash`): MD5, SHA1, SHA256 (opcionalmente SHA512)
+- **Soporte de Cadena de Custodia**:
+  - `--case-id=ID` - Identificador de caso
+  - `--evidence-id=ID` - Identificador de evidencia
+  - `--operator=NAME` - Nombre del operador
+  - IDs de ejecución UUID y timestamps de nanosegundos
+
+#### Configuración (`.adamantiumrc`)
+
+```bash
+# Limpieza Profunda
+DEEP_CLEAN_ENABLED=false
+DEEP_CLEAN_THUMBNAILS=true
+DEEP_CLEAN_PDF=true
+DEEP_CLEAN_VIDEO=true
+THUMBNAIL_MODE="remove"
+
+# Reportes Forenses
+FORENSIC_REPORT_ENABLED=false
+FORENSIC_REPORT_FORMAT="json"  # json, dfxml, all
+FORENSIC_MULTIHASH=false
+FORENSIC_HASH_ALGORITHMS="md5,sha1,sha256"
+```
+
+### 🔍 Funciones v2.5 (Detección de Metadatos Peligrosos)
 
 - **Análisis de Riesgos**: Detección y clasificación automática de metadatos peligrosos
   - **3 Niveles de Riesgo**: CRÍTICO (rojo), ADVERTENCIA (amarillo), INFO (azul)

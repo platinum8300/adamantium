@@ -12,7 +12,7 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Platform: Linux](https://img.shields.io/badge/Platform-Linux-blue.svg)](https://www.linux.org/)
-[![Version: 2.5](https://img.shields.io/badge/Version-2.5-green.svg)](https://github.com/platinum8300/adamantium/releases)
+[![Version: 2.6](https://img.shields.io/badge/Version-2.6-green.svg)](https://github.com/platinum8300/adamantium/releases)
 
 ---
 
@@ -39,7 +39,53 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
 - **Automatic Detection**: Identifies file type and applies optimal method
 - **Metadata Counter**: Shows how many fields were found and removed
 
-### 🆕 New in v2.5 (Dangerous Metadata Detection)
+### 🆕 New in v2.6 (Deep Cleaning + Forensic Reporting)
+
+adamantium v2.6 introduces two major capabilities for enhanced privacy and professional documentation.
+
+#### Deep Cleaning (`--deep-clean`)
+
+Targets hidden metadata that survives standard ExifTool cleaning:
+
+- **Thumbnail Cleaning**: Removes IFD1 embedded thumbnails that retain original metadata (GPS, camera info)
+  - Modes: `remove` (delete) or `regenerate` (create clean thumbnail)
+- **PDF Linearization**: Removes incremental updates (hidden previous versions, redacted content)
+  - Requires: `qpdf` or `ghostscript`
+- **Video Stream Cleaning**: Removes hidden streams beyond standard metadata
+  - Chapter markers, subtitles, attachments, data streams
+
+#### Forensic Reporting (`--forensic-report`)
+
+Professional-grade documentation for audits and legal proceedings:
+
+- **DFXML Export**: Digital Forensics XML (NIST standard)
+  - Compatible with Autopsy, Sleuth Kit, bulk_extractor
+  - XSD schema for validation (`schemas/adamantium_dfxml.xsd`)
+- **Multi-Hash Calculation** (`--multihash`): MD5, SHA1, SHA256 (optionally SHA512)
+- **Chain of Custody Support**:
+  - `--case-id=ID` - Case identifier
+  - `--evidence-id=ID` - Evidence identifier
+  - `--operator=NAME` - Operator name
+  - UUID execution IDs and nanosecond timestamps
+
+#### Configuration (`.adamantiumrc`)
+
+```bash
+# Deep Cleaning
+DEEP_CLEAN_ENABLED=false
+DEEP_CLEAN_THUMBNAILS=true
+DEEP_CLEAN_PDF=true
+DEEP_CLEAN_VIDEO=true
+THUMBNAIL_MODE="remove"
+
+# Forensic Reporting
+FORENSIC_REPORT_ENABLED=false
+FORENSIC_REPORT_FORMAT="json"  # json, dfxml, all
+FORENSIC_MULTIHASH=false
+FORENSIC_HASH_ALGORITHMS="md5,sha1,sha256"
+```
+
+### 🔍 v2.5 Features (Dangerous Metadata Detection)
 
 - **Risk Analysis**: Automatic detection and classification of dangerous metadata
   - **3 Risk Levels**: CRITICAL (red), WARNING (yellow), INFO (blue)
