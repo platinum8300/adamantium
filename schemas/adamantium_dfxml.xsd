@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  adamantium DFXML Extension Schema
+  Version: 1.0.0
+  Part of adamantium v2.6+
+
+  This schema defines the adamantium-specific extensions to DFXML
+  for metadata cleaning operation reports.
+
+  Namespace: https://github.com/platinum8300/adamantium/ns/1.0
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:adamantium="https://github.com/platinum8300/adamantium/ns/1.0"
+           targetNamespace="https://github.com/platinum8300/adamantium/ns/1.0"
+           elementFormDefault="qualified">
+
+  <!-- Simple types -->
+  <xs:simpleType name="statusType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="success"/>
+      <xs:enumeration value="failed"/>
+      <xs:enumeration value="skipped"/>
+      <xs:enumeration value="partial"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="hashMethodType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="md5"/>
+      <xs:enumeration value="sha1"/>
+      <xs:enumeration value="sha256"/>
+      <xs:enumeration value="sha512"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="riskLevelType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="critical"/>
+      <xs:enumeration value="warning"/>
+      <xs:enumeration value="info"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Complex types -->
+  <xs:complexType name="hashdigestType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="type" type="adamantium:hashMethodType" use="required"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:complexType name="fileInfoType">
+    <xs:sequence>
+      <xs:element name="path" type="xs:string"/>
+      <xs:element name="size" type="xs:nonNegativeInteger"/>
+      <xs:element name="hashdigest" type="adamantium:hashdigestType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="riskFieldType">
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="category" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="riskAnalysisType">
+    <xs:sequence>
+      <xs:element name="risk_critical_count" type="xs:nonNegativeInteger"/>
+      <xs:element name="risk_warning_count" type="xs:nonNegativeInteger"/>
+      <xs:element name="risk_info_count" type="xs:nonNegativeInteger"/>
+      <xs:element name="critical_fields" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="field" type="adamantium:riskFieldType" minOccurs="0" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="cleaningOperationType">
+    <xs:sequence>
+      <xs:element name="operation_id" type="xs:string"/>
+      <xs:element name="timestamp" type="xs:dateTime" minOccurs="0"/>
+      <xs:element name="status" type="adamantium:statusType"/>
+      <xs:element name="metadata_removed_count" type="xs:nonNegativeInteger" minOccurs="0"/>
+      <xs:element name="original_file" type="adamantium:fileInfoType"/>
+      <xs:element name="clean_file" type="adamantium:fileInfoType" minOccurs="0"/>
+      <xs:element name="risk_analysis" type="adamantium:riskAnalysisType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="caseInfoType">
+    <xs:sequence>
+      <xs:element name="case_id" type="xs:string" minOccurs="0"/>
+      <xs:element name="evidence_id" type="xs:string" minOccurs="0"/>
+      <xs:element name="operator" type="xs:string" minOccurs="0"/>
+      <xs:element name="execution_id" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="summaryType">
+    <xs:sequence>
+      <xs:element name="total_files" type="xs:nonNegativeInteger"/>
+      <xs:element name="successful" type="xs:nonNegativeInteger" minOccurs="0"/>
+      <xs:element name="failed" type="xs:nonNegativeInteger" minOccurs="0"/>
+      <xs:element name="skipped" type="xs:nonNegativeInteger" minOccurs="0"/>
+      <xs:element name="end_time" type="xs:dateTime" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Root elements (extensions to DFXML) -->
+  <xs:element name="cleaning_operation" type="adamantium:cleaningOperationType"/>
+  <xs:element name="case_info" type="adamantium:caseInfoType"/>
+  <xs:element name="summary" type="adamantium:summaryType"/>
+
+  <!-- Standalone elements -->
+  <xs:element name="operation_id" type="xs:string"/>
+  <xs:element name="timestamp" type="xs:dateTime"/>
+  <xs:element name="status" type="adamantium:statusType"/>
+  <xs:element name="metadata_removed_count" type="xs:nonNegativeInteger"/>
+  <xs:element name="original_file" type="adamantium:fileInfoType"/>
+  <xs:element name="clean_file" type="adamantium:fileInfoType"/>
+  <xs:element name="risk_analysis" type="adamantium:riskAnalysisType"/>
+  <xs:element name="case_id" type="xs:string"/>
+  <xs:element name="evidence_id" type="xs:string"/>
+  <xs:element name="operator" type="xs:string"/>
+  <xs:element name="execution_id" type="xs:string"/>
+  <xs:element name="total_files" type="xs:nonNegativeInteger"/>
+  <xs:element name="end_time" type="xs:dateTime"/>
+  <xs:element name="path" type="xs:string"/>
+  <xs:element name="size" type="xs:nonNegativeInteger"/>
+  <xs:element name="hashdigest" type="adamantium:hashdigestType"/>
+  <xs:element name="risk_critical_count" type="xs:nonNegativeInteger"/>
+  <xs:element name="risk_warning_count" type="xs:nonNegativeInteger"/>
+  <xs:element name="risk_info_count" type="xs:nonNegativeInteger"/>
+
+</xs:schema>

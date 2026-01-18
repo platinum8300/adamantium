@@ -4,6 +4,124 @@ All notable changes to adamantium will be documented in this file.
 
 ---
 
+## [2.6.0] - 2026-01-18
+
+### NEW FEATURE - Deep Cleaning + Forensic Professionalization
+
+adamantium v2.6 introduces two major capabilities: Deep Cleaning for hidden metadata that survives standard cleaning, and Forensic Reporting for professional chain-of-custody documentation.
+
+### Deep Cleaning (`--deep-clean`)
+
+Targets metadata that persists after standard ExifTool cleaning:
+
+- **Thumbnail Cleaning** - Removes IFD1 embedded thumbnails that retain original metadata
+  - Even after cleaning, thumbnails may contain GPS, camera info, and timestamps
+  - Modes: `remove` (delete thumbnail) or `regenerate` (create clean one)
+  - Supports JPEG, TIFF, and RAW formats
+
+- **PDF Linearization** - Removes hidden previous versions in incremental updates
+  - PDFs store edit history as incremental updates
+  - Previous content (redacted text, old versions) remains accessible
+  - Uses qpdf or Ghostscript to flatten PDF structure
+
+- **Video Stream Cleaning** - Removes hidden streams beyond metadata
+  - Chapter markers (can reveal editing patterns)
+  - Embedded subtitles (may contain sensitive text)
+  - Attachment streams (can hide arbitrary files)
+  - Data streams (various hidden data)
+  - Uses ffmpeg with `-map_chapters -1 -dn -sn`
+
+### Forensic Reporting (`--forensic-report`)
+
+Professional-grade documentation for audits and legal proceedings:
+
+- **DFXML Export** - Digital Forensics XML (NIST standard)
+  - Compatible with Autopsy, Sleuth Kit, bulk_extractor
+  - Full execution environment capture
+  - Custom adamantium namespace for cleaning operations
+  - XSD schema for validation (`schemas/adamantium_dfxml.xsd`)
+
+- **Multi-Hash Calculation** (`--multihash`)
+  - Calculates MD5, SHA1, SHA256 (optionally SHA512)
+  - Before and after hashes for chain of custody
+  - Individual hash functions available
+
+- **Chain of Custody Support**
+  - `--case-id=ID` - Case identifier
+  - `--evidence-id=ID` - Evidence identifier
+  - `--operator=NAME` - Operator name
+  - UUID v4 execution IDs for each session
+  - High-precision timestamps (nanoseconds)
+
+### New CLI Options
+
+```
+--deep-clean          Enable enhanced cleaning (thumbnails, PDF, video)
+--forensic-report     Generate forensic report (JSON format)
+--forensic-report=FMT Report format: json, dfxml, all
+--multihash           Calculate MD5, SHA1, SHA256 hashes
+--case-id=ID          Case identifier for chain of custody
+--evidence-id=ID      Evidence identifier
+--operator=NAME       Operator name for reports
+```
+
+### Configuration
+
+New options in `.adamantiumrc`:
+
+**Deep Cleaning:**
+- `DEEP_CLEAN_ENABLED=true|false` - Enable by default (default: false)
+- `DEEP_CLEAN_THUMBNAILS=true|false` - Clean thumbnails (default: true)
+- `DEEP_CLEAN_PDF=true|false` - Linearize PDFs (default: true)
+- `DEEP_CLEAN_VIDEO=true|false` - Clean video streams (default: true)
+- `THUMBNAIL_MODE=remove|regenerate` - Thumbnail handling (default: remove)
+- `DEEP_VERIFY=true|false` - Verify results (default: true)
+
+**Forensic Reporting:**
+- `FORENSIC_REPORT_ENABLED=true|false` - Enable by default (default: false)
+- `FORENSIC_REPORT_FORMAT=json|dfxml|all` - Output format (default: json)
+- `FORENSIC_MULTIHASH=true|false` - Multi-hash calculation (default: false)
+- `FORENSIC_HASH_ALGORITHMS=md5,sha1,sha256` - Algorithms to use
+- `FORENSIC_REPORT_DIR=path` - Report directory
+- `FORENSIC_TIMEZONE=UTC` - Timestamp timezone
+- `FORENSIC_VALIDATE_OUTPUT=true|false` - Schema validation (default: true)
+- `FORENSIC_OPERATOR=name` - Default operator
+
+### i18n
+
+Added new translated messages:
+- `DEEP_CLEAN_PROCESSING` - "Performing deep cleaning..." / "Realizando limpieza profunda..."
+- `FORENSIC_REPORT_GENERATED` - "Forensic report generated" / "Reporte forense generado"
+
+### Files Added
+
+**lib/deep_clean/**
+- `deep_clean_core.sh` - Core integration module (~230 lines)
+- `thumbnail_cleaner.sh` - IFD1 thumbnail handling (~250 lines)
+- `pdf_deep_cleaner.sh` - PDF linearization (~280 lines)
+- `video_stream_cleaner.sh` - Hidden stream removal (~320 lines)
+
+**lib/forensic/**
+- `forensic_core.sh` - Core forensic functions (~350 lines)
+- `hash_calculator.sh` - Multi-hash calculation (~280 lines)
+- `dfxml_exporter.sh` - DFXML report generation (~350 lines)
+
+**schemas/**
+- `adamantium_dfxml.xsd` - XML Schema for DFXML extensions (~100 lines)
+
+### Files Modified
+
+- `adamantium` - v2.6 integration, new CLI options, i18n messages
+- `.adamantiumrc.example` - Deep clean and forensic options
+
+### Dependencies
+
+**Optional (for full functionality):**
+- `qpdf` - PDF linearization (fallback: ghostscript)
+- `xmllint` - DFXML validation (from libxml2)
+
+---
+
 ## [2.5.0] - 2026-01-04
 
 ### NEW FEATURE - Dangerous Metadata Detection with Risk Levels

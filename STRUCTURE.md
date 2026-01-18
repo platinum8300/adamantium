@@ -24,7 +24,20 @@ adamantium/
 │   ├── notifier.sh             # Notificaciones de escritorio (v1.5)
 │   ├── report_generator.sh     # Generación de reportes JSON/CSV (v2.0)
 │   ├── epub_handler.sh         # Procesamiento de EPUB (v2.2)
-│   └── torrent_handler.sh      # Procesamiento de Torrent (v2.3)
+│   ├── torrent_handler.sh      # Procesamiento de Torrent (v2.3)
+│   ├── danger_detector.sh      # Detección de metadatos peligrosos (v2.5)
+│   ├── reencode_handler.sh     # Re-encoding multimedia (v2.4)
+│   ├── deep_clean/             # Limpieza profunda (v2.6)
+│   │   ├── deep_clean_core.sh  # Core de deep cleaning
+│   │   ├── thumbnail_cleaner.sh# Limpieza de thumbnails IFD1
+│   │   ├── pdf_deep_cleaner.sh # Linearización de PDFs
+│   │   └── video_stream_cleaner.sh # Limpieza de streams ocultos
+│   └── forensic/               # Reportes forenses (v2.6)
+│       ├── forensic_core.sh    # Core forense (timestamps, UUIDs)
+│       ├── hash_calculator.sh  # Cálculo multi-hash
+│       └── dfxml_exporter.sh   # Exportador DFXML
+├── schemas/                    # Esquemas de validación (v2.6)
+│   └── adamantium_dfxml.xsd    # Esquema XSD para extensiones DFXML
 ├── integration/                # Integración con gestores de archivos (v2.0)
 │   ├── install-integration.sh  # Instalador de integración
 │   ├── nautilus/               # Extensión para GNOME Files
@@ -462,12 +475,44 @@ CLEAN="${MAGENTA}◆${NC}"    # Proceso de limpieza
 - [x] Modos torrent: safe (default), aggressive
 - [x] Módulo: torrent_handler
 
+### v2.4 ✅ COMPLETADO
+- [x] Re-encoding de multimedia con ffmpeg
+- [x] Presets de calidad: high, medium, low
+- [x] Codecs configurables: libx264, libx265, libsvtav1
+- [x] Aceleración por hardware: NVIDIA, AMD, Intel, CPU
+- [x] Módulo: reencode_handler
+
+### v2.5 ✅ COMPLETADO
+- [x] Detección de metadatos peligrosos con niveles de riesgo
+- [x] Niveles: CRITICAL, WARNING, INFO
+- [x] Categorías: Location, Identity, Contact, Device ID, AI Prompt, etc.
+- [x] Panel de resumen visual con badges en línea
+- [x] Módulo: danger_detector
+
+### v2.6 ✅ COMPLETADO
+- [x] Deep Cleaning (limpieza profunda)
+  - [x] Limpieza de thumbnails IFD1 en imágenes
+  - [x] Linearización de PDFs (elimina versiones previas)
+  - [x] Limpieza de streams ocultos en video
+- [x] Forensic Reporting (reportes forenses)
+  - [x] Exportación DFXML (estándar NIST)
+  - [x] Cálculo multi-hash (MD5, SHA1, SHA256)
+  - [x] Cadena de custodia (case_id, evidence_id, operator)
+  - [x] Timestamps de alta precisión (nanosegundos)
+- [x] Módulos: deep_clean/, forensic/
+- [x] Esquema XSD: schemas/adamantium_dfxml.xsd
+
+### v2.7 (Planificado)
+- [ ] JSON exporter para reportes forenses
+- [ ] Office deep clean (comments, revisions, people.xml)
+- [ ] Integración de riesgos en reportes forenses
+
 ### v3.0 (Futuro)
 - [ ] GUI opcional (GTK4/Qt6)
-- [ ] Recodificación opcional para multimedia
-- [ ] Detección de metadatos peligrosos
+- [ ] PRNU anonymization (sensor fingerprinting)
 - [ ] API REST para uso remoto
 - [ ] Sistema de plugins
+- [ ] Integración CASE/UCO (Cyber-investigation Analysis Standard)
 
 ---
 
@@ -475,8 +520,8 @@ CLEAN="${MAGENTA}◆${NC}"    # Proceso de limpieza
 
 **adamantium** - Herramienta de limpieza profunda de metadatos
 
-Versión: 2.3.3
-Fecha: 2025-12-29
+Versión: 2.6.0
+Fecha: 2026-01-18
 
 Herramientas utilizadas:
 - ExifTool por Phil Harvey
@@ -498,4 +543,4 @@ Para bugs, sugerencias o contribuciones:
 
 ---
 
-**Última actualización**: 2025-12-29
+**Última actualización**: 2026-01-18

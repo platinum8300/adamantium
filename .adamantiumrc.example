@@ -5,7 +5,7 @@
 # Copy this file to ~/.adamantiumrc to customize adamantium behavior
 # All options have sensible defaults - only set what you want to change
 #
-# Version: 1.5+
+# Version: 2.6+
 # ═══════════════════════════════════════════════════════════════
 
 # ───────────────────────────────────────────────────────────────
@@ -204,6 +204,76 @@ DANGER_SHOW_SUMMARY=true
 # Show inline risk badges in metadata listing (true/false)
 # Adds [CRITICAL], [WARNING], [INFO] badges next to dangerous fields
 DANGER_SHOW_INLINE=true
+
+# ───────────────────────────────────────────────────────────────
+# DEEP CLEANING OPTIONS (v2.6+)
+# ───────────────────────────────────────────────────────────────
+
+# Enable deep cleaning by default (true/false)
+# Deep cleaning removes hidden metadata that survives standard cleaning:
+# - Thumbnails with original metadata (IFD1)
+# - PDF incremental updates (hidden previous versions)
+# - Video hidden streams (chapters, subtitles, attachments)
+DEEP_CLEAN_ENABLED=false
+
+# Clean embedded thumbnails in images (true/false)
+# Removes IFD1 thumbnails that may contain original metadata
+DEEP_CLEAN_THUMBNAILS=true
+
+# Linearize PDFs to remove incremental updates (true/false)
+# Requires: qpdf or ghostscript
+DEEP_CLEAN_PDF=true
+
+# Remove hidden video streams (true/false)
+# Removes chapters, subtitles, attachments, and data streams
+DEEP_CLEAN_VIDEO=true
+
+# Thumbnail cleaning mode: remove or regenerate
+# - remove: Completely delete thumbnail (smallest file size)
+# - regenerate: Create new clean thumbnail (preserves preview)
+THUMBNAIL_MODE="remove"
+
+# Verify deep cleaning results (true/false)
+DEEP_VERIFY=true
+
+# ───────────────────────────────────────────────────────────────
+# FORENSIC REPORTING OPTIONS (v2.6+)
+# ───────────────────────────────────────────────────────────────
+
+# Enable forensic reporting by default (true/false)
+# Generates chain-of-custody compliant reports
+FORENSIC_REPORT_ENABLED=false
+
+# Default forensic report format: json, dfxml, all
+# - json: Human-readable JSON reports
+# - dfxml: DFXML for forensic tools (Autopsy, Sleuth Kit)
+# - all: Generate both formats
+FORENSIC_REPORT_FORMAT="json"
+
+# Enable multi-hash calculation by default (true/false)
+# Calculates MD5, SHA1, and SHA256 for all processed files
+FORENSIC_MULTIHASH=false
+
+# Hash algorithms to calculate (comma-separated)
+# Options: md5, sha1, sha256, sha512
+FORENSIC_HASH_ALGORITHMS="md5,sha1,sha256"
+
+# Directory for forensic reports
+FORENSIC_REPORT_DIR="$HOME/.adamantium/forensic_reports"
+
+# Include execution environment in reports (true/false)
+# Records hostname, OS, tool versions for reproducibility
+FORENSIC_INCLUDE_ENVIRONMENT=true
+
+# Timezone for forensic timestamps (default: UTC)
+FORENSIC_TIMEZONE="UTC"
+
+# Validate output against schemas (true/false)
+# Requires: xmllint for DFXML validation
+FORENSIC_VALIDATE_OUTPUT=true
+
+# Default operator name (leave empty to use $USER)
+FORENSIC_OPERATOR=""
 
 # ═══════════════════════════════════════════════════════════════
 # USAGE

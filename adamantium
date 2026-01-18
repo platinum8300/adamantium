@@ -16,7 +16,7 @@
 set -euo pipefail
 
 # Version (single source of truth - update here only)
-export ADAMANTIUM_VERSION="2.5"
+export ADAMANTIUM_VERSION="2.6"
 
 # Colores
 readonly RED='\033[0;31m'
@@ -108,6 +108,15 @@ REENCODE_AUDIO_CODEC="aac"     # Audio codec: aac, libopus, flac
 REENCODE_CONTAINER=""          # Output container: mp4, mkv, webm (empty = keep original)
 REENCODE_HW_ACCEL="auto"       # Hardware acceleration: auto, nvidia, amd, intel, cpu
 REENCODE_NO_CONFIRM=false      # Skip re-encoding confirmation
+
+# Variables para v2.6 features (Deep Clean + Forensic)
+DEEP_CLEAN_ENABLED=false       # Enable deep cleaning (thumbnail, PDF linearization, video streams)
+FORENSIC_REPORT_ENABLED=false  # Enable forensic reporting
+FORENSIC_REPORT_FORMAT="json"  # Report format: json, dfxml, all
+FORENSIC_MULTIHASH=false       # Calculate multiple hashes (MD5, SHA1, SHA256)
+FORENSIC_CASE_ID=""            # Case ID for forensic reports
+FORENSIC_EVIDENCE_ID=""        # Evidence ID for forensic reports
+FORENSIC_OPERATOR=""           # Operator name for forensic reports
 
 # Performance optimizations (v2.3)
 declare -A MIME_CACHE=()   # Cache for MIME type detection
@@ -344,6 +353,8 @@ declare -A MSG_ES=(
     [RISK_VALUE]="Valor"
     [RISK_LEVEL]="Nivel"
     [RISK_CATEGORY]="Categoria"
+    [DEEP_CLEAN_PROCESSING]="Realizando limpieza profunda..."
+    [FORENSIC_REPORT_GENERATED]="Reporte forense generado"
 )
 
 # Mensajes en inglés (idioma por defecto)
@@ -547,6 +558,8 @@ declare -A MSG_EN=(
     [RISK_VALUE]="Value"
     [RISK_LEVEL]="Risk"
     [RISK_CATEGORY]="Category"
+    [DEEP_CLEAN_PROCESSING]="Performing deep cleaning..."
+    [FORENSIC_REPORT_GENERATED]="Forensic report generated"
 )
 
 # Función para obtener mensaje traducido
@@ -1468,6 +1481,15 @@ perform_cleaning() {
         clean_with_exiftool "$input" "$output"
     fi
 
+    # Deep cleaning (v2.6) - after standard metadata cleaning
+    if [ "$DEEP_CLEAN_ENABLED" = true ]; then
+        if declare -f deep_clean_file &>/dev/null; then
+            echo ""
+            echo -e "${CYAN}${TOOL_ICON} $(msg DEEP_CLEAN_PROCESSING)${NC}"
+            deep_clean_file "$output" "$output"
+        fi
+    fi
+
     echo ""
     echo -e "${GREEN}${SPARKLES} ${CHECK} $(msg CLEANING_COMPLETED)${NC}"
 }
@@ -1536,6 +1558,16 @@ main() {
     if [ -f "${lib_dir}/danger_detector.sh" ]; then
         source "${lib_dir}/danger_detector.sh"
         danger_init
+    fi
+
+    # Cargar módulos de limpieza profunda (v2.6)
+    if [ -f "${lib_dir}/deep_clean/deep_clean_core.sh" ]; then
+        source "${lib_dir}/deep_clean/deep_clean_core.sh"
+    fi
+
+    # Cargar módulos forenses (v2.6)
+    if [ -f "${lib_dir}/forensic/forensic_core.sh" ]; then
+        source "${lib_dir}/forensic/forensic_core.sh"
     fi
 
     # Parsear argumentos
@@ -1749,6 +1781,45 @@ main() {
                 REENCODE_NO_CONFIRM=true
                 shift
                 ;;
+            # Deep Clean options (v2.6)
+            --deep-clean)
+                DEEP_CLEAN_ENABLED=true
+                shift
+                ;;
+            # Forensic options (v2.6)
+            --forensic-report)
+                FORENSIC_REPORT_ENABLED=true
+                shift
+                ;;
+            --forensic-report=*)
+                FORENSIC_REPORT_ENABLED=true
+                FORENSIC_REPORT_FORMAT="${1#*=}"
+                case "$FORENSIC_REPORT_FORMAT" in
+                    json|dfxml|all) ;;
+                    *)
+                        echo -e "${RED}${CROSS} Invalid --forensic-report format: $FORENSIC_REPORT_FORMAT${NC}" >&2
+                        echo -e "Valid values: json, dfxml, all"
+                        exit 1
+                        ;;
+                esac
+                shift
+                ;;
+            --multihash)
+                FORENSIC_MULTIHASH=true
+                shift
+                ;;
+            --case-id=*)
+                FORENSIC_CASE_ID="${1#*=}"
+                shift
+                ;;
+            --evidence-id=*)
+                FORENSIC_EVIDENCE_ID="${1#*=}"
+                shift
+                ;;
+            --operator=*)
+                FORENSIC_OPERATOR="${1#*=}"
+                shift
+                ;;
             -h|--help)
                 print_header
                 echo -e "${STYLE_BOLD}$(msg USAGE)${NC}"
@@ -1782,6 +1853,20 @@ main() {
                 echo -e "  ${CYAN}--hw-accel=TYPE${NC}       Hardware acceleration:"
                 echo -e "                          auto (default), nvidia, amd, intel, cpu"
                 echo -e "  ${CYAN}--reencode-no-confirm${NC} Skip confirmation prompt"
+                echo ""
+                echo -e "${STYLE_BOLD}Deep Clean Mode (v2.6):${NC}"
+                echo -e "  ${CYAN}--deep-clean${NC}          Enable enhanced cleaning:"
+                echo -e "                          - Remove embedded thumbnails (IFD1)"
+                echo -e "                          - Linearize PDFs (remove incremental updates)"
+                echo -e "                          - Remove hidden video streams"
+                echo ""
+                echo -e "${STYLE_BOLD}Forensic Reporting (v2.6):${NC}"
+                echo -e "  ${CYAN}--forensic-report${NC}     Generate forensic report (JSON format)"
+                echo -e "  ${CYAN}--forensic-report=FMT${NC} Report format: json, dfxml, all"
+                echo -e "  ${CYAN}--multihash${NC}           Calculate MD5, SHA1, SHA256 hashes"
+                echo -e "  ${CYAN}--case-id=ID${NC}          Case identifier for chain of custody"
+                echo -e "  ${CYAN}--evidence-id=ID${NC}      Evidence identifier"
+                echo -e "  ${CYAN}--operator=NAME${NC}       Operator name for reports"
                 echo ""
                 echo -e "${STYLE_BOLD}$(msg BATCH_MODE):${NC}"
                 echo -e "  ${CYAN}--batch${NC}               Enable batch processing"
@@ -1877,6 +1962,13 @@ main() {
             NOTIFY_FORCE=true
         fi
         notify_init
+    fi
+
+    # Inicializar módulo forense (v2.6)
+    if [ "$FORENSIC_REPORT_ENABLED" = true ]; then
+        if declare -f forensic_init &>/dev/null; then
+            forensic_init
+        fi
     fi
 
     # Dispatch a interactive mode si está activado
@@ -2319,6 +2411,14 @@ main() {
     # Log operación completada
     if declare -f log_operation_complete &>/dev/null; then
         log_operation_complete "$ORIGINAL_FILE" "$OUTPUT_FILE" "success"
+    fi
+
+    # Forensic reporting (v2.6)
+    if [ "$FORENSIC_REPORT_ENABLED" = true ]; then
+        if declare -f forensic_generate_report &>/dev/null; then
+            forensic_generate_report "$ORIGINAL_FILE" "$OUTPUT_FILE" "success"
+            echo -e "${CYAN}${INFO} $(msg FORENSIC_REPORT_GENERATED)${NC}"
+        fi
     fi
 
     # Enviar notificación de éxito
