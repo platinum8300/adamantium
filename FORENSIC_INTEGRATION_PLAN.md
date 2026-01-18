@@ -2,10 +2,22 @@
 
 ## Documento de Planificación Estratégica
 
-**Versión del documento**: 2.0
+**Versión del documento**: 2.1
 **Fecha**: 2026-01-18
 **Objetivo**: Integración forense + Mejoras profundas de limpieza de metadatos
 **Versiones objetivo**: v2.6 → v2.7 → v2.8 → v2.9 → v3.0
+
+---
+
+## Estado de Implementación
+
+| Versión | Estado | Fecha | Notas |
+|---------|--------|-------|-------|
+| **v2.6** | **COMPLETADO** | 2026-01-18 | Deep clean (thumbnails, PDF, video) + DFXML + multi-hash |
+| v2.7 | Pendiente | - | JSON forensic export, Office deep clean |
+| v2.8 | Pendiente | - | PRNU anonymization, chain of custody |
+| v2.9 | Pendiente | - | CASE/UCO JSON-LD |
+| v3.0 | Pendiente | - | Plugins Autopsy, unified paranoid mode |
 
 ---
 
