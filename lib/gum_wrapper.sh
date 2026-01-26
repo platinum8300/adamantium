@@ -308,19 +308,23 @@ gum_pager() {
     local content="$1"
     local header="${2:-}"
 
+    # Si hay header, incluirlo como parte del contenido
+    local full_content="$content"
+    if [ -n "$header" ]; then
+        full_content="${header}
+────────────────────────────────────────────────────────────────────────────────
+${content}"
+    fi
+
     case "$TUI_BACKEND" in
         gum)
-            if [ -n "$header" ]; then
-                echo "$content" | gum pager --header="$header"
-            else
-                echo "$content" | gum pager
-            fi
+            echo "$full_content" | gum pager --soft-wrap
             ;;
         *)
             if command -v less &>/dev/null; then
-                echo "$content" | less -R
+                echo "$full_content" | less -R
             else
-                echo "$content" | more
+                echo "$full_content" | more
             fi
             ;;
     esac

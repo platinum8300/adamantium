@@ -29,6 +29,7 @@ ADAMANTIUM_BIN=""
 interactive_show_menu() {
     local options=(
         "📄 $(msg INTERACTIVE_SINGLE_FILE)"
+        "👁️  $(msg INTERACTIVE_VIEW_METADATA)"
         "📦 $(msg INTERACTIVE_ARCHIVE)"
         "📁 $(msg INTERACTIVE_BATCH)"
         "⚙️  $(msg INTERACTIVE_SETTINGS)"
@@ -184,6 +185,140 @@ interactive_single_file() {
             ;;
     esac
 
+    echo ""
+    interactive_press_enter
+}
+
+# ─────────────────────────────────────────────────────────────
+# VER METADATOS (sin limpiar)
+# ─────────────────────────────────────────────────────────────
+
+interactive_view_metadata() {
+    echo ""
+    echo -e "${CYAN}${SEARCH_ICON} $(msg INTERACTIVE_VIEW_METADATA)${NC}"
+    echo ""
+
+    # Seleccionar archivo
+    local file=$(gum_file ".")
+
+    if [ -z "$file" ] || [ ! -f "$file" ]; then
+        echo -e "${YELLOW}${WARN} Selection cancelled${NC}"
+        sleep 1
+        return
+    fi
+
+    # Mostrar info del archivo
+    echo -e "${CYAN}╔═══════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${CYAN}║${NC} ${STYLE_BOLD}${FILE_ICON} File selected${NC}"
+    echo -e "${CYAN}╠═══════════════════════════════════════════════════════════╣${NC}"
+    echo -e "${CYAN}║${NC} ${ARROW} $(basename "$file")"
+    echo -e "${CYAN}║${NC} ${SIZE_ICON} Size: $(du -h "$file" 2>/dev/null | cut -f1)"
+    echo -e "${CYAN}║${NC} ${BULLET} Type: $(file -b --mime-type "$file")"
+    echo -e "${CYAN}╚═══════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+
+    # Detectar extensión
+    local extension="${file##*.}"
+    extension=$(echo "$extension" | tr '[:upper:]' '[:lower:]')
+
+    echo -e "${CYAN}${INFO} ${STYLE_BOLD}$(msg SHOW_ONLY_MODE)${NC}"
+    echo -e "${GRAY}$(msg SHOW_ONLY_NOTICE)${NC}"
+    echo ""
+    echo -e "${GRAY}─────────────────────────────────────────────────────────────${NC}"
+
+    # Mostrar metadatos según tipo
+    case "$extension" in
+        css)
+            # Mostrar comentarios CSS
+            local comments=$(perl -0777 -ne 'print scalar(() = m{/\*.*?\*/}gs)' "$file" 2>/dev/null || echo "0")
+            echo -e "${STYLE_BOLD}📝 CSS Comments: ${WHITE}$comments${NC}"
+            echo ""
+            if [ "$comments" -gt 0 ]; then
+                perl -0777 -ne 'while (m{(/\*.*?\*/)}gs) { print "$1\n---\n"; }' "$file" 2>/dev/null | head -50
+            else
+                echo -e "${GREEN}${CHECK} No CSS comments found${NC}"
+            fi
+            ;;
+        svg)
+            # Mostrar metadatos SVG
+            echo -e "${STYLE_BOLD}📐 SVG Metadata:${NC}"
+            echo ""
+            local svg_meta=$(perl -0777 -ne '
+                if (/<metadata[^>]*>(.*?)<\/metadata>/si) { print "METADATA BLOCK:\n$1\n\n"; }
+                while (/<!--(.*?)-->/gs) { print "COMMENT: $1\n"; }
+                if (/<rdf:RDF[^>]*>(.*?)<\/rdf:RDF>/si) { print "RDF DATA:\n$1\n"; }
+            ' "$file" 2>/dev/null)
+            if [ -n "$svg_meta" ]; then
+                echo "$svg_meta" | head -50
+            else
+                echo -e "${GREEN}${CHECK} No SVG metadata found${NC}"
+            fi
+            ;;
+        epub)
+            # Cargar epub_handler si existe
+            local lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+            if [ -f "${lib_dir}/epub_handler.sh" ]; then
+                source "${lib_dir}/epub_handler.sh"
+                epub_show_metadata "$file" "EPUB Metadata" "$CYAN"
+            else
+                exiftool "$file" 2>/dev/null | head -50
+            fi
+            ;;
+        torrent)
+            # Cargar torrent_handler si existe
+            local lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+            if [ -f "${lib_dir}/torrent_handler.sh" ]; then
+                source "${lib_dir}/torrent_handler.sh"
+                torrent_show_metadata "$file" "Torrent Metadata" "$CYAN"
+            else
+                echo -e "${YELLOW}${WARN} Torrent handler not available${NC}"
+            fi
+            ;;
+        *)
+            # Usar exiftool para el resto
+            local metadata=$(exiftool "$file" 2>/dev/null)
+            if [ -n "$metadata" ]; then
+                local count=$(echo "$metadata" | wc -l)
+                echo -e "${STYLE_BOLD}📊 Metadata fields: ${WHITE}$count${NC}"
+                echo ""
+
+                # Obtener análisis de riesgos si está disponible (v2.5)
+                if declare -f danger_analyze_metadata &>/dev/null; then
+                    danger_analyze_metadata "$metadata"
+                    danger_show_summary_panel
+                    echo ""
+                fi
+
+                # Colorear campos según riesgo
+                echo "$metadata" | while IFS= read -r line; do
+                    local key=$(echo "$line" | cut -d: -f1 | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+                    local risk_level="none"
+
+                    if declare -f danger_get_field_risk &>/dev/null; then
+                        risk_level=$(danger_get_field_risk "$key")
+                    fi
+
+                    if [[ "$risk_level" == "critical" ]]; then
+                        echo -e "${RED}🔴 $line${NC}"
+                    elif [[ "$risk_level" == "warning" ]]; then
+                        echo -e "${YELLOW}🟡 $line${NC}"
+                    elif [[ "$risk_level" == "info" ]]; then
+                        echo -e "${BLUE}🔵 $line${NC}"
+                    elif echo "$line" | grep -qiE "(GPS|Author|Creator|Artist|Location|Company|Owner|Parameters|Camera|Device)"; then
+                        echo -e "${RED}● $line${NC}"
+                    elif echo "$line" | grep -qiE "(Date|Time|Software|Encoder)"; then
+                        echo -e "${YELLOW}● $line${NC}"
+                    else
+                        echo -e "${GRAY}● $line${NC}"
+                    fi
+                done
+            else
+                echo -e "${GREEN}${CHECK} No metadata found${NC}"
+            fi
+            ;;
+    esac
+
+    echo -e "${GRAY}─────────────────────────────────────────────────────────────${NC}"
     echo ""
     interactive_press_enter
 }
@@ -466,7 +601,65 @@ interactive_check_single_tool() {
 # ─────────────────────────────────────────────────────────────
 
 interactive_help() {
-    local help_text="
+    local help_text
+
+    if [ "$LANG_CODE" = "es" ]; then
+        help_text="
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                 ADAMANTIUM - Limpieza Profunda de Metadatos                ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+USO:
+  adamantium [opciones] <archivo> [archivo_salida]
+  adamantium --batch --pattern PATRON [directorio]
+  adamantium --interactive
+
+OPCIONES DE ARCHIVO INDIVIDUAL:
+  --verify              Verificar limpieza con comparación de hash SHA256
+  --dry-run             Modo previsualización (sin realizar cambios)
+  --show-only           Solo mostrar metadatos sin limpiar
+  --no-duplicate-check  Omitir detección de duplicados
+
+OPCIONES DE LOTE:
+  --batch               Habilitar modo de procesamiento por lotes
+  --pattern PATRON      Patrón de archivos (puede usarse múltiples veces)
+  --jobs N, -j N        Número de trabajos paralelos (por defecto: auto)
+  --recursive, -r       Buscar recursivamente en subdirectorios
+  --confirm             Selección interactiva de archivos (por defecto)
+  --no-confirm          Omitir confirmación (para automatización)
+
+MODO INTERACTIVO:
+  --interactive, -i     Lanzar modo interactivo TUI
+
+FORMATOS SOPORTADOS:
+  Imágenes:   JPG, PNG, TIFF, GIF, WebP, BMP, etc.
+  Video:      MP4, MKV, AVI, MOV, WebM, FLV, etc.
+  Audio:      MP3, FLAC, WAV, OGG, M4A, AAC, etc.
+  Documentos: PDF, DOCX, XLSX, PPTX, ODT, ODS, etc.
+  Archivos:   ZIP, 7Z, TAR, RAR, TAR.GZ, etc.
+  Otros:      EPUB, SVG, CSS, Torrent
+
+EJEMPLOS:
+  adamantium foto.jpg                     # Limpiar archivo individual
+  adamantium video.mp4 --verify           # Limpiar con verificación de hash
+  adamantium documento.pdf --dry-run      # Previsualizar sin cambios
+  adamantium imagen.png --show-only       # Ver metadatos sin limpiar
+  adamantium --batch --pattern '*.jpg' .  # Limpieza por lotes
+  adamantium -i                           # Modo interactivo
+
+METADATOS ELIMINADOS:
+  - Coordenadas GPS y datos de ubicación
+  - Información de autor, creador y empresa
+  - Modelo de cámara y detalles del dispositivo
+  - Parámetros de generación IA (prompts, modelos, seeds)
+  - Marcas de tiempo de creación y modificación
+  - Información de software y herramientas
+  - Comentarios, descripciones, palabras clave
+
+Más información: https://github.com/platinum8300/adamantium
+"
+    else
+        help_text="
 ╔═══════════════════════════════════════════════════════════════════════════╗
 ║                     ADAMANTIUM - Deep Metadata Cleaning                    ║
 ╚═══════════════════════════════════════════════════════════════════════════╝
@@ -479,6 +672,7 @@ USAGE:
 SINGLE FILE OPTIONS:
   --verify              Verify cleaning with SHA256 hash comparison
   --dry-run             Preview mode (no changes made)
+  --show-only           Display metadata without cleaning
   --no-duplicate-check  Skip duplicate detection
 
 BATCH OPTIONS:
@@ -497,11 +691,14 @@ SUPPORTED FILE FORMATS:
   Video:      MP4, MKV, AVI, MOV, WebM, FLV, etc.
   Audio:      MP3, FLAC, WAV, OGG, M4A, AAC, etc.
   Documents:  PDF, DOCX, XLSX, PPTX, ODT, ODS, etc.
+  Archives:   ZIP, 7Z, TAR, RAR, TAR.GZ, etc.
+  Other:      EPUB, SVG, CSS, Torrent
 
 EXAMPLES:
   adamantium photo.jpg                    # Clean single file
   adamantium video.mp4 --verify           # Clean with hash verification
   adamantium document.pdf --dry-run       # Preview without changes
+  adamantium image.png --show-only        # View metadata without cleaning
   adamantium --batch --pattern '*.jpg' .  # Batch clean all JPGs
   adamantium -i                           # Launch interactive mode
 
@@ -516,8 +713,10 @@ METADATA REMOVED:
 
 For more information: https://github.com/platinum8300/adamantium
 "
+    fi
 
-    gum_pager "$help_text" "❓ Help"
+    gum_pager "$help_text" "❓ $(msg INTERACTIVE_HELP)"
+    interactive_press_enter
 }
 
 # ─────────────────────────────────────────────────────────────
@@ -612,6 +811,9 @@ interactive_main() {
         case "$choice" in
             *"$(msg INTERACTIVE_SINGLE_FILE)"*)
                 interactive_single_file
+                ;;
+            *"$(msg INTERACTIVE_VIEW_METADATA)"*)
+                interactive_view_metadata
                 ;;
             *"$(msg INTERACTIVE_ARCHIVE)"*)
                 interactive_archive_mode
