@@ -4,6 +4,113 @@ All notable changes to adamantium will be documented in this file.
 
 ---
 
+## [2.7.0] - 2026-01-27
+
+### NEW FEATURE - Office Deep Cleaning + Timeline Export
+
+adamantium v2.7 extends deep cleaning capabilities to Microsoft Office documents and introduces forensic timeline export formats for integration with professional timeline analysis tools.
+
+### Office Deep Cleaning (`--deep-clean-office`)
+
+Complete cleaning of hidden data in DOCX, XLSX, and PPTX documents:
+
+- **Comments Removal** - Removes all comments, comment replies, and extended comment data
+  - Cleans comments.xml, commentsExtended.xml, commentsExtensible.xml
+  - Updates Content_Types.xml and relationship files
+
+- **Track Changes Cleaning** - Removes revision history and reviewer information
+  - Cleans people.xml (reviewer identities)
+  - Removes w:ins/w:del markers from document.xml
+  - Strips rsid attributes (revision session identifiers)
+  - Removes w14:paraId and w14:textId attributes
+
+- **Custom XML Removal** - Removes customXml directory and related data
+  - Often contains document classification, DRM data, or hidden metadata
+
+- **Document Properties Cleaning** - Cleans docProps/ directory
+  - Removes author, last modified by from core.xml
+  - Cleans application info from app.xml
+  - Removes custom.xml properties
+
+- **Embedded Images Cleaning** - Uses ExifTool to clean metadata from images in word/media/
+  - Supports JPEG, PNG, GIF, TIFF, BMP, EMF, WMF
+
+- **Settings Cleaning** - Removes identifying data from settings.xml
+  - Strips rsidRoot (unique document identifier)
+  - Removes document/write protection hashes
+
+### Timeline Export Formats
+
+New forensic timeline export formats for professional analysis:
+
+- **L2T CSV Format** (`--forensic-report=l2tcsv`)
+  - 17-field format compatible with Plaso, Timeline Explorer, Splunk
+  - Fields: date, time, timezone, MACB, source, sourcetype, type, user, host, short, desc, version, filename, inode, notes, format, extra
+  - MACB flags indicate which timestamp (Modified/Accessed/Changed/Birth)
+
+- **Body File Format** (`--forensic-report=bodyfile`)
+  - Input format for mactime (The Sleuth Kit) and Autopsy
+  - 11 pipe-separated fields: MD5|name|inode|mode|UID|GID|size|atime|mtime|ctime|crtime
+  - Compatible with forensic timeline generation tools
+
+- **TLN Format** (internal)
+  - 5-field simple timeline format
+  - Fields: Time|Source|Host|User|Description
+
+### New CLI Options
+
+```
+--deep-clean-office       Enable Office document deep cleaning
+--office-keep-comments    Keep comments (default: remove)
+--office-keep-revisions   Keep track changes (default: remove)
+--timeline-source=NAME    Source name for timeline exports
+--forensic-report=l2tcsv  Export as L2T CSV format
+--forensic-report=bodyfile Export as body file format
+```
+
+### Configuration
+
+New options in `.adamantiumrc`:
+
+**Office Deep Cleaning:**
+- `DEEP_CLEAN_OFFICE=true|false` - Enable Office deep cleaning (default: true)
+- `OFFICE_REMOVE_COMMENTS=true|false` - Remove comments (default: true)
+- `OFFICE_REMOVE_REVISIONS=true|false` - Remove track changes (default: true)
+- `OFFICE_REMOVE_CUSTOM_XML=true|false` - Remove custom XML (default: true)
+- `OFFICE_CLEAN_EMBEDDED_IMAGES=true|false` - Clean embedded images (default: true)
+- `OFFICE_CLEAN_SETTINGS=true|false` - Clean settings.xml (default: true)
+
+**Timeline Export:**
+- `TIMELINE_SOURCE=name` - Source name for timeline entries (default: ADAMANTIUM)
+- `TIMELINE_TIMEZONE=zone` - Timezone for timestamps (default: UTC)
+- `TIMELINE_OUTPUT_DIR=path` - Output directory for timelines
+
+### Files Added
+
+**lib/deep_clean/**
+- `office_deep_cleaner.sh` - Office document deep cleaning (~550 lines)
+
+**lib/forensic/**
+- `timeline_exporter.sh` - Timeline export functionality (~450 lines)
+
+**tests/**
+- `test_v27_features.sh` - v2.7 feature tests
+
+### Files Modified
+
+- `adamantium` - v2.7 integration, new CLI options
+- `lib/deep_clean/deep_clean_core.sh` - Office support integration
+- `.adamantiumrc.example` - New configuration options
+
+### Dependencies
+
+**Optional (for full functionality):**
+- `perl` - Required for advanced track changes cleaning
+- `exiftool` - Required for embedded image metadata cleaning
+- `unzip`/`zip` - Required for Office document handling (usually pre-installed)
+
+---
+
 ## [2.6.0] - 2026-01-18
 
 ### NEW FEATURE - Deep Cleaning + Forensic Professionalization

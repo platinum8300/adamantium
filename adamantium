@@ -16,7 +16,7 @@
 set -euo pipefail
 
 # Version (single source of truth - update here only)
-export ADAMANTIUM_VERSION="2.6"
+export ADAMANTIUM_VERSION="2.7"
 
 # Colores
 readonly RED='\033[0;31m'
@@ -112,11 +112,17 @@ REENCODE_NO_CONFIRM=false      # Skip re-encoding confirmation
 # Variables para v2.6 features (Deep Clean + Forensic)
 DEEP_CLEAN_ENABLED=false       # Enable deep cleaning (thumbnail, PDF linearization, video streams)
 FORENSIC_REPORT_ENABLED=false  # Enable forensic reporting
-FORENSIC_REPORT_FORMAT="json"  # Report format: json, dfxml, all
+FORENSIC_REPORT_FORMAT="json"  # Report format: json, dfxml, l2tcsv, bodyfile, all
 FORENSIC_MULTIHASH=false       # Calculate multiple hashes (MD5, SHA1, SHA256)
 FORENSIC_CASE_ID=""            # Case ID for forensic reports
 FORENSIC_EVIDENCE_ID=""        # Evidence ID for forensic reports
 FORENSIC_OPERATOR=""           # Operator name for forensic reports
+
+# Variables para v2.7 features (Office Deep Clean + Timeline)
+DEEP_CLEAN_OFFICE=true         # Enable Office document deep cleaning
+OFFICE_KEEP_COMMENTS=false     # Keep comments when deep cleaning Office docs
+OFFICE_KEEP_REVISIONS=false    # Keep track changes when deep cleaning Office docs
+TIMELINE_SOURCE="ADAMANTIUM"   # Source name for timeline entries
 
 # Performance optimizations (v2.3)
 declare -A MIME_CACHE=()   # Cache for MIME type detection
@@ -1797,10 +1803,10 @@ main() {
                 FORENSIC_REPORT_ENABLED=true
                 FORENSIC_REPORT_FORMAT="${1#*=}"
                 case "$FORENSIC_REPORT_FORMAT" in
-                    json|dfxml|all) ;;
+                    json|dfxml|l2tcsv|bodyfile|all) ;;
                     *)
                         echo -e "${RED}${CROSS} Invalid --forensic-report format: $FORENSIC_REPORT_FORMAT${NC}" >&2
-                        echo -e "Valid values: json, dfxml, all"
+                        echo -e "Valid values: json, dfxml, l2tcsv, bodyfile, all"
                         exit 1
                         ;;
                 esac
@@ -1820,6 +1826,24 @@ main() {
                 ;;
             --operator=*)
                 FORENSIC_OPERATOR="${1#*=}"
+                shift
+                ;;
+            # v2.7: Office deep clean options
+            --deep-clean-office)
+                DEEP_CLEAN_OFFICE=true
+                DEEP_CLEAN_ENABLED=true
+                shift
+                ;;
+            --office-keep-comments)
+                OFFICE_KEEP_COMMENTS=true
+                shift
+                ;;
+            --office-keep-revisions)
+                OFFICE_KEEP_REVISIONS=true
+                shift
+                ;;
+            --timeline-source=*)
+                TIMELINE_SOURCE="${1#*=}"
                 shift
                 ;;
             -h|--help)
@@ -1862,13 +1886,23 @@ main() {
                 echo -e "                          - Linearize PDFs (remove incremental updates)"
                 echo -e "                          - Remove hidden video streams"
                 echo ""
-                echo -e "${STYLE_BOLD}Forensic Reporting (v2.6):${NC}"
+                echo -e "${STYLE_BOLD}Forensic Reporting (v2.6+):${NC}"
                 echo -e "  ${CYAN}--forensic-report${NC}     Generate forensic report (JSON format)"
-                echo -e "  ${CYAN}--forensic-report=FMT${NC} Report format: json, dfxml, all"
+                echo -e "  ${CYAN}--forensic-report=FMT${NC} Report format: json, dfxml, l2tcsv, bodyfile, all"
                 echo -e "  ${CYAN}--multihash${NC}           Calculate MD5, SHA1, SHA256 hashes"
                 echo -e "  ${CYAN}--case-id=ID${NC}          Case identifier for chain of custody"
                 echo -e "  ${CYAN}--evidence-id=ID${NC}      Evidence identifier"
                 echo -e "  ${CYAN}--operator=NAME${NC}       Operator name for reports"
+                echo -e "  ${CYAN}--timeline-source=NAME${NC} Source name for timeline exports"
+                echo ""
+                echo -e "${STYLE_BOLD}Office Deep Clean (v2.7):${NC}"
+                echo -e "  ${CYAN}--deep-clean-office${NC}   Enable Office document deep cleaning:"
+                echo -e "                          - Remove comments and reviewers"
+                echo -e "                          - Clean track changes"
+                echo -e "                          - Remove custom XML data"
+                echo -e "                          - Clean embedded images metadata"
+                echo -e "  ${CYAN}--office-keep-comments${NC}   Keep comments (default: remove)"
+                echo -e "  ${CYAN}--office-keep-revisions${NC}  Keep track changes (default: remove)"
                 echo ""
                 echo -e "${STYLE_BOLD}$(msg BATCH_MODE):${NC}"
                 echo -e "  ${CYAN}--batch${NC}               Enable batch processing"
@@ -1924,6 +1958,20 @@ main() {
                 echo -e "  $0 video.mp4 --reencode --reencode-crf=20"
                 echo -e "  $0 video.mp4 --reencode --hw-accel=cpu"
                 echo ""
+                echo -e "  ${GRAY}# Deep clean + Forensic mode (v2.6)${NC}"
+                echo -e "  $0 photo.jpg --deep-clean"
+                echo -e "  $0 document.pdf --deep-clean --forensic-report"
+                echo -e "  $0 video.mp4 --forensic-report=dfxml --multihash"
+                echo ""
+                echo -e "  ${GRAY}# Office deep clean (v2.7)${NC}"
+                echo -e "  $0 document.docx --deep-clean"
+                echo -e "  $0 presentation.pptx --deep-clean-office"
+                echo -e "  $0 spreadsheet.xlsx --deep-clean --office-keep-comments"
+                echo ""
+                echo -e "  ${GRAY}# Timeline export (v2.7)${NC}"
+                echo -e "  $0 --batch --pattern '*.jpg' --forensic-report=l2tcsv ."
+                echo -e "  $0 photo.jpg --forensic-report=bodyfile"
+                echo ""
                 exit 0
                 ;;
             -*)
@@ -1971,6 +2019,21 @@ main() {
         if declare -f forensic_init &>/dev/null; then
             forensic_init
         fi
+        # Inicializar timeline exporter si el formato es timeline (v2.7)
+        if [ "$FORENSIC_REPORT_FORMAT" = "l2tcsv" ] || [ "$FORENSIC_REPORT_FORMAT" = "bodyfile" ] || [ "$FORENSIC_REPORT_FORMAT" = "all" ]; then
+            if declare -f timeline_init &>/dev/null; then
+                timeline_init
+                [ -n "$TIMELINE_SOURCE" ] && timeline_set_source "$TIMELINE_SOURCE"
+            fi
+        fi
+    fi
+
+    # Exportar variables de Office deep clean para submódulos (v2.7)
+    if [ "$OFFICE_KEEP_COMMENTS" = true ]; then
+        export OFFICE_REMOVE_COMMENTS=false
+    fi
+    if [ "$OFFICE_KEEP_REVISIONS" = true ]; then
+        export OFFICE_REMOVE_REVISIONS=false
     fi
 
     # Dispatch a interactive mode si está activado

@@ -2,7 +2,7 @@
 
 # ═══════════════════════════════════════════════════════════════
 # deep_clean_core.sh - Deep Cleaning Core Module
-# Part of adamantium v2.6
+# Part of adamantium v2.7
 # ═══════════════════════════════════════════════════════════════
 #
 # This module provides the core functionality for deep cleaning,
@@ -14,7 +14,7 @@
 # ═══════════════════════════════════════════════════════════════
 
 # Module version
-[[ -z "${DEEP_CLEAN_CORE_VERSION:-}" ]] && readonly DEEP_CLEAN_CORE_VERSION="1.0.0"
+[[ -z "${DEEP_CLEAN_CORE_VERSION:-}" ]] && readonly DEEP_CLEAN_CORE_VERSION="1.1.0"
 
 # Get the directory where this script is located
 DEEP_CLEAN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -47,6 +47,7 @@ DEEP_CLEAN_ENABLED="${DEEP_CLEAN_ENABLED:-false}"
 DEEP_CLEAN_THUMBNAILS="${DEEP_CLEAN_THUMBNAILS:-true}"
 DEEP_CLEAN_PDF="${DEEP_CLEAN_PDF:-true}"
 DEEP_CLEAN_VIDEO="${DEEP_CLEAN_VIDEO:-true}"
+DEEP_CLEAN_OFFICE="${DEEP_CLEAN_OFFICE:-true}"
 
 # Verification
 DEEP_VERIFY="${DEEP_VERIFY:-true}"
@@ -134,6 +135,14 @@ deep_clean_needs_processing() {
                 fi
             fi
             ;;
+        office)
+            # Check for hidden data in Office documents (v2.7)
+            if [ "$DEEP_CLEAN_OFFICE" = "true" ]; then
+                if declare -f office_has_hidden_data &>/dev/null; then
+                    office_has_hidden_data "$file" && return 0
+                fi
+            fi
+            ;;
     esac
 
     return 1
@@ -158,6 +167,7 @@ deep_clean_analyze() {
     local needs_thumbnail="false"
     local needs_pdf="false"
     local needs_video="false"
+    local needs_office="false"
     local recommendations=()
 
     case "$file_type" in
@@ -200,6 +210,25 @@ deep_clean_analyze() {
                 recommendations+=("Remove data streams")
             fi
             ;;
+        office)
+            # Office document analysis (v2.7)
+            if declare -f office_has_comments &>/dev/null && office_has_comments "$file"; then
+                needs_office="true"
+                recommendations+=("Remove comments and comment replies")
+            fi
+            if declare -f office_has_revisions &>/dev/null && office_has_revisions "$file"; then
+                needs_office="true"
+                recommendations+=("Remove track changes and reviewer information")
+            fi
+            if declare -f office_has_custom_xml &>/dev/null && office_has_custom_xml "$file"; then
+                needs_office="true"
+                recommendations+=("Remove custom XML data")
+            fi
+            if declare -f office_has_embedded_images &>/dev/null && office_has_embedded_images "$file"; then
+                needs_office="true"
+                recommendations+=("Clean embedded image metadata")
+            fi
+            ;;
     esac
 
     # Build JSON output
@@ -214,7 +243,8 @@ deep_clean_analyze() {
     "needs_deep_clean": {
         "thumbnail": $needs_thumbnail,
         "pdf": $needs_pdf,
-        "video": $needs_video
+        "video": $needs_video,
+        "office": $needs_office
     },
     "recommendations": $recs_json
 }
@@ -280,6 +310,18 @@ deep_clean_file() {
                 fi
             fi
             ;;
+        office)
+            # Office deep cleaning (v2.7)
+            if [ "$DEEP_CLEAN_OFFICE" = "true" ]; then
+                if declare -f office_deep_clean &>/dev/null; then
+                    if [ "$input" = "$output" ]; then
+                        office_deep_clean_inplace "$input" || success=false
+                    else
+                        office_deep_clean "$input" "$output" || success=false
+                    fi
+                fi
+            fi
+            ;;
         *)
             # No deep cleaning for this type, just copy if needed
             if [ "$input" != "$output" ]; then
@@ -332,6 +374,12 @@ deep_clean_verify() {
                 video_verify_clean "$file" || return 1
             fi
             ;;
+        office)
+            # Office verification (v2.7)
+            if declare -f office_verify_clean &>/dev/null; then
+                office_verify_clean "$file" || return 1
+            fi
+            ;;
     esac
 
     return 0
@@ -357,6 +405,7 @@ EOF
     declare -f thumbnail_cleaner_info &>/dev/null && echo "  - thumbnail_cleaner (v$THUMBNAIL_CLEANER_VERSION)"
     declare -f pdf_deep_cleaner_info &>/dev/null && echo "  - pdf_deep_cleaner (v$PDF_DEEP_CLEANER_VERSION)"
     declare -f video_stream_cleaner_info &>/dev/null && echo "  - video_stream_cleaner (v$VIDEO_STREAM_CLEANER_VERSION)"
+    declare -f office_deep_cleaner_info &>/dev/null && echo "  - office_deep_cleaner (v$OFFICE_DEEP_CLEANER_VERSION)"
 
     cat <<EOF
 
@@ -365,6 +414,7 @@ Configuration:
   DEEP_CLEAN_THUMBNAILS=$DEEP_CLEAN_THUMBNAILS
   DEEP_CLEAN_PDF=$DEEP_CLEAN_PDF
   DEEP_CLEAN_VIDEO=$DEEP_CLEAN_VIDEO
+  DEEP_CLEAN_OFFICE=$DEEP_CLEAN_OFFICE
   DEEP_VERIFY=$DEEP_VERIFY
 EOF
 }

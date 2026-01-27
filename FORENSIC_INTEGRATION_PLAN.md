@@ -2,8 +2,8 @@
 
 ## Documento de Planificación Estratégica
 
-**Versión del documento**: 2.1
-**Fecha**: 2026-01-18
+**Versión del documento**: 2.2
+**Fecha**: 2026-01-27
 **Objetivo**: Integración forense + Mejoras profundas de limpieza de metadatos
 **Versiones objetivo**: v2.6 → v2.7 → v2.8 → v2.9 → v3.0
 
@@ -14,7 +14,7 @@
 | Versión | Estado | Fecha | Notas |
 |---------|--------|-------|-------|
 | **v2.6** | **COMPLETADO** | 2026-01-18 | Deep clean (thumbnails, PDF, video) + DFXML + multi-hash |
-| v2.7 | Pendiente | - | JSON forensic export, Office deep clean |
+| **v2.7** | **COMPLETADO** | 2026-01-27 | Office deep clean + Timeline export (L2T CSV, body file) |
 | v2.8 | Pendiente | - | PRNU anonymization, chain of custody |
 | v2.9 | Pendiente | - | CASE/UCO JSON-LD |
 | v3.0 | Pendiente | - | Plugins Autopsy, unified paranoid mode |
@@ -2144,6 +2144,8 @@ tests/
 |---------|-------|---------|
 | 1.0 | 2026-01-17 | Versión inicial del plan (solo profesionalización forense) |
 | 2.0 | 2026-01-18 | Añadida sección completa de Deep Cleaning (mejoras reales de limpieza) |
+| 2.1 | 2026-01-18 | v2.6 marcado como COMPLETADO |
+| 2.2 | 2026-01-27 | v2.7 marcado como COMPLETADO (Office deep clean + Timeline export) |
 
 ---
 
@@ -2169,4 +2171,4 @@ tests/
 
 **Documento preparado para**: adamantium project
 **Autor**: platinum8300
-**Última actualización**: 2026-01-18
+**Última actualización**: 2026-01-27

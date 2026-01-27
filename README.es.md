@@ -36,7 +36,39 @@ adamantium es una herramienta de línea de comandos con interfaz TUI (Text User 
 - **Detección automática**: Identifica el tipo de archivo y aplica el método óptimo
 - **Contador de metadatos**: Muestra cuántos campos se encontraron y eliminaron
 
-### 🆕 Nuevo en v2.6 (Limpieza Profunda + Reportes Forenses)
+### 🆕 Nuevo en v2.7 (Limpieza Profunda de Office + Exportación Timeline)
+
+adamantium v2.7 extiende las capacidades de limpieza profunda a documentos Microsoft Office e introduce formatos de exportación de timeline forenses.
+
+#### Limpieza Profunda de Office (`--deep-clean-office`)
+
+Limpieza completa de datos ocultos en documentos DOCX, XLSX y PPTX:
+
+- **Eliminación de Comentarios**: Elimina todos los comentarios, respuestas e información de revisores
+- **Track Changes**: Limpia historial de revisiones, atributos rsid y lista de editores
+- **XML Personalizado**: Elimina directorio customXml (clasificación, datos DRM)
+- **Imágenes Embebidas**: Limpia metadatos de imágenes dentro de documentos Office
+- **Propiedades del Documento**: Limpia autor, empresa, historial de revisiones de docProps/
+
+```bash
+adamantium documento.docx --deep-clean
+adamantium informe.xlsx --deep-clean-office --office-keep-comments
+```
+
+#### Exportación Timeline (`--forensic-report=l2tcsv|bodyfile`)
+
+Nuevos formatos de exportación de timeline forenses para análisis profesional:
+
+- **Formato L2T CSV**: Formato de 17 campos compatible con Plaso, Timeline Explorer, Splunk
+- **Formato Body File**: Formato de entrada para mactime (The Sleuth Kit), Autopsy
+- **Formato TLN**: Formato simple de timeline de 5 campos
+
+```bash
+adamantium --batch --pattern '*.jpg' --forensic-report=l2tcsv .
+adamantium foto.jpg --forensic-report=bodyfile
+```
+
+### Funciones v2.6 (Limpieza Profunda + Reportes Forenses)
 
 adamantium v2.6 introduce dos capacidades principales para mayor privacidad y documentación profesional.
 
@@ -767,11 +799,25 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
   - [x] Esquema XSD para validación DFXML
 - [x] Nuevos módulos: `lib/deep_clean/`, `lib/forensic/`, `schemas/`
 
-### v2.7 (Planificado)
+### v2.7 (Limpieza Profunda de Office + Timeline) ✅ COMPLETADO
 
-- [ ] Exportador JSON forense
-- [ ] Office deep clean (comentarios, revisiones, people.xml)
-- [ ] Integración de análisis de riesgos en reportes forenses
+- [x] Limpieza profunda de Office (`--deep-clean-office`)
+  - [x] Eliminación de comentarios y revisores (comments.xml, people.xml)
+  - [x] Limpieza de track changes (atributos rsid, w:ins/w:del)
+  - [x] Eliminación de datos XML personalizados (customXml/)
+  - [x] Limpieza de metadatos de imágenes embebidas
+  - [x] Limpieza de propiedades del documento (docProps/)
+- [x] Formatos de exportación de timeline
+  - [x] Formato L2T CSV (17 campos, compatible con Plaso/Timeline Explorer)
+  - [x] Formato body file (compatible con mactime/Sleuth Kit)
+  - [x] Formato TLN (timeline simple de 5 campos)
+- [x] Nuevos módulos: `lib/deep_clean/office_deep_cleaner.sh`, `lib/forensic/timeline_exporter.sh`
+
+### v2.8 (Planificado)
+
+- [ ] Anonimización PRNU (huella de sensor)
+- [ ] Cadena de custodia con firmas GPG
+- [ ] Módulo de verificación post-limpieza
 
 ### v3.0 (Avanzado y Profesional)
 
@@ -784,6 +830,23 @@ Algunos metadatos pueden estar integrados en el stream de datos. Para casos extr
 ---
 
 ## 📜 Historial de Versiones
+
+### v2.7 (Limpieza Profunda de Office + Timeline) - 2026-01-27
+
+- **Limpieza Profunda de Office** (`--deep-clean-office`): Limpieza completa de datos ocultos en DOCX, XLSX, PPTX
+  - Eliminación de comentarios y revisores (comments.xml, people.xml, commentsExtended.xml)
+  - Limpieza de track changes (atributos rsid, marcadores w:ins/w:del)
+  - Eliminación de datos XML personalizados (directorio customXml/)
+  - Limpieza de metadatos de imágenes embebidas (word/media/, xl/media/)
+  - Limpieza de propiedades del documento (docProps/)
+  - Limpieza de settings (rsidRoot y otros datos identificativos)
+- **Exportación Timeline**: Nuevos formatos de timeline forenses para análisis profesional
+  - Formato L2T CSV (17 campos) compatible con Plaso, Timeline Explorer, Splunk
+  - Formato body file compatible con mactime (The Sleuth Kit), Autopsy
+  - Formato TLN (timeline simple de 5 campos)
+  - Flags MACB para identificación de timestamps
+- **Nuevas opciones CLI**: `--deep-clean-office`, `--office-keep-comments`, `--office-keep-revisions`, `--timeline-source`
+- **Nuevos módulos**: `lib/deep_clean/office_deep_cleaner.sh`, `lib/forensic/timeline_exporter.sh`
 
 ### v2.6 (Limpieza Profunda + Reportes Forenses) - 2026-01-18
 

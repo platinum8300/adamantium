@@ -5,7 +5,7 @@
 # Copy this file to ~/.adamantiumrc to customize adamantium behavior
 # All options have sensible defaults - only set what you want to change
 #
-# Version: 2.6+
+# Version: 2.7+
 # ═══════════════════════════════════════════════════════════════
 
 # ───────────────────────────────────────────────────────────────
@@ -274,6 +274,47 @@ FORENSIC_VALIDATE_OUTPUT=true
 
 # Default operator name (leave empty to use $USER)
 FORENSIC_OPERATOR=""
+
+# ───────────────────────────────────────────────────────────────
+# OFFICE DEEP CLEANING OPTIONS (v2.7+)
+# ───────────────────────────────────────────────────────────────
+
+# Enable Office document deep cleaning (true/false)
+# Cleans DOCX, XLSX, PPTX files removing hidden data
+DEEP_CLEAN_OFFICE=true
+
+# Remove comments from Office documents (true/false)
+# When true, deletes all comments and comment replies
+OFFICE_REMOVE_COMMENTS=true
+
+# Remove track changes / revisions (true/false)
+# When true, cleans all tracked insertions/deletions and reviewer info
+OFFICE_REMOVE_REVISIONS=true
+
+# Remove custom XML data (true/false)
+# Removes customXml directory and related data
+OFFICE_REMOVE_CUSTOM_XML=true
+
+# Clean metadata from embedded images (true/false)
+# Uses ExifTool to clean images inside Office documents
+OFFICE_CLEAN_EMBEDDED_IMAGES=true
+
+# Clean settings.xml (rsidRoot and other IDs) (true/false)
+OFFICE_CLEAN_SETTINGS=true
+
+# ───────────────────────────────────────────────────────────────
+# TIMELINE EXPORT OPTIONS (v2.7+)
+# ───────────────────────────────────────────────────────────────
+
+# Default source name for timeline exports
+# Used in L2T CSV, body file, and TLN formats
+TIMELINE_SOURCE="ADAMANTIUM"
+
+# Timezone for timeline timestamps (default: UTC)
+TIMELINE_TIMEZONE="UTC"
+
+# Directory for timeline exports
+TIMELINE_OUTPUT_DIR="$HOME/.adamantium/timelines"
 
 # ═══════════════════════════════════════════════════════════════
 # USAGE

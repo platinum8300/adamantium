@@ -39,7 +39,39 @@ A powerful command-line tool with TUI (Text User Interface) designed to complete
 - **Automatic Detection**: Identifies file type and applies optimal method
 - **Metadata Counter**: Shows how many fields were found and removed
 
-### 🆕 New in v2.6 (Deep Cleaning + Forensic Reporting)
+### 🆕 New in v2.7 (Office Deep Cleaning + Timeline Export)
+
+adamantium v2.7 extends deep cleaning capabilities to Microsoft Office documents and introduces forensic timeline export formats.
+
+#### Office Deep Cleaning (`--deep-clean-office`)
+
+Complete cleaning of hidden data in DOCX, XLSX, and PPTX documents:
+
+- **Comments Removal**: Removes all comments, comment replies, and reviewer information
+- **Track Changes**: Cleans revision history, rsid attributes, and editor list
+- **Custom XML**: Removes customXml directory (classification, DRM data)
+- **Embedded Images**: Cleans metadata from images inside Office documents
+- **Document Properties**: Cleans author, company, revision history from docProps/
+
+```bash
+adamantium document.docx --deep-clean
+adamantium report.xlsx --deep-clean-office --office-keep-comments
+```
+
+#### Timeline Export (`--forensic-report=l2tcsv|bodyfile`)
+
+New forensic timeline export formats for professional analysis:
+
+- **L2T CSV Format**: 17-field format compatible with Plaso, Timeline Explorer, Splunk
+- **Body File Format**: Input format for mactime (The Sleuth Kit), Autopsy
+- **TLN Format**: 5-field simple timeline format
+
+```bash
+adamantium --batch --pattern '*.jpg' --forensic-report=l2tcsv .
+adamantium photo.jpg --forensic-report=bodyfile
+```
+
+### v2.6 Features (Deep Cleaning + Forensic Reporting)
 
 adamantium v2.6 introduces two major capabilities for enhanced privacy and professional documentation.
 
@@ -725,11 +757,25 @@ See [EXAMPLES.md](EXAMPLES.md) for more practical examples.
   - [x] XSD schema for DFXML validation
 - [x] New modules: `lib/deep_clean/`, `lib/forensic/`, `schemas/`
 
-### v2.7 (Planned)
+### v2.7 (Office Deep Clean + Timeline Export) ✅ COMPLETED
 
-- [ ] JSON forensic exporter
-- [ ] Office deep clean (comments, revisions, people.xml)
-- [ ] Risk analysis integration in forensic reports
+- [x] Office deep clean (`--deep-clean-office`)
+  - [x] Comments and reviewer removal (comments.xml, people.xml)
+  - [x] Track changes cleaning (rsid attributes, w:ins/w:del)
+  - [x] Custom XML data removal (customXml/)
+  - [x] Embedded images metadata cleaning
+  - [x] Document properties cleaning (docProps/)
+- [x] Timeline export formats
+  - [x] L2T CSV format (17 fields, Plaso/Timeline Explorer compatible)
+  - [x] Body file format (mactime/Sleuth Kit compatible)
+  - [x] TLN format (5-field simple timeline)
+- [x] New modules: `lib/deep_clean/office_deep_cleaner.sh`, `lib/forensic/timeline_exporter.sh`
+
+### v2.8 (Planned)
+
+- [ ] PRNU anonymization (sensor fingerprinting)
+- [ ] Chain of custody with GPG signatures
+- [ ] Verification module post-cleaning
 
 ### v3.0 (Advanced and Professional)
 
@@ -755,6 +801,23 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
 ---
 
 ## 📜 Version History
+
+### v2.7 (Office Deep Clean + Timeline Export) - 2026-01-27
+
+- **Office Deep Cleaning** (`--deep-clean-office`): Complete cleaning of hidden data in DOCX, XLSX, PPTX
+  - Comments and reviewer removal (comments.xml, people.xml, commentsExtended.xml)
+  - Track changes cleaning (rsid attributes, w:ins/w:del markers)
+  - Custom XML data removal (customXml/ directory)
+  - Embedded images metadata cleaning (word/media/, xl/media/)
+  - Document properties cleaning (docProps/)
+  - Settings cleaning (rsidRoot and other identifying data)
+- **Timeline Export**: New forensic timeline formats for professional analysis
+  - L2T CSV format (17 fields) compatible with Plaso, Timeline Explorer, Splunk
+  - Body file format compatible with mactime (The Sleuth Kit), Autopsy
+  - TLN format (5-field simple timeline)
+  - MACB flags for timestamp identification
+- **New CLI options**: `--deep-clean-office`, `--office-keep-comments`, `--office-keep-revisions`, `--timeline-source`
+- **New modules**: `lib/deep_clean/office_deep_cleaner.sh`, `lib/forensic/timeline_exporter.sh`
 
 ### v2.6 (Deep Cleaning + Forensic Reporting) - 2026-01-18
 
