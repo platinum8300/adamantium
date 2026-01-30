@@ -1142,532 +1142,78 @@ adamantium -i  # Select "📦 Clean compressed archive"
 
 ## [1.3.1] - 2025-12-15
 
-### 🐛 BUG FIX - ExifTool Source Compilation on RPM-based Distros
+### Bug Fix - ExifTool RPM Compilation
 
-This patch release fixes a critical bug that prevented automatic ExifTool source compilation on Fedora, RHEL, CentOS, and other RPM-based distributions.
-
-### 🔧 Fix Details
-
-**Problem:**
-- ExifTool compilation from source failed on Fedora and RPM-based distributions
-- The hybrid update system would fall back to repository versions instead of installing the latest from exiftool.org
-- Root cause: Missing `ExtUtils::MakeMaker` Perl module, which is included by default on Arch-based systems but packaged separately on RPM-based distributions
-
-**Solution:**
-- Added automatic detection of missing Perl build dependencies
-- New `perl-makemaker` package mapping in `get_package_name()` function
-- Automatic installation of build dependencies before source compilation:
-  - **Fedora/RHEL/CentOS**: `perl-ExtUtils-MakeMaker`
-  - **Debian/Ubuntu**: `perl-modules`
-  - **Arch/CachyOS/Manjaro**: `base-devel` (already included with perl)
-  - **openSUSE**: `perl-ExtUtils-MakeMaker`
-  - **Alpine**: `perl-utils`
-
-### 🌍 Internationalization
-
-- **New messages** - Full bilingual support
-  - Spanish: `INSTALLING_BUILD_DEPS`, `BUILD_DEPS_ERROR`
-  - English: `INSTALLING_BUILD_DEPS`, `BUILD_DEPS_ERROR`
-
-### 📊 Statistics
-
-- **Version**: 1.3.1
-- **Type**: Patch release (bug fix)
-- **Affected Distributions**: Fedora, RHEL, CentOS, openSUSE, and other RPM-based distros
-- **Impact**: Users can now get the latest ExifTool version automatically on all supported distributions
-
-### 🔒 Backward Compatibility
-
-- **Zero Breaking Changes**: All existing features work identically
-- **New behavior**: Build dependencies are automatically installed only when needed
+- Fixed ExifTool source compilation on Fedora/RHEL/CentOS
+- Added automatic Perl build dependencies installation
 
 ---
 
 ## [1.3] - 2025-12-14
 
-### 🎉 NEW FEATURES - Interactive Mode
+### Interactive Mode
 
-adamantium v1.3 introduces a complete interactive mode with a beautiful TUI (Text User Interface) powered by gum, with intelligent fallback to fzf or pure bash for universal compatibility.
-
-### ✨ New Features
-
-- **Interactive Mode** (`--interactive`, `-i`) - Full TUI menu experience
-  - Beautiful menu-driven interface for easy navigation
-  - Single file cleaning with metadata preview
-  - Batch processing configuration wizard
-  - Settings management (toggle verify/dry-run modes)
-  - Built-in help and about screens
-  - Example: `adamantium --interactive` or `adamantium -i`
-
-- **Gum Integration** - Modern terminal UI
-  - Powered by [gum](https://github.com/charmbracelet/gum) from Charmbracelet
-  - Beautiful selection menus with color highlighting
-  - File browser for easy file selection
-  - Confirmation dialogs with visual styling
-  - Spinner animations for processing feedback
-
-- **Smart TUI Fallback** - Universal compatibility
-  - Automatic backend detection: gum → fzf → bash
-  - Full functionality maintained with any backend
-  - Graceful degradation without visual features
-  - Zero configuration required
-
-- **Tool Checker** - Built-in dependency verification
-  - Check all required tools (exiftool, ffmpeg)
-  - Check optional TUI tools (gum, fzf)
-  - Check archive tools for future versions (unzip, 7z, unrar)
-  - Version display for installed tools
-
-### 🏗️ Architecture
-
-- **New `lib/gum_wrapper.sh`** (~426 lines)
-  - Abstraction layer for gum with automatic fallbacks
-  - Functions: `gum_choose()`, `gum_confirm()`, `gum_input()`, `gum_file()`
-  - Additional: `gum_spin()`, `gum_style()`, `gum_pager()`, `gum_filter()`
-  - Installation instructions helper
-
-- **New `lib/interactive_mode.sh`** (~493 lines)
-  - Main interactive mode orchestration
-  - Functions: `interactive_main()`, `interactive_show_menu()`
-  - File operations: `interactive_single_file()`, `interactive_batch_mode()`
-  - Configuration: `interactive_settings()`, `interactive_check_tools()`
-  - Information: `interactive_help()`, `interactive_about()`
-
-### 🌍 Internationalization
-
-- **New interactive mode messages** - Full bilingual support
-  - Spanish: 12 new messages
-  - English: 12 new messages
-  - Messages: INTERACTIVE_WELCOME, INTERACTIVE_MENU_TITLE, INTERACTIVE_SINGLE_FILE,
-    INTERACTIVE_BATCH, INTERACTIVE_SETTINGS, INTERACTIVE_HELP, INTERACTIVE_ABOUT,
-    INTERACTIVE_EXIT, INTERACTIVE_SELECT_OPTION, INTERACTIVE_GOODBYE,
-    INTERACTIVE_ENTER_PATH, INTERACTIVE_SELECT_FILE
-
-### 🔧 New Options
-
-- `--interactive, -i` - Launch interactive TUI mode
-
-### 📚 Documentation
-
-- Updated README.md with Interactive Mode section
-- Updated README.es.md with Spanish documentation
-- Added TUI backends explanation
-- Added installation instructions for gum
-
-### 🔒 Backward Compatibility
-
-- **Zero Breaking Changes**: All existing features work identically
-- **Single file mode**: Unchanged behavior
-- **Batch mode**: Unchanged behavior
-- **All v1.2 and v1.1 options**: Continue to work
-
-### 📊 Statistics
-
-- **Version**: 1.3
-- **New Files**: 2 library modules (gum_wrapper.sh, interactive_mode.sh)
-- **New Functions**: 20+ interactive-related functions
-- **New Messages**: 24 (12 ES + 12 EN)
-- **New Options**: 1 (--interactive/-i)
-- **Lines of Code**: +920 (libraries + integration)
-
-### 🎯 Use Cases
-
-**Perfect for:**
-- Users who prefer visual interfaces over command-line
-- Quick file cleaning without remembering commands
-- Exploring adamantium features interactively
-- Configuring options without editing files
-
-**Examples:**
-```bash
-# Launch interactive mode
-adamantium -i
-
-# Or with full option
-adamantium --interactive
-```
+- **Interactive TUI** (`--interactive`, `-i`) with menu-driven interface
+- **gum integration** for modern terminal UI (Charmbracelet)
+- **Smart fallback** system: gum → fzf → bash
+- **Built-in tool checker** for dependencies
+- New modules: `lib/gum_wrapper.sh`, `lib/interactive_mode.sh`
 
 ---
 
 ## [1.2] - 2025-12-13
 
-### 🎉 NEW FEATURES - Professional Batch Processing
+### Professional Batch Processing
 
-adamantium v1.2 introduces a complete batch processing system with parallel execution, real-time progress tracking, and interactive file selection. This release transforms adamantium into a professional-grade tool for processing large collections of files.
-
-### ✨ New Features
-
-- **`--batch` mode** - Professional batch processing
-  - Process multiple files in a single command
-  - Pattern-based file selection (`*.jpg`, `*.png`, etc.)
-  - Support for multiple patterns simultaneously
-  - Recursive directory search with `--recursive` or `-r`
-  - Example: `adamantium --batch --pattern '*.jpg' ~/Photos`
-
-- **Parallel Execution** - Automatic CPU core detection
-  - 3-tier fallback system: GNU parallel > xargs > pure bash
-  - Auto-detection of optimal job count based on CPU cores
-  - Manual override with `--jobs N` or `-j N`
-  - 3x-5x performance improvement on large batches
-  - Example: `adamantium --batch -j 8 --pattern '*.mp4' ~/Videos`
-
-- **Real-time Progress Bar** - rsync-style statistics
-  - Visual progress bar with filled/empty indicators
-  - Live percentage, file counter (current/total)
-  - Speed in files/sec
-  - Estimated time remaining (ETA)
-  - Thread-safe updates during parallel execution
-
-- **Interactive File Selection** - Choose what to clean
-  - Pattern expansion with preview
-  - fzf integration for advanced selection (if installed)
-  - Basic fallback mode for universal compatibility
-  - Confirmation before processing
-  - Skip confirmation with `--no-confirm` for automation
-
-- **Batch Summary** - Comprehensive statistics
-  - Success/failed/total counters
-  - Elapsed time with human-readable format
-  - Average processing speed
-  - List of failed files (if any)
-  - Color-coded output matching adamantium's style
-
-### 🏗️ Architecture
-
-- **New `lib/` directory** - Modular library system
-  - `progress_bar.sh` - Real-time progress visualization
-  - `file_selector.sh` - Interactive file selection
-  - `parallel_executor.sh` - Parallel job management
-  - `batch_core.sh` - Main batch orchestration
-
-- **Enhanced batch_clean.sh** - Uses new --batch internally
-  - Maintains 100% backward compatibility
-  - CLI unchanged, internal implementation improved
-  - Automatic benefits from new infrastructure
-
-### 🌍 Internationalization
-
-- **New batch mode messages** - Full bilingual support
-  - Spanish: 22 new messages
-  - English: 22 new messages
-  - Consistent with existing i18n system
-  - Used throughout batch processing
-
-### 🔧 New Options
-
-**Batch Mode:**
-- `--batch` - Enable batch processing mode
-- `--pattern PATTERN` - File pattern (repeatable)
-- `--jobs N, -j N` - Parallel jobs (default: auto)
-- `--recursive, -r` - Recursive directory search
-- `--confirm` - Interactive selection (default)
-- `--no-confirm` - Skip confirmation
-- `--verbose, -v` - Verbose output
-- `--quiet, -q` - Minimal output
-
-### 📊 Performance
-
-- **Parallel Processing**: 3-5x faster on large batches
-- **Optimized Job Distribution**: Smart core allocation
-- **Memory Efficient**: Stream-based file processing
-- **Graceful Degradation**: Works without optional tools
-
-### 🔒 Backward Compatibility
-
-- **Zero Breaking Changes**: All existing features work identically
-- **Single file mode**: Unchanged behavior
-- **batch_clean.sh**: Same CLI, better performance
-- **Existing scripts**: Continue to work without modification
-
-### 📚 Documentation
-
-- Updated README.md with batch mode examples
-- Updated README.es.md with Spanish documentation
-- Added comprehensive batch usage patterns
-- Updated help text (`--help`) with batch options
-
-### 🐛 Bug Fixes
-
-- Improved error handling in batch mode
-- Better path sanitization for security
-- Fixed edge cases in file pattern matching
-- Proper cleanup of temporary state files
-
-### 📊 Statistics
-
-- **Version**: 1.2
-- **New Files**: 4 library modules
-- **New Functions**: 30+ batch-related functions
-- **New Messages**: 44 (22 ES + 22 EN)
-- **New Options**: 8 batch mode options
-- **Lines of Code**: +800 (libraries + integration)
-
-### 🎯 Use Cases
-
-**Perfect for:**
-- Batch cleaning photos from cameras
-- Processing entire document libraries
-- Cleaning video collections
-- Automated CI/CD pipelines
-- Scheduled maintenance scripts
-
-**Examples:**
-```bash
-# Clean all photos in ~/Pictures
-adamantium --batch --pattern '*.jpg' --pattern '*.png' ~/Pictures
-
-# Recursive video cleaning with 8 cores
-adamantium --batch -r -j 8 --pattern '*.mp4' ~/Videos
-
-# Automation-friendly (no confirmation)
-adamantium --batch --no-confirm --pattern '*.pdf' ~/Documents
-```
+- **`--batch` mode** with pattern-based file selection
+- **Parallel execution** with automatic CPU core detection (3-5x faster)
+- **Real-time progress bar** with rsync-style statistics
+- **Interactive file selection** with fzf integration
+- New options: `--batch`, `--pattern`, `--jobs`, `--recursive`, `--confirm`, `--no-confirm`
+- New modules: `lib/progress_bar.sh`, `lib/file_selector.sh`, `lib/parallel_executor.sh`, `lib/batch_core.sh`
 
 ---
 
 ## [1.1] - 2025-11-16
 
-### 🎉 NEW FEATURES - Verification and Preview
+### Verification and Preview
 
-adamantium v1.1 introduces powerful verification and preview capabilities, giving users more control and confidence in the metadata cleaning process.
-
-### ✨ New Features
-
-- **`--verify` option** - SHA256 hash verification
-  - Compare original and cleaned file hashes
-  - Visual confirmation that files are different
-  - Ensures cleaning was successful
-  - Example: `adamantium photo.jpg --verify`
-
-- **`--dry-run` mode** - Preview without execution
-  - See what would be cleaned without making changes
-  - Perfect for testing and validation
-  - Shows all metadata that would be removed
-  - Example: `adamantium document.pdf --dry-run`
-
-- **Duplicate Detection** - Automatic warning system
-  - Detects if file appears already clean
-  - Warns when minimal metadata present
-  - Prevents unnecessary reprocessing
-  - Can be disabled with `--no-duplicate-check`
-
-### 🔧 Improvements
-
-- **Enhanced argument parsing** - Modern option handling
-  - Support for GNU-style long options (`--verify`, `--dry-run`)
-  - Better error messages for invalid options
-  - Improved help system (`-h`, `--help`)
-
-- **Internationalization updates** - New translations
-  - Added Spanish translations for all new features
-  - English translations for new features
-  - Consistent bilingual experience
-
-- **Code organization** - Better structure
-  - New section for hash and verification functions
-  - Cleaner main() function with better flow
-  - Improved error handling
-
-### 📚 Documentation
-
-- Updated README.md with new features
-- Updated README.es.md with Spanish translations
-- Updated EXAMPLES.md with new usage patterns
-- Updated QUICKSTART.md with new options
-- Added comprehensive usage examples
-
-### 🐛 Bug Fixes
-
-- Fixed argument parsing to support options before/after filenames
-- Improved file detection logic
-- Better handling of edge cases in metadata detection
-
-### 📊 Statistics
-
-- **Version**: 1.1
-- **New Functions**: 3 (calculate_hash, detect_duplicate, verify_hashes)
-- **New Messages**: 10 (bilingual)
-- **New Options**: 3 (--verify, --dry-run, --no-duplicate-check)
+- **`--verify`** - SHA256 hash comparison before/after cleaning
+- **`--dry-run`** - Preview mode without making changes
+- **Duplicate detection** - Automatic warning for already-clean files
+- New option: `--no-duplicate-check`
 
 ---
 
 ## [1.0] - 2025-10-24
 
-### 🎉 FIRST STABLE RELEASE - Production Ready
+### Initial Release
 
-adamantium v1.0 is now **production ready** and available for global use. This release represents the culmination of extensive development, testing, and refinement to create a professional-grade metadata cleaning tool.
-
-### ✨ Core Features
-
-- **🛡️ Deep Metadata Cleaning**
-  - Combines ExifTool and ffmpeg for maximum effectiveness
-  - Complete metadata removal from multiple file formats
-  - Automatic file type detection (MIME type)
-  - Preservation of original files (safety first)
-
-- **🎨 Modern TUI Interface**
-  - Beautiful terminal interface with colors and emojis
-  - Visual before/after metadata comparison
-  - Sensitive metadata highlighting (GPS, Author, Parameters, etc.)
-  - Color-coded metadata categories (Red=sensitive, Yellow=technical, Blue=general)
-  - Progress indicators and status messages
-
-- **🌍 International Support**
-  - Automatic language detection from `$LANG` environment variable
-  - Full English and Spanish translations
-  - Bilingual documentation (README.md / README.es.md)
-  - Easy to extend for additional languages
-
-- **🐧 Universal Linux Compatibility**
-  - Works on any major Linux distribution
-  - Automatic distribution detection (Arch, Ubuntu, Fedora, Debian, openSUSE, Alpine)
-  - Smart package manager abstraction
-  - Package name translation for different distros
-
-- **🔄 Intelligent Update System**
-  - Hybrid update strategy for dependencies
-  - ExifTool installed from source (guaranteed latest version)
-  - 24-hour cache system to avoid overhead
-  - Automatic version verification and updates
-
-### 📦 Supported File Formats
-
-- **Videos**: MP4, MKV, AVI, MOV, WebM, FLV, etc.
-- **Audio**: MP3, FLAC, WAV, OGG, M4A, AAC, etc.
-- **Images**: JPG, PNG, TIFF, GIF, WebP, etc.
-- **AI Images**: PNG with Stable Diffusion, Flux, DALL-E metadata
-- **PDFs**: All PDF documents
-- **Office Documents**: DOCX, XLSX, PPTX, ODT, ODS, ODP, etc.
-
-### 🔒 Privacy & Security Features
-
-Removes sensitive metadata including:
-- 📍 GPS coordinates and location data
-- 👤 Author, creator, and company information
-- 📅 Creation and modification timestamps
-- 💻 Software and tool information
-- 📷 Camera model and device details
-- 🤖 AI generation parameters (prompts, models, seeds)
-- ✏️ Edit history and comments
-
-### 🛠️ Technical Implementation
-
-**Cleaning Methods:**
-- **Multimedia files** (video/audio):
-  1. ffmpeg removes container metadata
-  2. ExifTool removes residual metadata
-- **Other files** (images, PDFs, documents):
-  1. ExifTool removes all metadata
-
-**Key Functions:**
-- `detect_language()` - Automatic i18n
-- `detect_system()` - Distribution detection
-- `detect_file_type()` - MIME type identification
-- `show_metadata()` - Complete metadata visualization
-- `clean_with_exiftool()` - ExifTool cleaning
-- `clean_with_ffmpeg()` - ffmpeg deep cleaning
-
-### 📚 Complete Documentation
-
-- **README.md** - English documentation (primary)
-- **README.es.md** - Spanish documentation
-- **CONTRIBUTING.md** - Contribution guidelines
-- **INSTALLATION.md** - Detailed installation guide
-- **QUICKSTART.md** - Quick start guide
-- **EXAMPLES.md** - Practical examples
-- **STRUCTURE.md** - Code architecture
-- **AI_METADATA_WARNING.md** - AI metadata information
-- **AUTO_UPDATE_SYSTEM.md** - Update system documentation
-
-### 🚀 Installation & Usage
-
-**Quick Install:**
-```bash
-git clone https://github.com/platinum8300/adamantium.git
-cd adamantium
-chmod +x install.sh
-./install.sh
-```
-
-**Basic Usage:**
-```bash
-adamantium file.pdf              # Creates file_clean.pdf
-adamantium video.mp4 clean.mp4   # Custom output name
-```
-
-**Batch Processing:**
-```bash
-./batch_clean.sh ~/Photos jpg
-./batch_clean.sh ~/Documents pdf --recursive
-```
-
-### 🌟 Highlights
-
-- **Professional Quality** - Production-ready code
-- **Well Documented** - Comprehensive guides in English and Spanish
-- **Easy to Use** - Simple CLI with beautiful TUI
-- **Safe** - Always preserves original files
-- **Fast** - Efficient processing with smart caching
-- **International** - Multi-language support
-- **Universal** - Works on all major Linux distributions
-- **Open Source** - AGPL-3.0 License
-
-### 📊 Statistics
-
-- **Lines of Code**: ~850 lines of Bash
-- **Documentation**: 8 comprehensive guides
-- **Supported Formats**: 20+ file types
-- **Languages**: English, Spanish (more to come)
-- **Distributions**: 5+ Linux families supported
+- Core metadata cleaning with ExifTool + ffmpeg
+- Support for images, videos, audio, PDFs, Office documents
+- Modern TUI with colors and emojis
+- Automatic file type detection (MIME)
+- Multi-distribution installer (Arch, Ubuntu, Fedora, Debian, openSUSE, Alpine)
+- Bilingual support (English/Spanish)
+- Privacy-focused: removes GPS, author, timestamps, AI prompts, camera info
 
 ---
 
-## 🗺️ Roadmap - Future Versions
+## 🗺️ Roadmap
 
-### Completed Features
+### Planned Features
 
-- [x] **v1.1** - `--verify` option (hash comparison before/after)
-- [x] **v1.1** - `--dry-run` mode (preview without applying)
-- [x] **v1.1** - Duplicate detection by hash
-- [x] **v1.2** - Improved batch mode with progress bar
-- [x] **v1.2** - Parallel processing (3-5x faster)
-- [x] **v1.3** - Interactive mode with file selection
-- [x] **v1.3** - gum/fzf TUI integration
-- [x] **v1.3.1** - ExifTool source compilation fix for RPM-based distros
+#### v2.8
 
-### v1.4 (Compressed Archives) - COMPLETED
+- [ ] PRNU anonymization (sensor fingerprinting)
+- [ ] Chain of custody with GPG signatures
+- [ ] Verification module post-cleaning
 
-- [x] Support for compressed files (ZIP, TAR, RAR, 7Z)
-- [x] Extract, clean, and recompress workflow
-- [x] Password-protected archives support
-- [x] Archive content preview
-- [x] Nested archive processing
-- [x] Interactive mode integration
+#### v3.0 (Advanced and Professional)
 
-### v1.5 (Configuration and Automation) - COMPLETED
-
-- [x] Custom configuration (`~/.adamantiumrc`)
-- [x] Optional detailed logs (`~/.adamantium.log`)
-- [x] Desktop notifications (notify-send, kdialog)
-- [x] Log rotation and session tracking
-- [x] `--notify` option for file manager use
-
-### v2.0 (Integration and Reporting) - COMPLETED
-
-- [x] File manager integration (Nautilus, Dolphin)
-- [x] JSON/CSV report generation
-- [x] Integration installer script
-- [x] Nautilus Python extension
-- [x] Dolphin service menu
-- [x] Comprehensive test suite
-
-### v3.0 (Advanced and Professional)
-
-- [ ] Optional re-encoding for multimedia
-- [ ] Dangerous metadata detection with alerts
-- [ ] Forensic tools integration
+- [ ] CASE/UCO JSON-LD integration
 - [ ] REST API for remote use
-- [ ] Plugin system
+- [ ] Plugin system for extensibility
 - [ ] Optional GUI (GTK4/Qt6)
 
 ---

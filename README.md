@@ -1,6 +1,6 @@
 # adamantium
 
-[English](README.md) | [Español](README.es.md)
+[English](README.md)
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/platinum8300/adamantium/main/cover.jpg" alt="adamantium - Deep metadata cleaning" width="800">
@@ -347,90 +347,26 @@ adamantium [options] <file> [output_file]
 **Examples:**
 
 ```bash
-# Clean a PDF
-adamantium document.pdf
-# Generates: document_clean.pdf
+# Clean a file (creates file_clean.ext)
+adamantium photo.jpg
 
-# Clean with hash verification
-adamantium photo.jpg --verify
-
-# Preview cleaning without executing
-adamantium video.mp4 --dry-run
-
-# Clean a video with custom name
+# Custom output name
 adamantium video.mp4 safe_video.mp4
 
-# Clean an image
-adamantium photo.jpg
-# Generates: photo_clean.jpg
+# Preview without changes
+adamantium document.pdf --dry-run
 
-# Clean an Office document
-adamantium presentation.pptx
-# Generates: presentation_clean.pptx
+# Verify cleaning was successful
+adamantium photo.jpg --verify
 
-# Clean an audio file with verification
-adamantium song.mp3 song_no_metadata.mp3 --verify
-
-# Clean an SVG file (v2.1+)
-adamantium icon.svg
-# Generates: icon_clean.svg
-
-# Clean a CSS stylesheet (v2.1+)
-adamantium styles.css
-# Generates: styles_clean.css
-
-# View metadata without cleaning (v2.1+)
+# View metadata only
 adamantium photo.jpg --show-only
 
-# Clean an EPUB ebook (v2.2+)
-adamantium book.epub
-# Generates: book_clean.epub
-
-# Clean EPUB with custom output name
-adamantium novel.epub novel_anonymous.epub
-
-# Clean EPUB with verification
-adamantium textbook.epub --verify
-
-# Clean a torrent file (v2.3+)
-adamantium file.torrent
-# Generates: file_clean.torrent
-
-# Clean torrent with aggressive mode (maximum privacy)
-adamantium file.torrent --torrent-mode=aggressive
-
-# View torrent metadata without cleaning
-adamantium file.torrent --show-only
-
-# Lightweight mode for scripting (v2.3+)
+# Lightweight mode for scripting
 adamantium photo.jpg --lightweight
-# Output: photo.jpg -> photo_clean.jpg (47 fields removed)
-
-# Batch mode with lightweight output
-adamantium --batch --pattern '*.jpg' --lightweight .
-
-# Re-encoding mode (v2.4+) - Complete metadata removal via transcoding
-adamantium video.mp4 --reencode
-# Generates: video_clean.mp4 (re-encoded with medium quality)
-
-# High quality re-encoding
-adamantium video.mp4 --reencode=high
-
-# Convert to H.265 with Opus audio
-adamantium video.mp4 --reencode --video-codec=h265 --audio-codec=opus
-
-# Convert MKV to MP4 container
-adamantium video.mkv --reencode --container=mp4
-
-# Custom CRF for experts
-adamantium video.mp4 --reencode --reencode-crf=20
-
-# Force CPU encoding (disable GPU)
-adamantium video.mp4 --reencode --hw-accel=cpu
-
-# Skip confirmation (for automation)
-adamantium video.mp4 --reencode --reencode-no-confirm
 ```
+
+See [EXAMPLES.md](EXAMPLES.md) for more detailed examples.
 
 ### Batch Mode (v1.2+)
 
@@ -451,20 +387,17 @@ adamantium --batch --pattern PATTERN [options] [directory]
 **Examples:**
 
 ```bash
-# Batch clean all JPG files in a directory
+# Clean all JPG files in a directory
 adamantium --batch --pattern '*.jpg' ~/Photos
 
-# Multiple file types
-adamantium --batch --pattern '*.jpg' --pattern '*.png' --pattern '*.pdf' .
+# Multiple file types, recursive
+adamantium --batch -r --pattern '*.jpg' --pattern '*.png' .
 
-# Recursive with 8 parallel jobs
-adamantium --batch -r -j 8 --pattern '*.mp4' ~/Videos
+# Parallel processing with 8 jobs
+adamantium --batch -j 8 --pattern '*.mp4' ~/Videos
 
-# Non-interactive (for scripts/automation)
+# Automation (skip confirmation)
 adamantium --batch --no-confirm --pattern '*.pdf' ~/Documents
-
-# Interactive selection with fzf (if installed)
-adamantium --batch --confirm --pattern '*.jpg' .
 ```
 
 ### Archive Mode (v1.4+)
@@ -487,26 +420,17 @@ adamantium [options] <archive_file> [output_file]
 **Examples:**
 
 ```bash
-# Clean all files inside a ZIP archive
+# Clean files inside an archive
 adamantium photos.zip
-# Generates: photos_clean.zip
 
-# Preview archive contents without processing
+# Preview contents first
 adamantium documents.7z --archive-preview
 
-# Process password-protected archive
+# Password-protected archive
 adamantium confidential.zip --archive-password 'secretpass'
-
-# Clean RAR archive (output will be .7z)
-adamantium files.rar
-# Generates: files_clean.7z
-
-# Clean TAR.GZ archive
-adamantium backup.tar.gz
-# Generates: backup_clean.tar.gz
 ```
 
-**Note:** RAR files are converted to 7Z format on output because RAR is a proprietary format. 7Z provides similar or better compression and is an open standard.
+**Note:** RAR files are converted to 7Z format on output (open standard).
 
 ---
 
@@ -645,145 +569,7 @@ See [EXAMPLES.md](EXAMPLES.md) for more practical examples.
 
 ## 🔮 Roadmap
 
-### v1.1 (Verification and Preview) ✅ COMPLETED
-
-- [x] `--verify` option for before/after hash comparison
-- [x] `--dry-run` mode to preview without applying
-- [x] Duplicate detection by hash
-
-### v1.2 (Batch Improvements) ✅ COMPLETED
-
-- [x] Improved batch mode with progress bar
-- [x] Multiple file selection in batch mode
-- [x] Recursive directory processing with progress
-- [x] Parallel execution with automatic CPU core detection
-- [x] Interactive file selection with fzf integration
-
-### v1.3 (Interactive Mode) ✅ COMPLETED
-
-- [x] Interactive mode with full TUI menu (`--interactive`, `-i`)
-- [x] Gum integration for beautiful terminal UI
-- [x] Smart fallback system (gum → fzf → bash)
-- [x] Built-in tool checker for dependencies
-
-### v1.3.1 (Bug Fix) ✅ COMPLETED
-
-- [x] Fix ExifTool source compilation on RPM-based distros (Fedora, RHEL, CentOS)
-- [x] Automatic Perl build dependencies installation
-
-### v1.4 (Compressed Archives) ✅ COMPLETED
-
-- [x] Support for compressed files (ZIP, TAR, RAR, 7Z)
-- [x] Extract, clean, and recompress workflow
-- [x] Password-protected archives support
-- [x] Archive content preview
-- [x] Nested archive processing
-- [x] Interactive mode integration
-
-### v1.5 (Configuration and Automation) ✅ COMPLETED
-
-- [x] Custom configuration via `~/.adamantiumrc` file
-- [x] Optional detailed logs in `~/.adamantium.log`
-- [x] Desktop notifications (notify-send, kdialog)
-- [x] Log rotation and session tracking
-- [x] `--notify` option for file manager integration
-
-### v2.0 (Integration and Reporting) ✅ COMPLETED
-
-- [x] File manager integration (Nautilus, Dolphin) via context menu
-- [x] JSON/CSV report generation
-- [x] Nautilus Python extension for GNOME Files
-- [x] Dolphin service menu for KDE Plasma
-- [x] Integration installer script
-- [x] Comprehensive test suite
-
-### v2.0.1 (Bug Fix) ✅ COMPLETED
-
-- [x] Fix Nautilus extension to open terminal for TUI display
-- [x] Support for 9 terminal emulators
-
-### v2.1 (New Formats and Analysis) ✅ COMPLETED
-
-- [x] SVG file support (vector graphics metadata cleaning)
-- [x] CSS file support (comment removal)
-- [x] `--show-only` option to display metadata without cleaning
-- [x] Archive support for SVG and CSS files
-
-### v2.2 (EPUB Support and Archive Policies) ✅ COMPLETED
-
-- [x] EPUB ebook support (Dublin Core metadata cleaning)
-- [x] Preserve book title and language in EPUBs
-- [x] Clean internal images EXIF data in EPUBs
-- [x] `--unknown-policy` option for unknown files in archives
-- [x] Policy values: skip (default), warn, fail, include
-
-### v2.3 (Torrent Support and Lightweight Mode) - COMPLETED
-
-- [x] Torrent file support (.torrent metadata cleaning)
-- [x] Configurable torrent mode (`--torrent-mode=safe|aggressive`)
-- [x] Lightweight mode (`--lightweight`, `-l`) for minimal output
-- [x] Performance optimizations (MIME caching, progress buffering)
-
-### v2.4 (Re-encoding for Multimedia) ✅ COMPLETED
-
-- [x] Optional re-encoding for multimedia (with quality control)
-- [x] Hardware acceleration detection (NVIDIA NVENC, AMD VAAPI, Intel QSV)
-- [x] Quality presets (high/medium/low) and custom CRF
-- [x] Codec conversion (H.264, H.265, AV1 / AAC, Opus, FLAC)
-- [x] Container conversion (MP4, MKV, WebM)
-- [x] Time and size estimation before processing
-- [x] Confirmation prompt with `--reencode-no-confirm` option
-
-### v2.5 (Dangerous Metadata Detection) ✅ COMPLETED
-
-- [x] Risk analysis engine with 3 levels (CRITICAL, WARNING, INFO)
-- [x] Visual risk summary panel with Charmbracelet-style UI
-- [x] Inline risk badges in metadata listing
-- [x] Interactive risk details table view
-- [x] AI prompt detection (Stable Diffusion, DALL-E, Midjourney)
-- [x] Risk analysis in JSON/CSV reports
-- [x] Configurable via `.adamantiumrc` options
-
-### v2.6 (Deep Cleaning + Forensic Reporting) ✅ COMPLETED
-
-- [x] Deep cleaning for hidden metadata (`--deep-clean`)
-  - [x] Thumbnail IFD1 cleaning (removes metadata-laden thumbnails)
-  - [x] PDF linearization (removes incremental updates/hidden versions)
-  - [x] Video stream cleaning (chapters, subtitles, attachments)
-- [x] Forensic reporting (`--forensic-report`)
-  - [x] DFXML export (compatible with Autopsy, Sleuth Kit)
-  - [x] Multi-hash calculation (MD5, SHA1, SHA256)
-  - [x] Chain of custody support (case-id, evidence-id, operator)
-  - [x] XSD schema for DFXML validation
-- [x] New modules: `lib/deep_clean/`, `lib/forensic/`, `schemas/`
-
-### v2.7 (Office Deep Clean + Timeline Export) ✅ COMPLETED
-
-- [x] Office deep clean (`--deep-clean-office`)
-  - [x] Comments and reviewer removal (comments.xml, people.xml)
-  - [x] Track changes cleaning (rsid attributes, w:ins/w:del)
-  - [x] Custom XML data removal (customXml/)
-  - [x] Embedded images metadata cleaning
-  - [x] Document properties cleaning (docProps/)
-- [x] Timeline export formats
-  - [x] L2T CSV format (17 fields, Plaso/Timeline Explorer compatible)
-  - [x] Body file format (mactime/Sleuth Kit compatible)
-  - [x] TLN format (5-field simple timeline)
-- [x] New modules: `lib/deep_clean/office_deep_cleaner.sh`, `lib/forensic/timeline_exporter.sh`
-
-### v2.8 (Planned)
-
-- [ ] PRNU anonymization (sensor fingerprinting)
-- [ ] Chain of custody with GPG signatures
-- [ ] Verification module post-cleaning
-
-### v3.0 (Advanced and Professional)
-
-- [ ] PRNU anonymization (sensor fingerprinting)
-- [ ] CASE/UCO JSON-LD integration
-- [ ] REST API for remote use
-- [ ] Plugin system for extensibility
-- [ ] Optional GUI (GTK4/Qt6)
+See [CHANGELOG.md](CHANGELOG.md) for complete version history and roadmap.
 
 ---
 
@@ -802,146 +588,7 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
 
 ## 📜 Version History
 
-### v2.7 (Office Deep Clean + Timeline Export) - 2026-01-27
-
-- **Office Deep Cleaning** (`--deep-clean-office`): Complete cleaning of hidden data in DOCX, XLSX, PPTX
-  - Comments and reviewer removal (comments.xml, people.xml, commentsExtended.xml)
-  - Track changes cleaning (rsid attributes, w:ins/w:del markers)
-  - Custom XML data removal (customXml/ directory)
-  - Embedded images metadata cleaning (word/media/, xl/media/)
-  - Document properties cleaning (docProps/)
-  - Settings cleaning (rsidRoot and other identifying data)
-- **Timeline Export**: New forensic timeline formats for professional analysis
-  - L2T CSV format (17 fields) compatible with Plaso, Timeline Explorer, Splunk
-  - Body file format compatible with mactime (The Sleuth Kit), Autopsy
-  - TLN format (5-field simple timeline)
-  - MACB flags for timestamp identification
-- **New CLI options**: `--deep-clean-office`, `--office-keep-comments`, `--office-keep-revisions`, `--timeline-source`
-- **New modules**: `lib/deep_clean/office_deep_cleaner.sh`, `lib/forensic/timeline_exporter.sh`
-
-### v2.6 (Deep Cleaning + Forensic Reporting) - 2026-01-18
-
-- **Deep Cleaning** (`--deep-clean`): Removes hidden metadata that survives standard cleaning
-  - Thumbnail IFD1 cleaning (embedded thumbnails with original metadata)
-  - PDF linearization (removes incremental updates/hidden versions)
-  - Video stream cleaning (chapters, subtitles, attachments, data streams)
-- **Forensic Reporting** (`--forensic-report`): Professional chain-of-custody documentation
-  - DFXML export compatible with Autopsy, Sleuth Kit, bulk_extractor
-  - Multi-hash calculation (MD5, SHA1, SHA256, optional SHA512)
-  - Chain of custody: `--case-id`, `--evidence-id`, `--operator`
-  - High-precision timestamps (nanoseconds) and UUID execution IDs
-- **New modules**: `lib/deep_clean/` (4 files), `lib/forensic/` (3 files)
-- **New schema**: `schemas/adamantium_dfxml.xsd` for DFXML validation
-
-### v2.5 (Dangerous Metadata Detection) - 2026-01-04
-
-- **Risk Analysis Engine**: Automatic detection and classification of dangerous metadata
-- **3 Risk Levels**: CRITICAL (location, identity), WARNING (device IDs, AI prompts), INFO (timestamps, software)
-- **Visual Risk Panel**: Charmbracelet-style summary with risk counts by category
-- **Inline Badges**: Risk indicators directly in metadata listing
-- **AI Prompt Detection**: Identifies Stable Diffusion, DALL-E, Midjourney generation parameters
-- **Report Integration**: Risk analysis included in JSON and CSV reports
-- **New module**: `lib/danger_detector.sh` (~850 lines)
-
-### v2.4 (Re-encoding for Multimedia) - 2025-12-30
-
-- **Optional Re-encoding**: Full transcoding for guaranteed 100% metadata removal
-- **Hardware Acceleration**: Automatic GPU detection (NVIDIA NVENC, AMD VAAPI, Intel QSV)
-- **Quality Presets**: `--reencode=high|medium|low` with optimized CRF values
-- **Codec Conversion**: H.264, H.265, AV1 video; AAC, Opus, FLAC audio
-- **Container Conversion**: MP4, MKV, WebM with codec compatibility validation
-- **Smart Estimation**: Preview estimated time and output size before processing
-- **New module**: `lib/reencode_handler.sh` (~400 lines)
-
-### v2.3 (Torrent Support and Lightweight Mode) - 2025-12-28
-
-- **Torrent Support**: Full metadata cleaning for .torrent files
-- **Torrent Modes**: `--torrent-mode=safe` (default) or `aggressive`
-- **Lightweight Mode**: `--lightweight` or `-l` for minimal scripting output
-- **Performance**: MIME caching, progress buffering, ~45-50% faster batches
-- **New module**: `lib/torrent_handler.sh` with bencode parser
-
-### v2.2 (EPUB Support and Archive Policies) - 2025-12-26
-
-- **EPUB Support**: Full metadata cleaning for EPUB ebook files
-- **Dublin Core Cleaning**: Removes author, publisher, rights, identifiers, dates
-- **Title Preservation**: Preserves book title (`dc:title`) and language (`dc:language`)
-- **Internal Images**: Cleans EXIF metadata from embedded images (covers, illustrations)
-- **Unknown Policy**: New `--unknown-policy` option for archives (skip/warn/fail/include)
-
-### v2.1 (New Formats and Analysis) - 2025-12-24
-
-- **SVG Support**: Full metadata cleaning for SVG vector graphics files
-- **CSS Support**: Comment removal from CSS stylesheets (author info, copyright, versions)
-- **Show-Only Mode**: New `--show-only` option to display metadata without cleaning
-- **Archive Enhancement**: SVG and CSS files now processed inside compressed archives
-
-### v2.0.1 (Bug Fix) - 2025-12-20
-
-- **Nautilus Extension Fix**: Both menu options now properly open a terminal window
-- **Terminal Support**: Added support for 9 terminal emulators (kitty, ghostty, gnome-terminal, konsole, alacritty, xfce4-terminal, tilix, terminator, xterm)
-
-### v2.0 (Integration and Reporting) - 2025-12-19
-
-- **File Manager Integration**: Right-click context menu for Nautilus (GNOME) and Dolphin (KDE)
-- **JSON/CSV Reports**: Generate structured reports in `~/.adamantium/reports/`
-- **Nautilus Extension**: Python extension for GNOME Files
-- **Dolphin Service Menu**: KDE Plasma integration
-- **Integration Installer**: Easy setup via `./integration/install-integration.sh`
-- **Test Suite**: 31 automated tests for all features
-
-### v1.5 (Configuration and Automation) - 2025-12-19
-
-- **Configuration File**: Customize behavior via `~/.adamantiumrc` (20+ options)
-- **Detailed Logging**: Optional logs in `~/.adamantium.log` with rotation
-- **Desktop Notifications**: notify-send (GNOME/GTK) and kdialog (KDE) support
-- **--notify Option**: Send notifications on completion (for file manager use)
-- **Session Tracking**: Unique session IDs and statistics in logs
-
-### v1.4 (Compressed Archives) - 2025-12-18
-
-- **Archive Support**: Full support for ZIP, TAR, 7Z, RAR compressed files
-- **Complete Workflow**: Extract → Clean metadata → Recompress
-- **Password Support**: Handle password-protected archives
-- **Nested Archives**: Recursive processing of archives within archives
-- **RAR → 7Z**: Automatic conversion to open format
-- **Preview Mode**: `--archive-preview` to inspect contents before processing
-
-### v1.3 (Interactive Mode) - 2025-12-14
-
-- **Interactive TUI**: Complete text-based user interface (`-i` / `--interactive`)
-- **gum Integration**: Modern terminal UI with Charmbracelet's gum
-- **Smart Fallback**: Automatic fallback system (gum → fzf → bash)
-- **Tool Verifier**: Built-in dependency checker and installer
-- **Menu-driven**: Easy navigation through all features
-
-### v1.3.1 (Bug Fix) - 2025-12-15
-
-- **RPM Fix**: ExifTool source compilation fixed for Fedora/RHEL/CentOS
-- **Perl Dependencies**: Automatic installation of build dependencies
-
-### v1.2 (Batch Processing) - 2025-12-13
-
-- **Batch Mode**: Professional batch processing with progress bar (rsync-style)
-- **Parallel Processing**: Automatic CPU core detection for maximum performance
-- **Interactive Selection**: Choose files with patterns + confirmation (fzf support)
-- **Progress Bar**: Real-time stats (percentage, speed, ETA, file counter)
-- **3x-5x Faster**: Parallel execution for large batches
-
-### v1.1 (Verification & Preview) - 2025-11-16
-
-- **--verify**: Hash comparison (SHA256) to verify cleaning was successful
-- **--dry-run**: Preview mode - see what would be cleaned without making changes
-- **Duplicate Detection**: Automatic warning if file appears already clean
-
-### v1.0 (Initial Release) - 2025-10-24
-
-- Core metadata cleaning functionality with ExifTool + ffmpeg
-- Multi-format support (images, videos, audio, PDFs, Office)
-- Modern TUI interface with colors and emojis
-- Automatic file type detection
-- Multi-distribution installer
-- Bilingual support (English/Spanish)
+See [CHANGELOG.md](CHANGELOG.md) for complete version history.
 
 ---
 
@@ -979,21 +626,14 @@ This project is licensed under the GNU Affero General Public License v3.0 (AGPL-
 
 ### Documentation
 
-- [EXAMPLES.md](EXAMPLES.md) - 50+ practical examples
-- [STRUCTURE.md](STRUCTURE.md) - Code architecture
+- [EXAMPLES.md](EXAMPLES.md) - Advanced usage examples
 - [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guide
-- [CHANGELOG.md](CHANGELOG.md) - Complete version history
-- [AI_METADATA_WARNING.md](AI_METADATA_WARNING.md) - AI-generated images metadata guide
+- [CHANGELOG.md](CHANGELOG.md) - Complete version history and roadmap
 
 ### Tool Documentation
 
 - [ExifTool Documentation](https://exiftool.org/)
 - [ffmpeg Documentation](https://ffmpeg.org/documentation.html)
-
-### Privacy and Security
-
-- [Metadata Anonymization Toolkit (MAT2)](https://0xacab.org/jvoisin/mat2)
-- [Dangerzone - Safe document conversion](https://github.com/freedomofpress/dangerzone)
 
 ---
 

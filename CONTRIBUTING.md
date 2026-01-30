@@ -267,10 +267,9 @@ exiftool test_clean.jpg
 
 ### Documentation Files
 
-- `README.md`: Main documentation (includes quick start and installation)
-- `EXAMPLES.md`: Practical examples (+50 use cases)
-- `STRUCTURE.md`: Technical architecture
-- `CHANGELOG.md`: Version history
+- `README.md`: Main documentation (features, installation, usage)
+- `EXAMPLES.md`: Advanced usage examples
+- `CHANGELOG.md`: Version history and roadmap
 - `CONTRIBUTING.md`: This contribution guide
 
 ### Updating Documentation
@@ -280,7 +279,6 @@ When adding features:
 1. Update `README.md` with new capability
 2. Add examples to `EXAMPLES.md`
 3. Add entry to `CHANGELOG.md`
-4. Update `STRUCTURE.md` if architecture changes
 
 ## Distribution-Specific Testing
 

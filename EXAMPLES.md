@@ -1,605 +1,248 @@
-# adamantium - Ejemplos de Uso
+# adamantium - Advanced Usage Examples
 
-Esta guía contiene ejemplos prácticos para usar adamantium en diferentes escenarios.
+This guide contains advanced and practical examples for using adamantium.
 
----
-
-## Índice
-
-1. [Uso básico](#uso-básico)
-2. [✨ Features v1.1 - Verificación](#features-v11---verificación)
-3. [📦 Features v1.2 - Batch Mode](#features-v12---batch-mode)
-4. [🖥️ Features v1.3 - Modo Interactivo](#features-v13---modo-interactivo)
-5. [🗜️ Features v1.4 - Archivos Comprimidos](#features-v14---archivos-comprimidos)
-6. [Imágenes](#imágenes)
-7. [Videos](#videos)
-8. [Audio](#audio)
-9. [Documentos PDF](#documentos-pdf)
-10. [Documentos Office](#documentos-office)
-11. [Procesamiento por lotes](#procesamiento-por-lotes)
-12. [Casos de uso avanzados](#casos-de-uso-avanzados)
+For basic usage, see [README.md](README.md).
 
 ---
 
-## Uso básico
+## Index
 
-### Limpiar un archivo individual
-
-```bash
-# Genera archivo_limpio_clean.ext
-adamantium archivo_limpio.jpg
-
-# Especificar nombre de salida
-adamantium original.pdf documento_anonimo.pdf
-```
-
-### Ver ayuda
-
-```bash
-adamantium
-# Muestra la ayuda y ejemplos
-```
+1. [Verification and Preview](#verification-and-preview)
+2. [Batch Processing](#batch-processing)
+3. [Interactive Mode](#interactive-mode)
+4. [Compressed Archives](#compressed-archives)
+5. [Advanced Use Cases](#advanced-use-cases)
+6. [Automation](#automation)
 
 ---
 
-## ✨ Features v1.1 - Verificación
+## Verification and Preview
 
-### Verificación de hash (--verify)
+### Hash Verification (--verify)
 
 ```bash
-# Verificar que la limpieza fue exitosa comparando hashes SHA256
-adamantium foto.jpg --verify
+# Verify cleaning was successful with SHA256 comparison
+adamantium photo.jpg --verify
 
-# Salida muestra:
-#   ● Hash original (SHA256):
-#     a3f5d8e29b7c1a4f...
-#
-#   ● Hash limpio (SHA256):
-#     b7e9c4f18d2a5c3e...
-#
-#   ✓ Los archivos son diferentes (limpieza exitosa)
+# Output shows:
+#   ● Original hash (SHA256): a3f5d8e29b7c1a4f...
+#   ● Clean hash (SHA256):    b7e9c4f18d2a5c3e...
+#   ✓ Files are different (cleaning successful)
 ```
 
-### Modo previsualización (--dry-run)
+### Preview Mode (--dry-run)
 
 ```bash
-# Ver qué se limpiaría SIN hacer cambios
-adamantium documento.pdf --dry-run
+# See what would be cleaned without making changes
+adamantium document.pdf --dry-run
 
-# Muestra:
-# - Todos los metadatos encontrados
-# - Qué archivo se crearía
-# - NO crea ningún archivo nuevo
-
-# Útil para:
-# - Verificar antes de limpiar
-# - Auditorías de privacidad
-# - Testing de nuevos tipos de archivo
+# Useful for:
+# - Privacy audits
+# - Testing with new file types
+# - Scripting validation
 ```
 
-### Detección de duplicados
+### Combining Options
 
 ```bash
-# adamantium detecta automáticamente archivos ya limpios
-adamantium foto_clean.jpg
-
-# Muestra advertencia:
-# ⚠ ADVERTENCIA: Este archivo parece ya estar limpio
-# No se encontraron metadatos sensibles
-
-# Para omitir esta verificación:
-adamantium foto_clean.jpg --no-duplicate-check
-```
-
-### Combinación de opciones
-
-```bash
-# Preview con verificación (solo muestra, no ejecuta verify)
+# Preview with verification output
 adamantium video.mp4 --dry-run
 
-# Limpiar con verificación
-adamantium imagen.png --verify
-
-# Limpiar sin detección de duplicados, con verificación
+# Clean without duplicate detection
 adamantium archivo.jpg --no-duplicate-check --verify
-
-# Las opciones pueden ir antes o después del archivo
-adamantium --verify foto.jpg
-adamantium foto.jpg --verify  # Ambas formas son válidas
-```
-
-### Casos de uso de --dry-run
-
-```bash
-# 1. Auditoría de privacidad
-# Ver qué información tiene un archivo SIN modificarlo
-adamantium archivo_importante.pdf --dry-run > auditoria.txt
-
-# 2. Testing de compatibilidad
-# Probar con un archivo nuevo sin riesgo
-adamantium archivo_desconocido.xyz --dry-run
-
-# 3. Educación
-# Demostrar metadatos a otras personas
-adamantium foto_gps.jpg --dry-run
-
-# 4. Scripting
-# Verificar archivos en un pipeline
-if adamantium "$file" --dry-run | grep -q "GPS"; then
-    echo "Este archivo tiene GPS!"
-fi
-```
-
-### Casos de uso de --verify
-
-```bash
-# 1. Archivos críticos
-# Asegurar que se limpió correctamente
-adamantium documento_confidencial.pdf --verify
-
-# 2. Validación forense
-# Comprobar que el archivo cambió
-adamantium evidencia.jpg --verify > verificacion.log
-
-# 3. Automatización con verificación
-for file in *.jpg; do
-    adamantium "$file" --verify || echo "Error limpiando $file"
-done
-
-# 4. Debugging
-# Si sospechas que no se limpia bien
-adamantium archivo_problematico.mp4 --verify
 ```
 
 ---
 
-## 📦 Features v1.2 - Batch Mode
+## Batch Processing
 
-### Procesamiento batch básico
-
-```bash
-# Limpiar todos los JPG de un directorio
-adamantium --batch --pattern '*.jpg' ~/Fotos
-
-# Limpiar todos los PDF de un directorio
-adamantium --batch --pattern '*.pdf' ~/Documentos
-```
-
-### Múltiples patrones de archivo
+### Multiple Patterns
 
 ```bash
-# Limpiar varios tipos de imagen
+# Multiple image types
 adamantium --batch --pattern '*.jpg' --pattern '*.png' --pattern '*.gif' .
 
-# Imágenes y PDFs juntos
-adamantium --batch --pattern '*.jpg' --pattern '*.pdf' ~/Descargas
+# Images and PDFs together
+adamantium --batch --pattern '*.jpg' --pattern '*.pdf' ~/Downloads
 ```
 
-### Procesamiento recursivo
+### Recursive Processing
 
 ```bash
-# Buscar en subdirectorios
+# Search in subdirectories
 adamantium --batch -r --pattern '*.mp4' ~/Videos
 
-# Todos los documentos Office recursivamente
-adamantium --batch --recursive --pattern '*.docx' --pattern '*.xlsx' ~/Trabajo
+# All Office documents recursively
+adamantium --batch --recursive --pattern '*.docx' --pattern '*.xlsx' ~/Work
 ```
 
-### Control de paralelización
+### Parallel Processing
 
 ```bash
-# Usar 8 trabajos paralelos
-adamantium --batch -j 8 --pattern '*.jpg' ~/Fotos
+# Use 8 parallel jobs
+adamantium --batch -j 8 --pattern '*.jpg' ~/Photos
 
-# Usar todos los núcleos disponibles (por defecto)
-adamantium --batch --pattern '*.mp4' ~/Videos
-
-# Un solo trabajo (secuencial)
-adamantium --batch -j 1 --pattern '*.pdf' ~/Documentos
+# Single job (sequential)
+adamantium --batch -j 1 --pattern '*.pdf' ~/Documents
 ```
 
-### Selección interactiva con fzf
+### Automation-Friendly
 
 ```bash
-# Con confirmación (por defecto) - muestra lista para seleccionar
-adamantium --batch --confirm --pattern '*.jpg' .
+# No confirmation for scripts
+adamantium --batch --no-confirm --pattern '*.pdf' ~/Documents
 
-# Sin confirmación para automatización
-adamantium --batch --no-confirm --pattern '*.pdf' ~/Documentos
-```
-
-### Modos de salida
-
-```bash
-# Modo verboso - muestra detalles de cada archivo
-adamantium --batch -v --pattern '*.jpg' ~/Fotos
-
-# Modo silencioso - solo errores
-adamantium --batch -q --pattern '*.pdf' ~/Documentos
-```
-
-### Ejemplos prácticos de batch
-
-```bash
-# Limpiar todas las fotos antes de subir a redes sociales
-adamantium --batch -r --pattern '*.jpg' --pattern '*.png' ~/Instagram
-
-# Procesar videos de GoPro
-adamantium --batch --pattern 'GH*.MP4' /media/GoPro/DCIM
-
-# Limpiar documentos para enviar por email
-adamantium --batch --pattern '*.pdf' --pattern '*.docx' ~/Enviar
-
-# Procesamiento masivo de fotos con verificación
-adamantium --batch -r --pattern '*.jpg' ~/Fotos 2>&1 | tee limpieza.log
+# Lightweight output for CI/CD
+adamantium --batch --pattern '*.jpg' --lightweight .
 ```
 
 ---
 
-## 🖥️ Features v1.3 - Modo Interactivo
+## Interactive Mode
 
-### Iniciar modo interactivo
+### Launch Interactive TUI
 
 ```bash
-# Forma corta
 adamantium -i
-
-# Forma larga
+# or
 adamantium --interactive
 ```
 
-### Opciones del menú interactivo
+### Menu Options
 
-El modo interactivo proporciona un menú TUI con las siguientes opciones:
+1. **🧹 Clean single file** - Navigate and select a file with preview
+2. **📦 Batch mode** - Configure patterns and process multiple files
+3. **⚙️ Settings** - Toggle --verify, --dry-run, configure parallel jobs
+4. **🔧 Check tools** - Verify ExifTool, ffmpeg installation
+5. **❓ Help** - Usage information
+6. **ℹ️ About** - Version info
 
-1. **🧹 Limpiar archivo individual**
-   - Navega y selecciona un archivo
-   - Muestra preview de metadatos
-   - Limpia con confirmación
+### Supported Backends
 
-2. **📦 Modo batch**
-   - Selección de directorio
-   - Configuración de patrones
-   - Procesamiento con barra de progreso
+- **gum** (recommended): Modern terminal UI with styling
+- **fzf** (alternative): Fast fuzzy search
+- **bash** (fallback): Works on any system
 
-3. **⚙️ Configuración**
-   - Activar/desactivar --verify
-   - Activar/desactivar --dry-run
-   - Configurar jobs paralelos
+---
 
-4. **🔧 Verificar herramientas**
-   - Comprueba ExifTool instalado
-   - Comprueba ffmpeg instalado
-   - Muestra versiones
+## Compressed Archives
 
-5. **❓ Ayuda**
-   - Muestra información de uso
-
-6. **ℹ️ Acerca de**
-   - Información de versión
-
-### Backends soportados
+### Basic Archive Cleaning
 
 ```bash
-# Con gum instalado (recomendado)
-# Interfaz moderna con estilo
+# ZIP archive
+adamantium photos.zip
+# Generates: photos_clean.zip
 
-# Con fzf (alternativa)
-# Búsqueda fuzzy rápida
+# 7Z archive
+adamantium documents.7z
+# Generates: documents_clean.7z
 
-# Sin ninguno (fallback bash)
-# Funciona en cualquier sistema
+# RAR archive (converts to 7Z)
+adamantium files.rar
+# Generates: files_clean.7z
 ```
 
-### Ejemplo de flujo interactivo
+### Password-Protected Archives
 
 ```bash
-$ adamantium -i
+# ZIP with password
+adamantium secret.zip --archive-password 'password123'
 
-╔═══════════════════════════════════════════════════════════════╗
-║  ADAMANTIUM - Modo Interactivo                                ║
-╚═══════════════════════════════════════════════════════════════╝
+# 7Z with password
+adamantium confidential.7z --archive-password 'strong_key'
+```
 
-? Selecciona una opción:
-  > 🧹 Limpiar archivo
-    📦 Modo batch
-    ⚙️  Configuración
-    🔧 Verificar herramientas
-    ❓ Ayuda
-    ℹ️  Acerca de
-    ❌ Salir
+### Archive Preview
+
+```bash
+# View contents without processing
+adamantium photos.zip --archive-preview
+
+# Useful to verify what will be cleaned
+adamantium documents.7z --archive-preview
 ```
 
 ---
 
-## 🗜️ Features v1.4 - Archivos Comprimidos
+## Advanced Use Cases
 
-### Limpiar archivos dentro de un ZIP
+### Anonymous Publication
 
 ```bash
-# Limpiar todos los archivos (fotos, docs, etc.) dentro del ZIP
-adamantium fotos_vacaciones.zip
-# Genera: fotos_vacaciones_clean.zip
+# Whistleblower / Secure leak
+adamantium internal_document.pdf public_document.pdf
 
-# Con nombre personalizado
-adamantium fotos_vacaciones.zip fotos_seguras.zip
+# Verify no metadata remains
+exiftool public_document.pdf | grep -i "author\|creator\|producer"
 ```
 
-### Limpiar archivo 7Z
+### Cleaning Before Cloud Upload
 
 ```bash
-# Limpiar contenidos de un archivo 7Z
-adamantium documentos.7z
-# Genera: documentos_clean.7z
-
-# 7Z con contraseña
-adamantium documentos.7z --archive-password 'miclave123'
+# Before uploading to Google Drive, Dropbox, etc.
+adamantium --batch --pattern '*.jpg' --no-confirm ~/ToUpload
 ```
 
-### Limpiar archivo RAR (convertido a 7Z)
+### Social Media Preparation
 
 ```bash
-# RAR se procesa y se convierte a 7Z (formato abierto)
-adamantium archivos.rar
-# Genera: archivos_clean.7z
-
-# RAR con contraseña
-adamantium archivos_secretos.rar --archive-password 'secreto'
-# Genera: archivos_secretos_clean.7z
+# Clean photos before posting
+adamantium --batch -r --pattern '*.jpg' --pattern '*.png' ~/Instagram
 ```
 
-### Limpiar archivos TAR
+### Portfolio Preparation
 
 ```bash
-# TAR simple
-adamantium backup.tar
-# Genera: backup_clean.tar
-
-# TAR.GZ (comprimido con gzip)
-adamantium backup.tar.gz
-# Genera: backup_clean.tar.gz
-
-# TAR.BZ2 (comprimido con bzip2)
-adamantium datos.tar.bz2
-# Genera: datos_clean.tar.bz2
-
-# TAR.XZ (comprimido con xz)
-adamantium archivos.tar.xz
-# Genera: archivos_clean.tar.xz
+# Clean project files without revealing clients
+adamantium --batch --pattern '*.pdf' --pattern '*.jpg' ~/Portfolio
 ```
 
-### Vista previa de contenidos
+### Deep Cleaning (v2.6+)
 
 ```bash
-# Ver qué archivos contiene sin procesarlos
-adamantium fotos.zip --archive-preview
+# Remove hidden metadata (thumbnails, PDF history, video streams)
+adamantium photo.jpg --deep-clean
 
-# Útil para verificar qué se va a limpiar
-adamantium documentos.7z --archive-preview
+# Deep clean Office documents (v2.7+)
+adamantium document.docx --deep-clean-office
 ```
 
-### Archivos con contraseña
+### Forensic Reports (v2.6+)
 
 ```bash
-# ZIP cifrado
-adamantium secreto.zip --archive-password 'contraseña123'
+# Generate DFXML report with chain of custody
+adamantium photo.jpg --forensic-report=dfxml --case-id=CASE001 --operator="John Doe"
 
-# 7Z cifrado
-adamantium confidencial.7z --archive-password 'clave_fuerte'
+# Multi-hash calculation
+adamantium document.pdf --multihash
 
-# RAR cifrado (salida será 7Z)
-adamantium privado.rar --archive-password 'pass123'
+# Timeline export (v2.7+)
+adamantium --batch --pattern '*.jpg' --forensic-report=l2tcsv .
 ```
 
-### Casos de uso típicos
+### Re-encoding for Maximum Privacy (v2.4+)
 
 ```bash
-# Limpiar álbum de fotos antes de compartir
-adamantium album_familia.zip
-# Elimina GPS, fechas, info de cámara de todas las fotos
+# Re-encode video for guaranteed metadata removal
+adamantium video.mp4 --reencode
 
-# Limpiar backup de documentos de trabajo
-adamantium documentos_trabajo.7z
-# Elimina autor, empresa, comentarios de todos los docs
+# High quality re-encoding
+adamantium video.mp4 --reencode=high
 
-# Preparar archivo para enviar por email
-adamantium proyecto.zip --archive-preview  # Verificar contenido
-adamantium proyecto.zip                     # Limpiar todo
+# Convert codecs
+adamantium video.mp4 --reencode --video-codec=h265 --audio-codec=opus
+
+# Use GPU acceleration
+adamantium video.mp4 --reencode --hw-accel=nvidia
 ```
 
 ---
 
-## Imágenes
+## Automation
 
-### Eliminar metadatos EXIF de una foto
-
-```bash
-# Elimina GPS, cámara, fecha, etc.
-adamantium foto_vacaciones.jpg
-
-# Resultado: foto_vacaciones_clean.jpg
-# Metadatos eliminados: GPS, Author, Camera Model, Software
-```
-
-### Limpiar múltiples fotos de una cámara
-
-```bash
-cd ~/Fotos/2025/Viaje
-
-# Opción 1: Una por una
-for foto in DSC*.jpg; do
-    adamantium "$foto"
-done
-
-# Opción 2: Con modo batch
-adamantium --batch --pattern '*.jpg' ~/Fotos/2025/Viaje
-```
-
-### Limpiar imágenes PNG con transparencia
-
-```bash
-adamantium logo.png
-# Preserva la transparencia, solo elimina metadatos
-```
-
----
-
-## Videos
-
-### Limpiar metadatos de un video de GoPro
-
-```bash
-# Los videos de GoPro contienen GPS, modelo, serial number
-adamantium GOPR0123.MP4 video_anonimo.MP4
-```
-
-### Limpiar video antes de subirlo a YouTube
-
-```bash
-adamantium tutorial.mp4 tutorial_youtube.mp4
-
-# Metadatos eliminados:
-# - Software de edición usado
-# - Fecha de creación original
-# - Información del encoder
-# - Comentarios embebidos
-```
-
-### Limpiar videos MKV
-
-```bash
-# MKV puede contener múltiples pistas y metadatos complejos
-adamantium pelicula.mkv pelicula_clean.mkv
-```
-
----
-
-## Audio
-
-### Eliminar ID3 tags de MP3
-
-```bash
-# Elimina: Artista, Álbum, Año, Comentarios, Arte de portada
-adamantium cancion.mp3
-
-# Resultado: cancion_clean.mp3 (sin tags ID3)
-```
-
-### Limpiar álbum completo
-
-```bash
-cd ~/Música/Álbum
-
-for track in *.mp3; do
-    adamantium "$track" "clean_${track}"
-done
-```
-
-### Limpiar archivos FLAC (audio lossless)
-
-```bash
-adamantium audio_high_quality.flac
-# Elimina Vorbis comments pero mantiene calidad de audio
-```
-
----
-
-## Documentos PDF
-
-### Limpiar PDF antes de compartir
-
-```bash
-adamantium informe_empresa.pdf informe_publico.pdf
-
-# Metadatos eliminados:
-# - Author: "Juan Pérez"
-# - Creator: "Microsoft Word 2019"
-# - Producer: "Adobe PDF Library"
-# - Creation Date: 2025-01-15
-# - Modification Date: 2025-02-20
-# - Company: "Mi Empresa S.A."
-```
-
-### Limpiar factura escaneada
-
-```bash
-adamantium factura_escaneada.pdf factura_limpia.pdf
-# Elimina metadata del scanner (modelo, software, fecha)
-```
-
-### Limpiar tesis o trabajo académico
-
-```bash
-adamantium tesis_original.pdf tesis_anonima.pdf
-
-# Útil para:
-# - Revisión por pares anónima
-# - Envío a revistas científicas
-# - Compartir borradores sin identificación
-```
-
----
-
-## Documentos Office
-
-### Limpiar documento de Word
-
-```bash
-adamantium documento.docx documento_limpio.docx
-
-# Metadatos eliminados:
-# - Author, Last Modified By
-# - Company, Manager
-# - Creation/Modification dates
-# - Template used
-# - Total editing time
-```
-
-### Limpiar presentación de PowerPoint
-
-```bash
-adamantium presentacion.pptx presentacion_compartir.pptx
-
-# Elimina: Author, Company, Comments, Notes, Revision history
-```
-
-### Limpiar hoja de cálculo Excel
-
-```bash
-adamantium datos_sensibles.xlsx datos_publicos.xlsx
-# Elimina propiedades del documento y metadatos de celda
-```
-
-### Limpiar documentos LibreOffice (ODF)
-
-```bash
-# ODT (Writer)
-adamantium documento.odt
-
-# ODS (Calc)
-adamantium hoja_calculo.ods
-
-# ODP (Impress)
-adamantium presentacion.odp
-```
-
----
-
-## Procesamiento por lotes
-
-### Limpiar todas las fotos de un directorio
-
-```bash
-adamantium --batch --pattern '*.jpg' ~/Fotos/Evento
-```
-
-### Limpiar recursivamente (subdirectorios incluidos)
-
-```bash
-adamantium --batch -r --pattern '*.pdf' ~/Documentos/Proyectos
-```
-
-### Script personalizado para múltiples extensiones
+### Shell Script Example
 
 ```bash
 #!/bin/bash
@@ -607,200 +250,21 @@ adamantium --batch -r --pattern '*.pdf' ~/Documentos/Proyectos
 
 DIR="$1"
 
-echo "Limpiando imágenes..."
-adamantium --batch --pattern '*.jpg' --pattern '*.png' "$DIR"
+echo "Cleaning images..."
+adamantium --batch --pattern '*.jpg' --pattern '*.png' --no-confirm "$DIR"
 
-echo "Limpiando videos..."
-adamantium --batch --pattern '*.mp4' --pattern '*.mov' "$DIR"
+echo "Cleaning videos..."
+adamantium --batch --pattern '*.mp4' --pattern '*.mov' --no-confirm "$DIR"
 
-echo "Limpiando documentos..."
-adamantium --batch --pattern '*.pdf' --pattern '*.docx' "$DIR"
+echo "Cleaning documents..."
+adamantium --batch --pattern '*.pdf' --pattern '*.docx' --no-confirm "$DIR"
 
-echo "✓ Limpieza completa"
+echo "✓ Cleaning complete"
 ```
 
-### Limpiar archivos modificados recientemente
+### systemd Service
 
-```bash
-# Archivos modificados en las últimas 24 horas
-find ~/Documentos -type f -name "*.pdf" -mtime -1 -exec adamantium {} \;
-```
-
----
-
-## Casos de uso avanzados
-
-### Preparar archivos para publicación anónima
-
-```bash
-# Whistleblower / Leak seguro
-adamantium documento_interno.pdf documento_publico.pdf
-
-# Verificar que no quedan metadatos
-exiftool documento_publico.pdf | grep -i "author\|creator\|producer"
-# (No debería mostrar nada sensible)
-```
-
-### Limpiar metadatos antes de subir a la nube
-
-```bash
-# Antes de subir a Google Drive, Dropbox, etc.
-for file in *.jpg; do
-    adamantium "$file"
-    # Subir solo los archivos _clean.jpg
-done
-```
-
-### Limpiar fotos para redes sociales
-
-```bash
-# Instagram, Facebook, Twitter
-adamantium foto_perfil.jpg foto_perfil_clean.jpg
-
-# Aunque las redes sociales eliminan algunos metadatos,
-# es mejor limpiarlos antes por seguridad
-```
-
-### Anonimizar archivos de evidencia
-
-```bash
-# Para compartir con soporte técnico sin revelar identidad
-adamantium captura_error.png captura_anonima.png
-adamantium log_sistema.pdf log_anonimo.pdf
-```
-
-### Preparar portfolio sin revelar clientes
-
-```bash
-# Diseñadores, fotógrafos, videógrafos
-for proyecto in *.psd; do
-    # Exportar a JPG
-    convert "$proyecto" "${proyecto%.psd}.jpg"
-
-    # Limpiar metadatos
-    adamantium "${proyecto%.psd}.jpg"
-done
-```
-
-### Limpiar grabaciones de pantalla
-
-```bash
-# OBS Studio, SimpleScreenRecorder añaden metadata
-adamantium screencast.mp4 screencast_compartir.mp4
-```
-
-### Verificar limpieza con diff
-
-```bash
-# Comparar metadatos antes y después
-exiftool original.jpg > before.txt
-adamantium original.jpg
-exiftool original_clean.jpg > after.txt
-diff before.txt after.txt
-```
-
----
-
-## Tips y trucos
-
-### Alias útiles en Fish shell
-
-```fish
-# ~/.config/fish/config.fish
-
-# Limpiar y reemplazar
-function clean-replace
-    adamantium $argv[1] temp_clean
-    mv temp_clean $argv[1]
-end
-
-# Limpiar todo el directorio actual
-function clean-here
-    adamantium --batch --pattern "*.$argv[1]" .
-end
-
-# Limpiar y mostrar comparación
-function clean-compare
-    exiftool $argv[1] > /tmp/before_meta.txt
-    adamantium $argv[1]
-    exiftool "$argv[1]_clean" > /tmp/after_meta.txt
-    diff /tmp/before_meta.txt /tmp/after_meta.txt
-end
-```
-
-### Integración con Dolphin (KDE)
-
-Crear archivo `~/.local/share/kservices5/adamantium-clean.desktop`:
-
-```ini
-[Desktop Entry]
-Type=Service
-ServiceTypes=KonqPopupMenu/Plugin
-MimeType=image/jpeg;image/png;video/mp4;application/pdf;
-Actions=CleanMetadata;
-
-[Desktop Action CleanMetadata]
-Name=Limpiar metadatos con adamantium
-Icon=edit-clear
-Exec=konsole --hold -e adamantium %f
-```
-
-### Integración con Nautilus (GNOME)
-
-Crear script `~/.local/share/nautilus/scripts/Limpiar con adamantium`:
-
-```bash
-#!/bin/bash
-for file in "$@"; do
-    adamantium "$file" | zenity --text-info --width=800 --height=600
-done
-```
-
----
-
-## Flujos de trabajo recomendados
-
-### Para fotógrafos
-
-```bash
-# 1. Importar fotos de la cámara
-# 2. Seleccionar las mejores
-# 3. Editar en Darktable/GIMP
-# 4. Exportar versión final
-# 5. Limpiar metadatos antes de entregar al cliente
-
-adamantium foto_editada.jpg foto_entrega_cliente.jpg
-```
-
-### Para videomakers
-
-```bash
-# 1. Grabar footage
-# 2. Editar en DaVinci Resolve/Kdenlive
-# 3. Exportar versión final
-# 4. Limpiar metadatos
-
-adamantium video_final.mp4 video_cliente.mp4
-```
-
-### Para escritores/investigadores
-
-```bash
-# 1. Escribir documento en LibreOffice
-# 2. Revisar y corregir
-# 3. Exportar a PDF
-# 4. Limpiar metadatos antes de enviar
-
-adamantium articulo.pdf articulo_revista.pdf
-```
-
----
-
-## Automatización con systemd
-
-Crear servicio que limpia automáticamente archivos nuevos en una carpeta:
-
-`~/.config/systemd/user/adamantium-watch.service`:
+Create `~/.config/systemd/user/adamantium-watch.service`:
 
 ```ini
 [Unit]
@@ -809,49 +273,72 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/inotifywait -m -e create /home/usuario/Compartir --format '%w%f' | while read file; do adamantium "$file"; done
+ExecStart=/bin/bash -c 'inotifywait -m -e create /home/user/Share --format "%%w%%f" | while read file; do adamantium "$file" --lightweight; done'
 Restart=always
 
 [Install]
 WantedBy=default.target
 ```
 
-Activar:
+Enable:
 ```bash
-systemd --user enable adamantium-watch.service
-systemd --user start adamantium-watch.service
+systemctl --user enable adamantium-watch.service
+systemctl --user start adamantium-watch.service
 ```
+
+### Fish Shell Functions
+
+```fish
+# ~/.config/fish/config.fish
+
+# Clean and replace original
+function clean-replace
+    adamantium $argv[1] temp_clean
+    mv temp_clean $argv[1]
+end
+
+# Clean all files of a type in current directory
+function clean-here
+    adamantium --batch --pattern "*.$argv[1]" --no-confirm .
+end
+```
+
+### Desktop Integration
+
+adamantium includes file manager integration:
+
+```bash
+# Install integration (Nautilus/Dolphin)
+./integration/install-integration.sh
+```
+
+After installation, right-click any file → "Clean Metadata (Adamantium)"
 
 ---
 
-## Solución de problemas específicos
+## Troubleshooting
 
-### Video no se reproduce después de limpiar
+### Video Won't Play After Cleaning
 
 ```bash
-# Probar con VLC o mpv que son más tolerantes
+# Try with VLC or mpv (more tolerant)
 vlc video_clean.mp4
 
-# Si falla, el video original puede estar corrupto
+# If it fails, the original may be corrupt
 ffmpeg -v error -i video_original.mp4 -f null -
 ```
 
-### PDF pierde interactividad
+### PDF Loses Interactivity
+
+PDF forms may lose functionality after cleaning. This is expected behavior - the metadata removal process affects interactive elements.
+
+### Office Files Won't Open
 
 ```bash
-# Los formularios PDF pueden perder funcionalidad
-# Solución: Usar solo exiftool sin ffmpeg (ya lo hace adamantium automáticamente)
-```
-
-### Archivos Office no abren
-
-```bash
-# Verificar integridad
-libreoffice --headless --convert-to pdf documento_clean.docx
-
-# Si falla, el archivo original puede tener problemas
+# Verify integrity
+libreoffice --headless --convert-to pdf document_clean.docx
 ```
 
 ---
 
-¿Necesitas más ejemplos? Contribuye con tus propios casos de uso en el repositorio.
+For more information, see the [README.md](README.md) or run `adamantium --help`.
