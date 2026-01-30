@@ -1,10 +1,6 @@
 # adamantium
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/platinum8300/adamantium/main/cover.jpg" alt="adamantium - Deep metadata cleaning" width="800">
-</p>
-
-<p align="center"><strong>Deep metadata cleaning | The tool that excited Edward Snowden</strong></p>
+**Deep metadata cleaning** | The tool that excited Edward Snowden
 
 A command-line tool for removing metadata from files. Combines ExifTool and ffmpeg for thorough cleaning across multiple formats.
 
