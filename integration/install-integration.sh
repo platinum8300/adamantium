@@ -103,6 +103,7 @@ install_dolphin() {
     # Copy service menu
     if [ -f "${SCRIPT_DIR}/dolphin/adamantium-clean.desktop" ]; then
         cp "${SCRIPT_DIR}/dolphin/adamantium-clean.desktop" "$DOLPHIN_SERVICE_DIR/"
+        chmod +x "$DOLPHIN_SERVICE_DIR/adamantium-clean.desktop"
         echo -e "${GREEN}[OK]${NC} Installed: $DOLPHIN_SERVICE_DIR/adamantium-clean.desktop"
     else
         echo -e "${RED}[ERROR]${NC} Source file not found: ${SCRIPT_DIR}/dolphin/adamantium-clean.desktop"

@@ -12,16 +12,16 @@ X-KDE-StartupNotify=false
 Name=Clean Metadata (Adamantium)
 Name[es]=Limpiar Metadatos (Adamantium)
 Icon=security-high
-Exec=adamantium --notify %f
+Exec=bash -c 'TERM_APP=$(kreadconfig5 --file kdeglobals --group General --key TerminalApplication 2>/dev/null || echo konsole); case "$TERM_APP" in kitty) kitty --hold -e adamantium --notify "$0";; alacritty) alacritty --hold -e adamantium --notify "$0";; *) "$TERM_APP" -e bash -c "adamantium --notify \"$0\"; read -p \"Press Enter to close...\"";; esac' %f
 
 [Desktop Action preview]
 Name=Preview Metadata (Adamantium)
 Name[es]=Vista Previa de Metadatos (Adamantium)
 Icon=dialog-information
-Exec=adamantium --dry-run %f
+Exec=bash -c 'TERM_APP=$(kreadconfig5 --file kdeglobals --group General --key TerminalApplication 2>/dev/null || echo konsole); case "$TERM_APP" in kitty) kitty --hold -e adamantium --dry-run "$0";; alacritty) alacritty --hold -e adamantium --dry-run "$0";; *) "$TERM_APP" -e bash -c "adamantium --dry-run \"$0\"; read -p \"Press Enter to close...\"";; esac' %f
 
 [Desktop Action batch]
 Name=Clean All Selected (Adamantium)
 Name[es]=Limpiar Todos los Seleccionados (Adamantium)
 Icon=edit-select-all
-Exec=adamantium --batch --no-confirm --notify --pattern "*" %F
+Exec=bash -c 'TERM_APP=$(kreadconfig5 --file kdeglobals --group General --key TerminalApplication 2>/dev/null || echo konsole); case "$TERM_APP" in kitty) kitty --hold -e adamantium --batch --no-confirm --notify --pattern "*" "$@";; alacritty) alacritty --hold -e adamantium --batch --no-confirm --notify --pattern "*" "$@";; *) "$TERM_APP" -e bash -c "adamantium --batch --no-confirm --notify --pattern \"*\" \"$@\"; read -p \"Press Enter to close...\"";; esac' _ %F
