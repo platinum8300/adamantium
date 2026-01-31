@@ -110,7 +110,9 @@ declare -A DANGER_PATTERNS_WARNING=(
     ["Prompt"]="ai_prompt"
     ["NegativePrompt"]="ai_prompt"
     ["UserComment"]="ai_prompt"
-    ["Description"]="ai_prompt"
+    ["ImageDescription"]="ai_prompt"
+    ["XMP-dc:Description"]="ai_prompt"
+    ["IPTC:Caption-Abstract"]="ai_prompt"
     ["Comment"]="ai_prompt"
     ["Source"]="ai_prompt"
     ["Dream"]="ai_prompt"
@@ -238,8 +240,8 @@ danger_classify_field() {
     # Check WARNING patterns
     for pattern in "${!DANGER_PATTERNS_WARNING[@]}"; do
         if [[ "$normalized_field" == *"$pattern"* ]] || [[ "$field_name" == *"$pattern"* ]]; then
-            # Special check for AI prompts in UserComment/Comment fields
-            if [[ "$pattern" == "UserComment" || "$pattern" == "Comment" || "$pattern" == "Description" ]]; then
+            # Special check for AI prompts in UserComment/Comment/Description fields
+            if [[ "$pattern" == "UserComment" || "$pattern" == "Comment" || "$pattern" == "ImageDescription" || "$pattern" == "XMP-dc:Description" || "$pattern" == "IPTC:Caption-Abstract" ]]; then
                 # Only flag if contains AI-related keywords
                 if danger_detect_ai_content "$field_value"; then
                     echo "warning:ai_prompt"
